@@ -56162,6 +56162,16 @@ You should be redirected to the song at:<br /><br />
                         message = div$7(h2$6("Unison Sign"), p$2("This setting is a volume multiplier applied to the second voice. This setting will only work correctly with two voices."));
                     }
                     break;
+                case "ringMod":
+                    {
+                        message = div$7(h2$6("Ring Modulation"), p$2(`This setting multiplies a sine wave's frequency with an instrument frequency, this is useful for "bell-like" instruments.`));
+                    }
+                    break;
+                case "RingModHz":
+                    {
+                        message = div$7(h2$6("Ring Modulation (Hertz)"), p$2(`This setting changes the Hertz of the 2nd multiplied frequency with the first frequency.`));
+                    }
+                    break;
                 default:
                     if (type.indexOf("modSetInfo") >= 0) {
                         let modNum = +type[type.length - 1];
