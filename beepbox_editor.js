@@ -56585,6 +56585,26 @@ You should be redirected to the song at:<br /><br />
                         message = div$7(h2$6("Ring Modulation (Hertz)"), p$2(`This setting changes the Hertz of the 2nd multiplied frequency with the first frequency.`));
                     }
                     break;
+                case "phaserMix":
+                    {
+                        message = div$7(h2$6("Phaser Mix"), p$2(``));
+                    }
+                    break;
+                case "phaserFreq":
+                    {
+                        message = div$7(h2$6("Phaser Frequency"), p$2(``));
+                    }
+                    break;
+                case "phaserFeedback":
+                    {
+                        message = div$7(h2$6("Phaser Feedback"), p$2(``));
+                    }
+                    break;
+                case "phaserStages":
+                    {
+                        message = div$7(h2$6("Phaser Stages"), p$2(`This slider changes how many all-passes there are in the phaser.`));
+                    }
+                    break;
                 default:
                     if (type.indexOf("modSetInfo") >= 0) {
                         let modNum = +type[type.length - 1];
