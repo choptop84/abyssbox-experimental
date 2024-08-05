@@ -1025,6 +1025,7 @@ var beepbox = (function (exports) {
         { name: "phaserFreq", computeIndex: 41, displayName: "phaser freq", interleave: false, isFilter: false, maxCount: 1, effect: 13, compatibleInstruments: null },
         { name: "phaserMix", computeIndex: 42, displayName: "phaser", interleave: false, isFilter: false, maxCount: 1, effect: 13, compatibleInstruments: null },
         { name: "phaserFeedback", computeIndex: 43, displayName: "phaser feedback", interleave: false, isFilter: false, maxCount: 1, effect: 13, compatibleInstruments: null },
+        { name: "phaserStages", computeIndex: 44, displayName: "phaser stages", interleave: false, isFilter: false, maxCount: 1, effect: 13, compatibleInstruments: null },
     ]);
     Config.operatorWaves = toNameMap([
         { name: "sine", samples: Config.sineWave },
@@ -26925,8 +26926,9 @@ li.select2-results__option[role=group] > strong:hover {
         fromJsonObject(instrumentObject, isNoiseChannel, isModChannel, useSlowerRhythm, useFastTwoNoteArp, legacyGlobalReverb = 0, jsonFormat = Config.jsonFormat) {
             if (instrumentObject == undefined)
                 instrumentObject = {};
+            const format = jsonFormat.toLowerCase();
             let type = Config.instrumentTypeNames.indexOf(instrumentObject["type"]);
-            if ((jsonFormat == "SynthBox") && (instrumentObject["type"] == "FM"))
+            if ((format == "synthbox") && (instrumentObject["type"] == "FM"))
                 type = Config.instrumentTypeNames.indexOf("FM6op");
             if (type == -1)
                 type = isModChannel ? 10 : (isNoiseChannel ? 2 : 0);
@@ -26936,7 +26938,7 @@ li.select2-results__option[role=group] > strong:hover {
                 this.preset = instrumentObject["preset"] >>> 0;
             }
             if (instrumentObject["volume"] != undefined) {
-                if (jsonFormat == "JummBox" || jsonFormat == "Midbox" || jsonFormat == "SynthBox" || jsonFormat == "UltraBox") {
+                if (format == "jummbox" || format == "midbox" || format == "synthbox" || format == "goldbox" || format == "paandorasbox" || format == "ultrabox") {
                     this.volume = clamp(-Config.volumeRange / 2, (Config.volumeRange / 2) + 1, instrumentObject["volume"] | 0);
                 }
                 else {
@@ -27106,12 +27108,15 @@ li.select2-results__option[role=group] > strong:hover {
             }
             if (instrumentObject["pan"] != undefined) {
                 this.pan = clamp(0, Config.panMax + 1, Math.round(Config.panCenter + (instrumentObject["pan"] | 0) * Config.panCenter / 100));
-                if (this.pan != Config.panCenter) {
-                    this.effects = (this.effects | (1 << 2));
-                }
+            }
+            else if (instrumentObject["ipan"] != undefined) {
+                this.pan = clamp(0, Config.panMax + 1, Config.panCenter + (instrumentObject["ipan"] * 100));
             }
             else {
                 this.pan = Config.panCenter;
+            }
+            if (this.pan != Config.panCenter) {
+                this.effects = (this.effects | (1 << 2));
             }
             if (instrumentObject["panDelay"] != undefined) {
                 this.panDelay = (instrumentObject["panDelay"] | 0);
@@ -27288,10 +27293,10 @@ li.select2-results__option[role=group] > strong:hover {
                         this.customAlgorithm.fromPreset(this.algorithm6Op);
                     }
                     this.feedbackType6Op = Config.feedbacks6Op.findIndex(feedback6Op => feedback6Op.name == instrumentObject["feedbackType"]);
-                    if ((this.feedbackType6Op == -1) && (jsonFormat == "SynthBox")) {
-                        this.feedbackType6Op = Config.algorithms6Op.findIndex(feedbackType6Op => feedbackType6Op.name == "Custom");
+                    if (this.feedbackType6Op == -1) {
                         let synthboxLegacyFeedbacks = toNameMap([
                             { name: "2⟲ 3⟲", indices: [[], [2], [3], [], [], []] },
+                            { name: "3⟲ 4⟲", indices: [[], [], [3], [4], [], []] },
                             { name: "4⟲ 5⟲", indices: [[], [], [], [4], [5], []] },
                             { name: "5⟲ 6⟲", indices: [[], [], [], [], [5], [6]] },
                             { name: "1⟲ 6⟲", indices: [[1], [], [], [], [], [6]] },
@@ -27318,18 +27323,20 @@ li.select2-results__option[role=group] > strong:hover {
                             { name: "1→2→3→4→5→6", indices: [[], [1], [2], [3], [4], [5]] },
                         ]);
                         let synthboxFeedbackType = synthboxLegacyFeedbacks[synthboxLegacyFeedbacks.findIndex(feedback => feedback.name == instrumentObject["feedbackType"])].indices;
-                        this.customFeedbackType.set(synthboxFeedbackType);
-                    }
-                    else {
-                        if (this.feedbackType6Op == -1)
-                            this.feedbackType6Op = 1;
-                        if (this.feedbackType6Op == 0) {
-                            this.customFeedbackType.set(instrumentObject["customFeedback"]["mods"]);
+                        if (synthboxFeedbackType != undefined) {
+                            this.feedbackType6Op = 0;
+                            this.customFeedbackType.set(synthboxFeedbackType);
                         }
                         else {
-                            this.customFeedbackType.fromPreset(this.feedbackType6Op);
+                            this.feedbackType6Op = 1;
                         }
                     }
+                }
+                if ((this.feedbackType6Op == 0) && (instrumentObject["customFeedback"] != undefined)) {
+                    this.customFeedbackType.set(instrumentObject["customFeedback"]["mods"]);
+                }
+                else {
+                    this.customFeedbackType.fromPreset(this.feedbackType6Op);
                 }
                 if (instrumentObject["feedbackAmplitude"] != undefined) {
                     this.feedbackAmplitude = clamp(0, Config.operatorAmplitudeMax + 1, instrumentObject["feedbackAmplitude"] | 0);
@@ -27354,6 +27361,10 @@ li.select2-results__option[role=group] > strong:hover {
                         operator.amplitude = 0;
                     }
                     if (operatorObject["waveform"] != undefined) {
+                        if (format == "goldbox" && j > 3) {
+                            operator.waveform = 0;
+                            continue;
+                        }
                         operator.waveform = Config.operatorWaves.findIndex(wave => wave.name == operatorObject["waveform"]);
                         if (operator.waveform == -1) {
                             if (operatorObject["waveform"] == "square") {
@@ -27430,7 +27441,7 @@ li.select2-results__option[role=group] > strong:hover {
                     this.aliases = instrumentObject["aliases"];
                 }
                 else {
-                    if (jsonFormat == "ModBox") {
+                    if (format == "modbox") {
                         this.effects = (this.effects | (1 << 3));
                         this.aliases = true;
                         this.distortion = 0;
@@ -30758,7 +30769,17 @@ li.select2-results__option[role=group] > strong:hover {
             this.initToDefault(true);
             if (!jsonObject)
                 return;
-            const format = jsonFormat == "auto" ? jsonObject["format"] : jsonFormat;
+            if (jsonFormat == "auto") {
+                if (jsonObject["format"] == "BeepBox") {
+                    if (jsonObject["riff"] != undefined) {
+                        jsonFormat = "modbox";
+                    }
+                    if (jsonObject["masterGain"] != undefined) {
+                        jsonFormat = "jummbox";
+                    }
+                }
+            }
+            const format = (jsonFormat == "auto" ? jsonObject["format"] : jsonFormat).toLowerCase();
             if (jsonObject["name"] != undefined) {
                 this.title = jsonObject["name"];
             }
@@ -31021,7 +31042,7 @@ li.select2-results__option[role=group] > strong:hover {
                                     instrumentObject["wave"] = names[oldNames.findIndex(x => x === waveName)];
                                 }
                                 else if (veryOldNames.includes(waveName)) {
-                                    if (waveName === "trumpet" || waveName === "flute") ;
+                                    if ((waveName === "trumpet" || waveName === "flute") && (format != "paandorasbox")) ;
                                     else {
                                         shouldLoadLegacySamples = true;
                                         instrumentObject["wave"] = names[veryOldNames.findIndex(x => x === waveName)];
@@ -32001,6 +32022,7 @@ li.select2-results__option[role=group] > strong:hover {
             this.phaserBreakCoef = 0.0;
             this.phaserBreakCoefDelta = 0.0;
             this.phaserStages = 0;
+            this.phaserStagesDelta = 0;
             this.envelopeComputer = new EnvelopeComputer();
             this.spectrumWave = new SpectrumWaveState();
             this.harmonicsWave = new HarmonicsWaveState();
@@ -32484,7 +32506,13 @@ li.select2-results__option[role=group] > strong:hover {
                 const phaserBreakCoefEnd = (phaserBreakFreqEndT - 1) / (phaserBreakFreqEndT + 1);
                 this.phaserBreakCoef = phaserBreakCoefStart;
                 this.phaserBreakCoefDelta = (phaserBreakCoefEnd - phaserBreakCoefStart) / roundedSamplesPerTick;
-                this.phaserStages = instrument.phaserStages;
+                const phaserStagesEnvelopeStart = envelopeStarts[44];
+                const phaserStagesEnvelopeEnd = envelopeEnds[44];
+                const phaserStagesSlider = instrument.phaserStages;
+                let phaserStagesStart = Math.max(Config.phaserMinStages, Math.min(Config.phaserMaxStages, phaserStagesSlider * phaserStagesEnvelopeStart));
+                let phaserStagesEnd = Math.max(Config.phaserMinStages, Math.min(Config.phaserMaxStages, phaserStagesSlider * phaserStagesEnvelopeEnd));
+                this.phaserStages = phaserStagesStart;
+                this.phaserStagesDelta = (phaserStagesEnd - phaserStagesStart) / roundedSamplesPerTick;
             }
             if (usesReverb) {
                 let useReverbStart = instrument.reverb;
@@ -36149,7 +36177,9 @@ li.select2-results__option[role=group] > strong:hover {
                 
                 const phaserSamples = instrumentState.phaserSamples;
                 const phaserPrevInputs = instrumentState.phaserPrevInputs;
-                const phaserStages = instrumentState.phaserStages;
+                let phaserStages = instrumentState.phaserStages;
+                let phaserStagesInt = Math.floor(phaserStages);
+                const phaserStagesDelta = instrumentState.phaserStagesDelta;
                 const phaserFeedbackMultDelta = +instrumentState.phaserFeedbackMultDelta;
                 let phaserFeedbackMult = +instrumentState.phaserFeedbackMult;
                 const phaserMixDelta = +instrumentState.phaserMixDelta;
@@ -36347,8 +36377,8 @@ li.select2-results__option[role=group] > strong:hover {
                 }
                 if (usesPhaser) {
                     effectsSource += `
-                        const phaserFeedback = phaserSamples[phaserStages - 1] * phaserFeedbackMult;
-                        for (let stage = 0; stage < phaserStages; stage++) {
+                        const phaserFeedback = phaserSamples[Math.max(0,phaserStagesInt - 1)] * phaserFeedbackMult;
+                        for (let stage = 0; stage < phaserStagesInt; stage++) {
                             const phaserInput = stage === 0 ? sample + phaserFeedback : phaserSamples[stage - 1];
                             const phaserPrevInput = phaserPrevInputs[stage];
                             const phaserSample = phaserSamples[stage];
@@ -36356,11 +36386,13 @@ li.select2-results__option[role=group] > strong:hover {
                             phaserPrevInputs[stage] = phaserInput;
                             phaserSamples[stage] = phaserNextOutput;
                         }
-                        const phaserOutput = phaserSamples[phaserStages - 1];
+                        const phaserOutput = phaserSamples[Math.max(0,phaserStagesInt - 1)];
                         sample = sample + phaserOutput * phaserMix;
                         phaserFeedbackMult += phaserFeedbackMultDelta;
                         phaserBreakCoef += phaserBreakCoefDelta;
                         phaserMix += phaserMixDelta;
+                        phaserStages += phaserStagesDelta;
+                        /*phaserStagesInt = Math.floor(phaserStages);*/
                     `;
                 }
                 if (usesEqFilter) {
@@ -41950,12 +41982,12 @@ li.select2-results__option[role=group] > strong:hover {
         }
     }
 
-    const { button: button$s, div: div$s, span: span$6, h2: h2$r, input: input$h, br: br$4, select: select$f, option: option$f } = HTML;
+    const { button: button$s, div: div$s, span: span$6, h2: h2$r, input: input$h, br: br$4, select: select$g, option: option$g } = HTML;
     class BeatsPerBarPrompt {
         constructor(_doc) {
             this._doc = _doc;
             this._beatsStepper = input$h({ style: "width: 3em; margin-left: 1em;", type: "number", step: "1" });
-            this._conversionStrategySelect = select$f({ style: "width: 100%;" }, option$f({ value: "splice" }, "Splice beats at end of bars."), option$f({ value: "stretch" }, "Stretch notes to fit in bars."), option$f({ value: "overflow" }, "Overflow notes across bars."));
+            this._conversionStrategySelect = select$g({ style: "width: 100%;" }, option$g({ value: "splice" }, "Splice beats at end of bars."), option$g({ value: "stretch" }, "Stretch notes to fit in bars."), option$g({ value: "overflow" }, "Overflow notes across bars."));
             this._cancelButton = button$s({ class: "cancelButton" });
             this._okayButton = button$s({ class: "okayButton", style: "width:45%;" }, "Okay");
             this.container = div$s({ class: "prompt noSelection", style: "width: 250px;" }, div$s({ class: "promptTitle" }, h2$r({ class: "bpmExt", style: "text-align: inherit;" }, ""), h2$r({ class: "bpmTitle" }, "Beats Per Bar")), div$s({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, div$s({ style: "text-align: right;" }, "Beats per bar:", br$4(), span$6({ style: "font-size: smaller; color: ${ColorConfig.secondaryText};" }, "(Multiples of 3 or 4 are recommended)")), this._beatsStepper), div$s({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, div$s({ class: "selectContainer", style: "width: 100%;" }, this._conversionStrategySelect)), div$s({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton), this._cancelButton);
@@ -43204,12 +43236,12 @@ li.select2-results__option[role=group] > strong:hover {
         }
     }
 
-    const { button: button$n, div: div$n, h2: h2$m, input: input$e, select: select$e, option: option$e, code: code$1 } = HTML;
+    const { button: button$n, div: div$n, h2: h2$m, input: input$e, select: select$f, option: option$f, code: code$1 } = HTML;
     class InstrumentImportPrompt {
         constructor(_doc) {
             this._doc = _doc;
             this._cancelButton = button$n({ class: "cancelButton" });
-            this._importStrategySelect = select$e({ style: "width: 100%;" }, option$e({ value: "append" }, "Append instruments to the end of the list."), option$e({ value: "replace" }, "Replace only the selected instrument."), option$e({ value: "all" }, "Replace all instruments in the channel."));
+            this._importStrategySelect = select$f({ style: "width: 100%;" }, option$f({ value: "append" }, "Append instruments to the end of the list."), option$f({ value: "replace" }, "Replace only the selected instrument."), option$f({ value: "all" }, "Replace all instruments in the channel."));
             this._fileInput = input$e({ type: "file", accept: ".json,application/json" });
             this.importStratSelectDiv = div$n({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, div$n({ class: "selectContainer", style: "width: 100%;" }, this._importStrategySelect));
             this.warningText = div$n({}, div$n({ style: "text-align: left;" }, "You must enable either ", code$1("Simultaneous instruments per channel"), " or ", code$1("Different instruments per pattern"), " to change the import strategy."));
@@ -45986,11 +46018,11 @@ button.playButton::before {
     CustomThemeBases._iconStyleElement = document.head.appendChild(HTML.style({ type: "text/css" }));
     CustomThemeBases._cursorStyleElement = document.head.appendChild(HTML.style({ type: "text/css" }));
 
-    const { button: button$m, div: div$m, h2: h2$l, option: option$d, select: select$d, optgroup: optgroup$2 } = HTML;
+    const { button: button$m, div: div$m, h2: h2$l, option: option$e, select: select$e, optgroup: optgroup$2 } = HTML;
     class SetThemePrompt {
         constructor(_doc) {
             this._doc = _doc;
-            this._themeSelect = select$d({ style: "width: 100%;", id: "themeSelect" }, option$d({ value: "none" }, "None"), optgroup$2({ label: "AbyssBox Themes" }, option$d({ value: "AbyssBox Classic" }, "AbyssBox Classic"), option$d({ value: "AbyssBox Competitive" }, "AbyssBox Competitive"), option$d({ value: "AbyssBox Light" }, "AbyssBox Light"), option$d({ value: "AbyssBox 0.8" }, "AbyssBox 0.8"), option$d({ value: "AbyssBox Piano" }, "AbyssBox Piano [!]"), option$d({ value: "Half-Life" }, "Half-Life"), option$d({ value: "Half-Life: Source" }, "Half-Life: Source"), option$d({ value: "Doom 1993" }, "Doom 1993"), option$d({ value: "Undertale" }, "Undertale"), option$d({ value: "Yume Nikki" }, "Yume Nikki [!]"), option$d({ value: "Scratch" }, "Scratch"), option$d({ value: "Scratch Addons" }, "Scratch Addons"), option$d({ value: "Windows Xp" }, "Windows Xp"), option$d({ value: "Frutiger Aero" }, "Frutiger Aero"), option$d({ value: "Skeuomorphic" }, "Skeuomorphic/Early 2000's (LeoV)"), option$d({ value: "Glyde" }, "Glyde"), option$d({ value: "starry studio" }, "Starry Studio"), option$d({ value: "Terminal 2.0 (AB)" }, "Terminal 2.0 (AB)"), option$d({ value: "Slushie" }, "Slushie"), option$d({ value: "Slushie Pixel" }, "Slushie 2"), option$d({ value: "BeepBox Pixel" }, "BeepBox Pixel"), option$d({ value: "forest 2" }, "Forest 2"), option$d({ value: "canyon 2" }, "Canyon 2"), option$d({ value: "Nebula 2" }, "Nebula 2"), option$d({ value: "Ghost House" }, "Ghost House"), option$d({ value: "Ghost House 2" }, "Ghost House 2")), optgroup$2({ label: "BeepBox Themes" }, option$d({ value: "dark classic" }, "BeepBox Dark"), option$d({ value: "light classic" }, "BeepBox Light"), option$d({ value: "dark competition" }, "BeepBox Competition Dark")), optgroup$2({ label: "JummBox Themes" }, option$d({ value: "jummbox classic" }, "JummBox Dark"), option$d({ value: "jummbox light" }, "JummBox Light"), option$d({ value: "forest" }, "Forest"), option$d({ value: "canyon" }, "Canyon"), option$d({ value: "midnight" }, "Midnight"), option$d({ value: "beachcombing" }, "Beachcombing"), option$d({ value: "violet verdant" }, "Violet Verdant"), option$d({ value: "sunset" }, "Sunset"), option$d({ value: "autumn" }, "Autumn"), option$d({ value: "fruit" }, "Shadowfruit"), option$d({ value: "toxic" }, "Toxic"), option$d({ value: "roe" }, "Roe"), option$d({ value: "moonlight" }, "Moonlight"), option$d({ value: "portal" }, "Portal"), option$d({ value: "fusion" }, "Fusion"), option$d({ value: "inverse" }, "Inverse"), option$d({ value: "nebula" }, "Nebula"), option$d({ value: "roe light" }, "Roe Light"), option$d({ value: "amoled dark" }, "High Contrast Dark"), option$d({ value: "energized" }, "Energized"), option$d({ value: "neapolitan" }, "Neapolitan"), option$d({ value: "mono" }, "Poly"), option$d({ value: "blutonium" }, "Blutonium")), optgroup$2({ label: "ModBox Themes" }, option$d({ value: "modbox classic" }, "Modbox"), option$d({ value: "modbox 2" }, "Modbox 2.0"), option$d({ value: "modbox artic" }, "Artic"), option$d({ value: "modbox cinnamon" }, "Cinnamon Roll [!]"), option$d({ value: "modbox ocean" }, "Ocean"), option$d({ value: "modbox rainbow" }, "Rainbow [!]"), option$d({ value: "modbox float" }, "Float [!]"), option$d({ value: "modbox windows" }, "Windows"), option$d({ value: "modbox grassland" }, "Grassland"), option$d({ value: "modbox dessert" }, "Dessert"), option$d({ value: "modbox kahoot" }, "Kahootiest"), option$d({ value: "modbox bitbeam" }, "Beam to the Bit [!]"), option$d({ value: "modbox egg" }, "Pretty Egg"), option$d({ value: "modbox pony" }, "Poniryoshka"), option$d({ value: "modbox gameboy" }, "Gameboy [!]"), option$d({ value: "modbox woodkid" }, "Woodkid [!]"), option$d({ value: "modbox midnight" }, "Midnight [!]"), option$d({ value: "modbox snedbox" }, "Snedbox"), option$d({ value: "modbox unnamed" }, "unnamed [!]"), option$d({ value: "modbox piano" }, "Piano [!]"), option$d({ value: "modbox halloween" }, "Halloween [!]"), option$d({ value: "modbox frozen" }, "FrozenOver❄️ [!]")), optgroup$2({ label: "ShitBox Themes" }, option$d({ value: "shitbox 1.0" }, "Shitbox 1.0"), option$d({ value: "shitbox 2.0" }, "Shitbox 2.0"), option$d({ value: "shitbox 3.0" }, "Shitbox 3.0/shitbox4"), option$d({ value: "shitbox ModBox 2.0" }, "Shitbox ModBox 2.0"), option$d({ value: "shitbox Realm" }, "Shitbox Realm [!]")), optgroup$2({ label: "Nepbox Themes" }, option$d({ value: "nepbox" }, "Nepbox"), option$d({ value: "nepbox laffey" }, "Laffey"), option$d({ value: "nepbox snedbox" }, "Snedbox (Nb) [!]"), option$d({ value: "nepbox piano" }, "Piano (Nb) [!]")), optgroup$2({ label: "Mod Default Themes" }, option$d({ value: "sandbox classic" }, "Sandbox"), option$d({ value: "harrybox" }, "Haileybox"), option$d({ value: "brucebox" }, "Brucebox"), option$d({ value: "nerdbox" }, "NerdBox"), option$d({ value: "zefbox" }, "Zefbox"), option$d({ value: "cardboardbox classic" }, "Cardboardbox"), option$d({ value: "blubox classic" }, "Blubox"), option$d({ value: "dogebox classic" }, "Dogebox"), option$d({ value: "dogebox dark" }, "Way too Dark (DB)/TOO DARK(BluB)"), option$d({ value: "wackybox" }, "Wackybox"), option$d({ value: "todbox dark mode" }, "Todbox Dark Mode"), option$d({ value: "mainbox 1.0" }, "Mainbox"), option$d({ value: "microbox" }, "MicroBox"), option$d({ value: "paandorasbox" }, "PaandorasBox"), option$d({ value: "foxbox" }, "FoxBox"), option$d({ value: "midbox" }, "Midbox"), option$d({ value: "gold light" }, "Gold Light"), option$d({ value: "dogebox2" }, "Dogebox2"), option$d({ value: "WeebBox" }, "WeebBox"), option$d({ value: "BoxBeep Dark" }, "BoxBeep Dark"), option$d({ value: "BoxBeep light" }, "BoxBeep Light"), option$d({ value: "birdbox dark" }, "BirdBox Dark"), option$d({ value: "birdbox light" }, "BirdBox Light")), optgroup$2({ label: "Miscellaneous Themes" }, option$d({ value: "azur lane" }, "Azur Lane"), option$d({ value: "AWeebyssBox" }, "AWeebyssBox"), option$d({ value: "Deuteranopia" }, "Deuteranopia"), option$d({ value: "Protanopia" }, "Protanopia"), option$d({ value: "Tritanopia" }, "Tritanopia"), option$d({ value: "2012 Video Tutorial" }, "2012 Video Tutorial"), option$d({ value: "I am on fire" }, "I am on fire")));
+            this._themeSelect = select$e({ style: "width: 100%;", id: "themeSelect" }, option$e({ value: "none" }, "None"), optgroup$2({ label: "AbyssBox Themes" }, option$e({ value: "AbyssBox Classic" }, "AbyssBox Classic"), option$e({ value: "AbyssBox Competitive" }, "AbyssBox Competitive"), option$e({ value: "AbyssBox Light" }, "AbyssBox Light"), option$e({ value: "AbyssBox 0.8" }, "AbyssBox 0.8"), option$e({ value: "AbyssBox Piano" }, "AbyssBox Piano [!]"), option$e({ value: "Half-Life" }, "Half-Life"), option$e({ value: "Half-Life: Source" }, "Half-Life: Source"), option$e({ value: "Doom 1993" }, "Doom 1993"), option$e({ value: "Undertale" }, "Undertale"), option$e({ value: "Yume Nikki" }, "Yume Nikki [!]"), option$e({ value: "Scratch" }, "Scratch"), option$e({ value: "Scratch Addons" }, "Scratch Addons"), option$e({ value: "Windows Xp" }, "Windows Xp"), option$e({ value: "Frutiger Aero" }, "Frutiger Aero"), option$e({ value: "Skeuomorphic" }, "Skeuomorphic/Early 2000's (LeoV)"), option$e({ value: "Glyde" }, "Glyde"), option$e({ value: "starry studio" }, "Starry Studio"), option$e({ value: "Terminal 2.0 (AB)" }, "Terminal 2.0 (AB)"), option$e({ value: "Slushie" }, "Slushie"), option$e({ value: "Slushie Pixel" }, "Slushie 2"), option$e({ value: "BeepBox Pixel" }, "BeepBox Pixel"), option$e({ value: "forest 2" }, "Forest 2"), option$e({ value: "canyon 2" }, "Canyon 2"), option$e({ value: "Nebula 2" }, "Nebula 2"), option$e({ value: "Ghost House" }, "Ghost House"), option$e({ value: "Ghost House 2" }, "Ghost House 2")), optgroup$2({ label: "BeepBox Themes" }, option$e({ value: "dark classic" }, "BeepBox Dark"), option$e({ value: "light classic" }, "BeepBox Light"), option$e({ value: "dark competition" }, "BeepBox Competition Dark")), optgroup$2({ label: "JummBox Themes" }, option$e({ value: "jummbox classic" }, "JummBox Dark"), option$e({ value: "jummbox light" }, "JummBox Light"), option$e({ value: "forest" }, "Forest"), option$e({ value: "canyon" }, "Canyon"), option$e({ value: "midnight" }, "Midnight"), option$e({ value: "beachcombing" }, "Beachcombing"), option$e({ value: "violet verdant" }, "Violet Verdant"), option$e({ value: "sunset" }, "Sunset"), option$e({ value: "autumn" }, "Autumn"), option$e({ value: "fruit" }, "Shadowfruit"), option$e({ value: "toxic" }, "Toxic"), option$e({ value: "roe" }, "Roe"), option$e({ value: "moonlight" }, "Moonlight"), option$e({ value: "portal" }, "Portal"), option$e({ value: "fusion" }, "Fusion"), option$e({ value: "inverse" }, "Inverse"), option$e({ value: "nebula" }, "Nebula"), option$e({ value: "roe light" }, "Roe Light"), option$e({ value: "amoled dark" }, "High Contrast Dark"), option$e({ value: "energized" }, "Energized"), option$e({ value: "neapolitan" }, "Neapolitan"), option$e({ value: "mono" }, "Poly"), option$e({ value: "blutonium" }, "Blutonium")), optgroup$2({ label: "ModBox Themes" }, option$e({ value: "modbox classic" }, "Modbox"), option$e({ value: "modbox 2" }, "Modbox 2.0"), option$e({ value: "modbox artic" }, "Artic"), option$e({ value: "modbox cinnamon" }, "Cinnamon Roll [!]"), option$e({ value: "modbox ocean" }, "Ocean"), option$e({ value: "modbox rainbow" }, "Rainbow [!]"), option$e({ value: "modbox float" }, "Float [!]"), option$e({ value: "modbox windows" }, "Windows"), option$e({ value: "modbox grassland" }, "Grassland"), option$e({ value: "modbox dessert" }, "Dessert"), option$e({ value: "modbox kahoot" }, "Kahootiest"), option$e({ value: "modbox bitbeam" }, "Beam to the Bit [!]"), option$e({ value: "modbox egg" }, "Pretty Egg"), option$e({ value: "modbox pony" }, "Poniryoshka"), option$e({ value: "modbox gameboy" }, "Gameboy [!]"), option$e({ value: "modbox woodkid" }, "Woodkid [!]"), option$e({ value: "modbox midnight" }, "Midnight [!]"), option$e({ value: "modbox snedbox" }, "Snedbox"), option$e({ value: "modbox unnamed" }, "unnamed [!]"), option$e({ value: "modbox piano" }, "Piano [!]"), option$e({ value: "modbox halloween" }, "Halloween [!]"), option$e({ value: "modbox frozen" }, "FrozenOver❄️ [!]")), optgroup$2({ label: "ShitBox Themes" }, option$e({ value: "shitbox 1.0" }, "Shitbox 1.0"), option$e({ value: "shitbox 2.0" }, "Shitbox 2.0"), option$e({ value: "shitbox 3.0" }, "Shitbox 3.0/shitbox4"), option$e({ value: "shitbox ModBox 2.0" }, "Shitbox ModBox 2.0"), option$e({ value: "shitbox Realm" }, "Shitbox Realm [!]")), optgroup$2({ label: "Nepbox Themes" }, option$e({ value: "nepbox" }, "Nepbox"), option$e({ value: "nepbox laffey" }, "Laffey"), option$e({ value: "nepbox snedbox" }, "Snedbox (Nb) [!]"), option$e({ value: "nepbox piano" }, "Piano (Nb) [!]")), optgroup$2({ label: "Mod Default Themes" }, option$e({ value: "sandbox classic" }, "Sandbox"), option$e({ value: "harrybox" }, "Haileybox"), option$e({ value: "brucebox" }, "Brucebox"), option$e({ value: "nerdbox" }, "NerdBox"), option$e({ value: "zefbox" }, "Zefbox"), option$e({ value: "cardboardbox classic" }, "Cardboardbox"), option$e({ value: "blubox classic" }, "Blubox"), option$e({ value: "dogebox classic" }, "Dogebox"), option$e({ value: "dogebox dark" }, "Way too Dark (DB)/TOO DARK(BluB)"), option$e({ value: "wackybox" }, "Wackybox"), option$e({ value: "todbox dark mode" }, "Todbox Dark Mode"), option$e({ value: "mainbox 1.0" }, "Mainbox"), option$e({ value: "microbox" }, "MicroBox"), option$e({ value: "paandorasbox" }, "PaandorasBox"), option$e({ value: "foxbox" }, "FoxBox"), option$e({ value: "midbox" }, "Midbox"), option$e({ value: "gold light" }, "Gold Light"), option$e({ value: "dogebox2" }, "Dogebox2"), option$e({ value: "WeebBox" }, "WeebBox"), option$e({ value: "BoxBeep Dark" }, "BoxBeep Dark"), option$e({ value: "BoxBeep light" }, "BoxBeep Light"), option$e({ value: "birdbox dark" }, "BirdBox Dark"), option$e({ value: "birdbox light" }, "BirdBox Light")), optgroup$2({ label: "Miscellaneous Themes" }, option$e({ value: "azur lane" }, "Azur Lane"), option$e({ value: "AWeebyssBox" }, "AWeebyssBox"), option$e({ value: "Deuteranopia" }, "Deuteranopia"), option$e({ value: "Protanopia" }, "Protanopia"), option$e({ value: "Tritanopia" }, "Tritanopia"), option$e({ value: "2012 Video Tutorial" }, "2012 Video Tutorial"), option$e({ value: "I am on fire" }, "I am on fire")));
             this._cancelButton = button$m({ class: "cancelButton" });
             this._okayButton = button$m({ class: "okayButton", style: "width:45%;" }, "Okay");
             this.lastTheme = this._doc.song.setSongTheme;
@@ -47270,7 +47302,7 @@ button.playButton::before {
         return Math.pow(volumeMult, 0.25) * 127;
     }
 
-    const { button: button$k, div: div$k, h2: h2$j, input: input$c, select: select$c, option: option$c } = HTML;
+    const { button: button$k, div: div$k, h2: h2$j, input: input$c, select: select$d, option: option$d } = HTML;
     function lerp(low, high, t) {
         return low + t * (high - low);
     }
@@ -47303,7 +47335,7 @@ button.playButton::before {
             this._enableIntro = input$c({ type: "checkbox" });
             this._loopDropDown = input$c({ style: "width: 3em;", type: "number", min: "1", max: "16", step: "1" });
             this._enableOutro = input$c({ type: "checkbox" });
-            this._formatSelect = select$c({ style: "width: 100%;" }, option$c({ value: "wav" }, "Export to .wav file."), option$c({ value: "mp3" }, "Export to .mp3 file."), option$c({ value: "midi" }, "Export to .mid file."), option$c({ value: "json" }, "Export to .json file."), option$c({ value: "html" }, "Export to .html file."));
+            this._formatSelect = select$d({ style: "width: 100%;" }, option$d({ value: "wav" }, "Export to .wav file."), option$d({ value: "mp3" }, "Export to .mp3 file."), option$d({ value: "midi" }, "Export to .mid file."), option$d({ value: "json" }, "Export to .json file."), option$d({ value: "html" }, "Export to .html file."));
             this._removeWhitespace = input$c({ type: "checkbox" });
             this._removeWhitespaceDiv = div$k({ style: "vertical-align: middle; align-items: center; justify-content: space-between; margin-bottom: 14px;" }, "Remove Whitespace: ", this._removeWhitespace);
             this._oggWarning = div$k({ style: "vertical-align: middle; align-items: center; justify-content: space-between; margin-bottom: 14px;" }, "Warning: .ogg files aren't supported on as many devices as mp3 or wav. IOS is an example of this, exporting is still possible, but playback is not.");
@@ -49101,7 +49133,7 @@ You should be redirected to the song at:<br /><br />
         }
     }
 
-    const { button: button$j, p: p$9, div: div$j, h2: h2$i, input: input$b } = HTML;
+    const { button: button$j, p: p$9, div: div$j, h2: h2$i, input: input$b, select: select$c, option: option$c } = HTML;
     class ImportPrompt {
         constructor(_doc) {
             this._doc = _doc;
@@ -49110,7 +49142,8 @@ You should be redirected to the song at:<br /><br />
             this._exportButton = button$j({ style: "height: auto; min-height: var(--button-size); margin: 0.5em; width:50%; color: var(--secondary-text);" }, "Export");
             this._fileInput = input$b({ type: "file", accept: ".json,application/json,.mid,.midi,audio/midi,audio/x-midi" });
             this._cancelButton = button$j({ class: "cancelButton" });
-            this._importPrompt = div$j({}, div$j({ class: "promptTitle" }, h2$i({ class: "importExt", style: "text-align: inherit;" }, ""), h2$i({ class: "importTitle" }, "Import")), p$9({ style: "text-align: left; margin: 0.5em 0;" }, "BeepBox songs can be exported and re-imported as .json files. You could also use other means to make .json files for BeepBox as long as they follow the same structure."), p$9({ style: "text-align: left; margin: 0.5em 0;" }, "BeepBox can also (crudely) import .mid files. There are many tools available for creating .mid files. Shorter and simpler songs are more likely to work well."), this._fileInput, this._cancelButton);
+            this._modeImportSelect = select$c({ style: "width: 100%;" }, option$c({ value: "auto" }, "Auto-detect mode (for json)"), option$c({ value: "BeepBox" }, "BeepBox"), option$c({ value: "ModBox" }, "ModBox"), option$c({ value: "JummBox" }, "JummBox"), option$c({ value: "SynthBox" }, "SynthBox"), option$c({ value: "GoldBox" }, "GoldBox"), option$c({ value: "PaandorasBox" }, "PaandorasBox"), option$c({ value: "UltraBox" }, "UltraBox"));
+            this._importPrompt = div$j({}, div$j({ class: "promptTitle" }, h2$i({ class: "importExt", style: "text-align: inherit;" }, ""), h2$i({ class: "importTitle" }, "Import")), p$9({ style: "text-align: left; margin: 0.5em 0;" }, "BeepBox songs can be exported and re-imported as .json files. You could also use other means to make .json files for BeepBox as long as they follow the same structure."), p$9({ style: "text-align: left; margin: 0.5em 0;" }, "BeepBox can also (crudely) import .mid files. There are many tools available for creating .mid files. Shorter and simpler songs are more likely to work well."), this._modeImportSelect, this._fileInput, this._cancelButton);
             this._exportPrompt = div$j({ style: "display:none;" }, this.exportStuff._exportPrompt);
             this.customContainer = div$j({ class: "customContainer", id: "customContainer", style: "width: 100%;" }, p$9({ style: "text-align: center; margin: 1em 0; display:flex; flex-direction: row;" }, this._importButton, this._exportButton), this._importPrompt, this._exportPrompt);
             this.container = div$j({ class: "prompt noSelection", style: "width: 300px;" }, this.customContainer);
@@ -49153,7 +49186,7 @@ You should be redirected to the song at:<br /><br />
                     reader.addEventListener("load", (event) => {
                         this._doc.prompt = null;
                         this._doc.goBackToStart();
-                        this._doc.record(new ChangeSong(this._doc, reader.result), true, true);
+                        this._doc.record(new ChangeSong(this._doc, reader.result, this._modeImportSelect.value), true, true);
                     });
                     reader.readAsText(file);
                 }
@@ -63384,6 +63417,8 @@ You should be redirected to the song at:<br /><br />
                     return this._phaserFreqSlider;
                 case Config.modulators.dictionary["phaser feedback"].index:
                     return this._phaserFeedbackSlider;
+                case Config.modulators.dictionary["phaser stages"].index:
+                    return this._phaserStagesSlider;
                 default:
                     return null;
             }
