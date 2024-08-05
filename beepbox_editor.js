@@ -32511,6 +32511,10 @@ li.select2-results__option[role=group] > strong:hover {
                 const phaserStagesSlider = instrument.phaserStages;
                 let phaserStagesStart = Math.max(Config.phaserMinStages, Math.min(Config.phaserMaxStages, phaserStagesSlider * phaserStagesEnvelopeStart));
                 let phaserStagesEnd = Math.max(Config.phaserMinStages, Math.min(Config.phaserMaxStages, phaserStagesSlider * phaserStagesEnvelopeEnd));
+                if (synth.isModActive(Config.modulators.dictionary["phaser stages"].index, channelIndex, instrumentIndex)) {
+                    phaserStagesStart = Math.round(synth.getModValue(Config.modulators.dictionary["phaser stages"].index, channelIndex, instrumentIndex, false));
+                    phaserStagesEnd = Math.round(synth.getModValue(Config.modulators.dictionary["phaser stages"].index, channelIndex, instrumentIndex, false));
+                }
                 this.phaserStages = phaserStagesStart;
                 this.phaserStagesDelta = (phaserStagesEnd - phaserStagesStart) / roundedSamplesPerTick;
             }
@@ -61078,6 +61082,7 @@ You should be redirected to the song at:<br /><br />
                                     settingList.push("phaser");
                                     settingList.push("phaser frequency");
                                     settingList.push("phaser feedback");
+                                    settingList.push("phaser stages");
                                 }
                             }
                             buildOptions(this._modSetBoxes[mod], settingList);
