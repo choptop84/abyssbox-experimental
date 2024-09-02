@@ -589,7 +589,6 @@ var beepbox = (function (exports) {
         { name: "nerdbox unnamed 1", expression: 0.5, samples: centerAndNormalizeWave([0.2, 0.8 / 0.2, 0.7, -0.4, -1.0, 0.5, -0.5 / 0.6]) },
         { name: "nerdbox unnamed 2", expression: 0.5, samples: centerAndNormalizeWave([2.0, 5.0 / 55.0, -9.0, 6.5 / 6.5, -55.0, 18.5 / -26.0]) },
         { name: "zefbox semi-square", expression: 1.0, samples: centerAndNormalizeWave([1.0, 1.5, 2.0, 2.5, 2.5, 2.5, 2.0, 1.5, 1.0]) },
-        { name: "zefbox deep square", expression: 1.0, samples: centerAndNormalizeWave([1.0, 2.25, 1.0, -1.0, -2.25, -1.0]) },
         { name: "zefbox squaretal", expression: 0.7, samples: centerAndNormalizeWave([1.5, 1.0, 1.5, -1.5, -1.0, -1.5]) },
         { name: "zefbox saw wide", expression: 0.65, samples: centerAndNormalizeWave([0.0, -0.4, -0.8, -1.2, -1.6, -2.0, 0.0, -0.4, -0.8, -1.2, -1.6]) },
         { name: "zefbox saw narrow", expression: 0.65, samples: centerAndNormalizeWave([1, 0.5, 1, 0.5, 1, 0.5, 1, 2, 1, 2, 1]) },
@@ -22341,7 +22340,7 @@ var beepbox = (function (exports) {
     ColorConfig.tonic = "var(--tonic)";
     ColorConfig.fifthNote = "var(--fifth-note)";
     ColorConfig.thirdNote = "var(--third-note)";
-    ColorConfig.noteRangeAOE = "var(--note-range-AOE, var(--editor-background))";
+    ColorConfig.dimmedArea = "var(--dimmed-area, var(--editor-background))";
     ColorConfig.pitch1Background = "var(--pitch1-background)";
     ColorConfig.pitch2Background = "var(--pitch2-background)";
     ColorConfig.pitch3Background = "var(--pitch3-background)";
@@ -28122,12 +28121,6 @@ li.select2-results__option[role=group] > strong:hover {
             for (let i = 0; i < encodedSongTitle.length; i++) {
                 buffer.push(encodedSongTitle.charCodeAt(i));
             }
-            buffer.push(89);
-            var encodedSongTheme = encodeURIComponent(this.setSongTheme);
-            buffer.push(base64IntToCharCode[encodedSongTheme.length >> 6], base64IntToCharCode[encodedSongTheme.length & 0x3f]);
-            for (let i = 0; i < encodedSongTheme.length; i++) {
-                buffer.push(encodedSongTheme.charCodeAt(i));
-            }
             var encodedAuthorTitle = encodeURIComponent(this.author);
             buffer.push(base64IntToCharCode[encodedAuthorTitle.length >> 6], base64IntToCharCode[encodedAuthorTitle.length & 0x3f]);
             for (let i = 0; i < encodedAuthorTitle.length; i++) {
@@ -28139,6 +28132,12 @@ li.select2-results__option[role=group] > strong:hover {
                 buffer.push(encodedDescriptionTitle.charCodeAt(i));
             }
             buffer.push(base64IntToCharCode[this.showSongDetails ? 1 : 0]);
+            buffer.push(89);
+            var encodedSongTheme = encodeURIComponent(this.setSongTheme);
+            buffer.push(base64IntToCharCode[encodedSongTheme.length >> 6], base64IntToCharCode[encodedSongTheme.length & 0x3f]);
+            for (let i = 0; i < encodedSongTheme.length; i++) {
+                buffer.push(encodedSongTheme.charCodeAt(i));
+            }
             buffer.push(110, base64IntToCharCode[this.pitchChannelCount], base64IntToCharCode[this.noiseChannelCount], base64IntToCharCode[this.modChannelCount]);
             buffer.push(115, base64IntToCharCode[this.scale]);
             if (this.scale == Config.scales["dictionary"]["Custom"].index) {
@@ -29228,8 +29227,8 @@ li.select2-results__option[role=group] > strong:hover {
                                     instrument.chipWave = clamp(0, Config.chipWaves.length, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
                                 }
                                 else {
-                                    if (fromUltraBox) {
-                                        if (beforeSix) {
+                                    if (fromUltraBox || fromAbyssBox) {
+                                        if ((fromUltraBox && beforeSix) || (fromAbyssBox && beforeThree)) {
                                             const chipWaveReal = base64CharCodeToInt[compressed.charCodeAt(charIndex++)];
                                             const chipWaveCounter = base64CharCodeToInt[compressed.charCodeAt(charIndex++)];
                                             if (chipWaveCounter == 3) {
@@ -29782,16 +29781,16 @@ li.select2-results__option[role=group] > strong:hover {
                                 instrument.convertLegacySettings(legacySettings, forceSimpleFilter);
                             }
                             else {
-                                if ((fromAbyssBox && beforeTwo) || (fromUltraBox && beforeSix) || fromGoldBox || fromJummBox || fromBeepBox) {
-                                    instrument.effects = (base64CharCodeToInt[compressed.charCodeAt(charIndex++)] << 6) | (base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
-                                }
-                                else {
+                                if ((fromAbyssBox && !beforeTwo || fromAbyssBox && !beforeThree) || (fromUltraBox && !beforeSix)) {
                                     instrument.effects = ((base64CharCodeToInt[compressed.charCodeAt(charIndex++)] << (6 * 5))
                                         | (base64CharCodeToInt[compressed.charCodeAt(charIndex++)] << (6 * 4))
                                         | (base64CharCodeToInt[compressed.charCodeAt(charIndex++)] << (6 * 3))
                                         | (base64CharCodeToInt[compressed.charCodeAt(charIndex++)] << (6 * 2))
                                         | (base64CharCodeToInt[compressed.charCodeAt(charIndex++)] << (6 * 1))
                                         | (base64CharCodeToInt[compressed.charCodeAt(charIndex++)] << (6 * 0))) >>> 0;
+                                }
+                                else {
+                                    instrument.effects = (base64CharCodeToInt[compressed.charCodeAt(charIndex++)] << 6) | (base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
                                 }
                                 if (effectsIncludeNoteFilter(instrument.effects)) {
                                     let typeCheck = base64CharCodeToInt[compressed.charCodeAt(charIndex++)];
@@ -29846,6 +29845,10 @@ li.select2-results__option[role=group] > strong:hover {
                                 }
                                 if (effectsIncludeTransition(instrument.effects)) {
                                     instrument.transition = clamp(0, Config.transitions.length, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
+                                    if ((fromUltraBox && !beforeSix) || (fromAbyssBox && !beforeThree)) {
+                                        if (Config.transitions[instrument.transition].slides == true)
+                                            instrument.slideTicks = base64CharCodeToInt[compressed.charCodeAt(charIndex++)];
+                                    }
                                 }
                                 if (effectsIncludeChord(instrument.effects)) {
                                     instrument.chord = clamp(0, Config.chords.length, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
@@ -52677,7 +52680,7 @@ You should be redirected to the song at:<br /><br />
             this._svgPlayhead = SVG.rect({ x: "0", y: "0", width: "4", fill: ColorConfig.playhead, "pointer-events": "none" });
             this._selectionRect = SVG.rect({ class: "dashed-line dash-move", fill: ColorConfig.boxSelectionFill, stroke: ColorConfig.hoverPreview, "stroke-width": 2, "stroke-dasharray": "5, 3", "fill-opacity": "0.4", "pointer-events": "none", visibility: "hidden" });
             this._svgPreview = SVG.path({ fill: "none", stroke: ColorConfig.hoverPreview, "stroke-width": "2", "pointer-events": "none" });
-            this._svgNoteRangeIndicatorOverlay = SVG.path({ fill: ColorConfig.noteRangeAOE, "fill-opacity": "0.8", stroke: "none", "pointer-events": "none" });
+            this._svgNoteRangeIndicatorOverlay = SVG.path({ fill: ColorConfig.dimmedArea, "fill-opacity": "0.8", stroke: "none", "pointer-events": "none" });
             this.modDragValueLabel = HTML.div({ width: "90", "text-anchor": "start", contenteditable: "true", style: "display: flex, justify-content: center; align-items:center; position:absolute; pointer-events: none;", "dominant-baseline": "central", });
             this._svg = SVG.svg({ id: 'firstImage', style: `background-image: url(${getLocalStorageItem("customTheme", "")}); background-repeat: no-repeat; background-size: 100% 100%; background-color: ${ColorConfig.editorBackground}; touch-action: none; position: absolute;`, width: "100%", height: "100%" }, SVG.defs(this._svgNoteBackground, this._svgDrumBackground, this._svgModBackground), this._svgBackground, this._svgNoteRangeIndicatorOverlay, this._selectionRect, this._svgNoteContainer, this._svgPreview, this._svgPlayhead);
             this.container = HTML.div({ style: "height: 100%; overflow:hidden; position: relative; flex-grow: 1;" }, this._svg, this.modDragValueLabel);
