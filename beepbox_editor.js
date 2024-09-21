@@ -709,6 +709,9 @@ var beepbox = (function (exports) {
     Config.chorusRange = 8;
     Config.ringModRange = 8;
     Config.ringModHzRange = 64;
+    Config.rmHzOffsetCenter = 200;
+    Config.rmHzOffsetMax = 400;
+    Config.rmHzOffsetMin = 0;
     Config.chorusPeriodSeconds = 2.0;
     Config.chorusDelayRange = 0.0034;
     Config.chorusDelayOffsets = [[1.51, 2.10, 3.35], [1.47, 2.15, 3.25]];
@@ -2501,17 +2504,17 @@ var beepbox = (function (exports) {
                 if (channel < song.pitchChannelCount) {
                     return ColorConfig.getComputed("--pitch-channel-limit") == ""
                         ? ColorConfig.pitchChannels[channel % ColorConfig.pitchChannels.length]
-                        : ColorConfig.pitchChannels[channel % (Number(ColorConfig.getComputed("--pitch-channel-limit")) % ColorConfig.pitchChannels.length)];
+                        : ColorConfig.pitchChannels[(channel % Number(ColorConfig.getComputed("--pitch-channel-limit"))) % ColorConfig.pitchChannels.length];
                 }
                 else if (channel < song.pitchChannelCount + song.noiseChannelCount) {
                     return ColorConfig.getComputed("--noise-channel-limit") == ""
                         ? ColorConfig.noiseChannels[(channel - song.pitchChannelCount) % ColorConfig.noiseChannels.length]
-                        : ColorConfig.noiseChannels[(channel - song.pitchChannelCount) % (Number(ColorConfig.getComputed("--noise-channel-limit")) % ColorConfig.noiseChannels.length)];
+                        : ColorConfig.noiseChannels[((channel - song.pitchChannelCount) % Number(ColorConfig.getComputed("--noise-channel-limit"))) % ColorConfig.noiseChannels.length];
                 }
                 else {
                     return ColorConfig.getComputed("--mod-channel-limit") == ""
                         ? ColorConfig.modChannels[(channel - song.pitchChannelCount - song.noiseChannelCount) % ColorConfig.modChannels.length]
-                        : ColorConfig.modChannels[(channel - song.pitchChannelCount - song.noiseChannelCount) % (Number(ColorConfig.getComputed("--mod-channel-limit")) % ColorConfig.modChannels.length)];
+                        : ColorConfig.modChannels[((channel - song.pitchChannelCount - song.noiseChannelCount) % Number(ColorConfig.getComputed("--mod-channel-limit"))) % ColorConfig.modChannels.length];
                 }
             }
             else {
@@ -2589,6 +2592,7 @@ var beepbox = (function (exports) {
             if (theme == undefined)
                 theme = this.themes["AbyssBox Classic"];
             this._styleElement.textContent = theme;
+            this.currentSetTheme = name;
             const themeColor = document.querySelector("meta[name='theme-color']");
             if (themeColor != null) {
                 themeColor.setAttribute("content", getComputedStyle(document.documentElement).getPropertyValue('--ui-widget-background'));
@@ -2685,6 +2689,7 @@ var beepbox = (function (exports) {
     ColorConfig.colorLookup = new Map();
     ColorConfig.usesColorFormula = false;
     ColorConfig.usesPianoScheme = false;
+    ColorConfig.currentSetTheme = "AbyssBox Classic";
     ColorConfig.themes = {
         "AbyssBox Classic": `
 			:root {		
@@ -2828,8 +2833,8 @@ var beepbox = (function (exports) {
 		--file-page-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-file.png");
 		--edit-pencil-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-edit.png");
 		--preferences-gear-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-preferences.png");
-		--instrument-copy-symbol: url("https://choptop84.github.io/abyssbox-app/icon-copy.png");
-		--instrument-paste-symbol: url("https://choptop84.github.io/abyssbox-app/icon-paste.png");
+		--instrument-copy-symbol: url("./image_assets/icon-copy.png");
+		--instrument-paste-symbol: url("./image_assets/icon-paste.png");
 		--play-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-play.png");
 		--pause-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-pause.png");
 		--record-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-record.png");
@@ -2844,32 +2849,32 @@ var beepbox = (function (exports) {
 		--export-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-export.png");
 		--export-instrument-symbol: var(--export-symbol);
 		--import-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-import.png");
-		--undo-symbol: url("https://choptop84.github.io/abyssbox-app/icon-undo.png");
-		--redo-symbol: url("https://choptop84.github.io/abyssbox-app/icon-redo.png");
-		--copy-symbol: url("https://choptop84.github.io/abyssbox-app/icon-copy.png");
-		--paste-symbol: url("https://choptop84.github.io/abyssbox-app/icon-paste.png");
-		--insert-channel-symbol: url("https://choptop84.github.io/abyssbox-app/icon-insertChannel.png");
-		--delete-channel-symbol: url("https://choptop84.github.io/abyssbox-app/icon-deleteChannel.png");
-		--select-all-symbol: url("https://choptop84.github.io/abyssbox-app/icon-SelectAll.png");
-		--duplicate-symbol: url("https://choptop84.github.io/abyssbox-app/icon-duplicate.png");
-		--notes-up-symbol: url("https://choptop84.github.io/abyssbox-app/moveNotesUp.png");
-		--notes-down-symbol: url("https://choptop84.github.io/abyssbox-app/moveNotesDown.png");
-		--loop-bar-symbol: url("https://choptop84.github.io/abyssbox-app/icon-singleBarLoop.png");
-		--fullscreen-symbol: url("https://choptop84.github.io/abyssbox-app/icon-fullscreen.png");
-	--loop-within-bar-symbol: url("https://choptop84.github.io/abyssbox-app/icon-loop-bar.png");
-	--loop-full-song-symbol: url("https://choptop84.github.io/abyssbox-app/icon-loop-song.png");
-	--dont-loop-symbol: url("https://choptop84.github.io/abyssbox-app/icon-loop-once.png");
+		--undo-symbol: url("./image_assets/icon-undo.png");
+		--redo-symbol: url("./image_assets/icon-redo.png");
+		--copy-symbol: url("./image_assets/icon-copy.png");
+		--paste-symbol: url("./image_assets/icon-paste.png");
+		--insert-channel-symbol: url("./image_assets/icon-insertChannel.png");
+		--delete-channel-symbol: url("./image_assets/icon-deleteChannel.png");
+		--select-all-symbol: url("./image_assets/icon-SelectAll.png");
+		--duplicate-symbol: url("./image_assets/icon-duplicate.png");
+		--notes-up-symbol: url("./image_assets/moveNotesUp.png");
+		--notes-down-symbol: url("./image_assets/moveNotesDown.png");
+		--loop-bar-symbol: url("./image_assets/icon-singleBarLoop.png");
+		--fullscreen-symbol: url("./image_assets/icon-fullscreen.png");
+	--loop-within-bar-symbol: url("./image_assets/icon-loop-bar.png");
+	--loop-full-song-symbol: url("./image_assets/icon-loop-song.png");
+	--dont-loop-symbol: url("./image_assets/icon-loop-once.png");
 		}
 		
 			@font-face {
 		   font-family: "AbyssType";
 		   src:
- 		   url("abysstype.otf") format("opentype") tech(color-COLRv1),
+ 		   url("./image_assets/abysstype.otf") format("opentype") tech(color-COLRv1),
 			}
 
 			/* sets background image */
 			body {
-			background-image: url("https://choptop84.github.io/abyssbox-source/website/stripesbg.gif") !important;
+			background-image: url("./image_assets/stripesbg.gif") !important;
 			background-position: center;
 			background-repeat: repeat;
 
@@ -2885,7 +2890,7 @@ var beepbox = (function (exports) {
 			} */
 
 			#text-content {
-    				border-image-source: url("https://choptop84.github.io/abyssbox-app/abyssbox_border.png");
+    				border-image-source: url("./image_assets/abyssbox_border.png");
     				border-image-slice: 4 fill; 
    				border-image-width: 8px; 
 				border-image-repeat: stretch; 
@@ -2898,7 +2903,7 @@ var beepbox = (function (exports) {
     				image-rendering: optimizeSpeed !important;             /* IE */
 				}
 			#beepboxEditorContainer {
-    				border-image-source: url("https://choptop84.github.io/abyssbox-app/abyssbox_border.png");
+    				border-image-source: url("./image_assets/abyssbox_border.png");
     				border-image-slice: 4 fill; 
    				border-image-width: 8px; 
 				border-image-repeat: stretch;
@@ -2930,7 +2935,7 @@ var beepbox = (function (exports) {
 			button.importInstrumentButton, 
 			.beepboxEditor select, 
 			.beepboxEditor .select2-selection__rendered {
-    				border-image-source: url("https://choptop84.github.io/abyssbox-app/abyssbox_border.png") !important;
+    				border-image-source: url("./image_assets/abyssbox_border.png") !important;
     				border-image-slice: 4 fill !important; 
    				border-image-width: 4px !important; 
 				border-image-repeat: stretch !important;
@@ -2942,7 +2947,7 @@ var beepbox = (function (exports) {
     				image-rendering: pixelated !important;                 /* Future browsers */
     				image-rendering: optimizeSpeed !important;             /* IE */
 
-					cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+					cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 				}
 
 			div.selectRow button:not(.copyButton,.pasteButton,.exportInstrumentButton,.importInstrumentButton) {
@@ -2962,7 +2967,7 @@ var beepbox = (function (exports) {
 			@font-face {
 		   font-family: "AbyssType_small";
 		   src:
- 		   url("abysstype_small.otf") format("opentype") tech(color-COLRv1),
+ 		   url("./image_assets/abysstype_small.otf") format("opentype") tech(color-COLRv1),
 			}
 
 			html {
@@ -2975,72 +2980,72 @@ var beepbox = (function (exports) {
 
 			.beepboxEditor input[type="range"]::-webkit-slider-thumb
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]::-webkit-slider-runnable-track
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]:focus::-webkit-slider-runnable-track
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]::-ms-thumb
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]::-ms-track
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]:focus::-ms-track
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]::-moz-range-thumb
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]::-moz-range-track
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]:focus::-moz-range-track
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="text"],
 			.beepboxEditor input[type="number"]
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="checkbox"]
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="checkbox"]:checked
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="checkbox"]:checked:after
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 
 			div.selectRow span {
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 
 			`,
@@ -3187,8 +3192,8 @@ var beepbox = (function (exports) {
 		--file-page-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-file.png");
 		--edit-pencil-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-edit.png");
 		--preferences-gear-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-preferences.png");
-		--instrument-copy-symbol: url("https://choptop84.github.io/abyssbox-app/icon-copy.png");
-		--instrument-paste-symbol: url("https://choptop84.github.io/abyssbox-app/icon-paste.png");
+		--instrument-copy-symbol: url("./image_assets/icon-copy.png");
+		--instrument-paste-symbol: url("./image_assets/icon-paste.png");
 		--play-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-play.png");
 		--pause-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-pause.png");
 		--record-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-record.png");
@@ -3203,39 +3208,39 @@ var beepbox = (function (exports) {
 		--export-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-export.png");
 		--export-instrument-symbol: var(--export-symbol);
 		--import-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-import.png");
-		--undo-symbol: url("https://choptop84.github.io/abyssbox-app/icon-undo.png");
-		--redo-symbol: url("https://choptop84.github.io/abyssbox-app/icon-redo.png");
-		--copy-symbol: url("https://choptop84.github.io/abyssbox-app/icon-copy.png");
-		--paste-symbol: url("https://choptop84.github.io/abyssbox-app/icon-paste.png");
-		--insert-channel-symbol: url("https://choptop84.github.io/abyssbox-app/icon-insertChannel.png");
-		--delete-channel-symbol: url("https://choptop84.github.io/abyssbox-app/icon-deleteChannel.png");
-		--select-all-symbol: url("https://choptop84.github.io/abyssbox-app/icon-SelectAll.png");
-		--duplicate-symbol: url("https://choptop84.github.io/abyssbox-app/icon-duplicate.png");
-		--notes-up-symbol: url("https://choptop84.github.io/abyssbox-app/moveNotesUp.png");
-		--notes-down-symbol: url("https://choptop84.github.io/abyssbox-app/moveNotesDown.png");
-		--loop-bar-symbol: url("https://choptop84.github.io/abyssbox-app/icon-singleBarLoop.png");
-		--fullscreen-symbol: url("https://choptop84.github.io/abyssbox-app/icon-fullscreen.png");
-		--loop-within-bar-symbol: url("https://choptop84.github.io/abyssbox-app/icon-loop-bar.png");
-	--loop-full-song-symbol: url("https://choptop84.github.io/abyssbox-app/icon-loop-song.png");
-	--dont-loop-symbol: url("https://choptop84.github.io/abyssbox-app/icon-loop-once.png");
+		--undo-symbol: url("./image_assets/icon-undo.png");
+		--redo-symbol: url("./image_assets/icon-redo.png");
+		--copy-symbol: url("./image_assets/icon-copy.png");
+		--paste-symbol: url("./image_assets/icon-paste.png");
+		--insert-channel-symbol: url("./image_assets/icon-insertChannel.png");
+		--delete-channel-symbol: url("./image_assets/icon-deleteChannel.png");
+		--select-all-symbol: url("./image_assets/icon-SelectAll.png");
+		--duplicate-symbol: url("./image_assets/icon-duplicate.png");
+		--notes-up-symbol: url("./image_assets/moveNotesUp.png");
+		--notes-down-symbol: url("./image_assets/moveNotesDown.png");
+		--loop-bar-symbol: url("./image_assets/icon-singleBarLoop.png");
+		--fullscreen-symbol: url("./image_assets/icon-fullscreen.png");
+		--loop-within-bar-symbol: url("./image_assets/icon-loop-bar.png");
+	--loop-full-song-symbol: url("./image_assets/icon-loop-song.png");
+	--dont-loop-symbol: url("./image_assets/icon-loop-once.png");
 		}
 		
 			@font-face {
 		   font-family: "AbyssType";
 		   src:
- 		   url("abysstype.otf") format("opentype") tech(color-COLRv1),
+ 		   url("./image_assets/abysstype.otf") format("opentype") tech(color-COLRv1),
 			}
 
 			@font-face {
 		   font-family: "AbyssType";
 		   src:
- 		   url("abysstype.otf") format("opentype") tech(color-COLRv1),
+ 		   url("./image_assets/abysstype.otf") format("opentype") tech(color-COLRv1),
 			}
 
 			@font-face {
 		   font-family: "AbyssType_small";
 		   src:
- 		   url("abysstype_small.otf") format("opentype") tech(color-COLRv1),
+ 		   url("./image_assets/abysstype_small.otf") format("opentype") tech(color-COLRv1),
 			}
 
 			.beepboxEditor button,
@@ -3312,72 +3317,72 @@ var beepbox = (function (exports) {
 
 			.beepboxEditor input[type="range"]::-webkit-slider-thumb
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]::-webkit-slider-runnable-track
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]:focus::-webkit-slider-runnable-track
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]::-ms-thumb
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]::-ms-track
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]:focus::-ms-track
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]::-moz-range-thumb
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]::-moz-range-track
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]:focus::-moz-range-track
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="text"],
 			.beepboxEditor input[type="number"]
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="checkbox"]
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="checkbox"]:checked
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="checkbox"]:checked:after
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 
 			div.selectRow span {
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 
 			`,
@@ -3524,7 +3529,7 @@ var beepbox = (function (exports) {
 
 				/* sets background image */
 				body {
-				background-image: url("https://choptop84.github.io/abyssbox-source/website/stripesbg_light.gif") !important;
+				background-image: url("./image_assets/stripesbg_light.gif") !important;
 				background-position: center;
 				background-repeat: repeat;
 	
@@ -3535,7 +3540,7 @@ var beepbox = (function (exports) {
 				image-rendering: optimizeSpeed !important;             /* IE */
 					}		
 			#text-content {
-    				border-image-source: url("https://choptop84.github.io/abyssbox-source/website/abyssbox_border_light.png");
+    				border-image-source: url("./image_assets/abyssbox_border_light.png");
     				border-image-slice: 4 fill; 
    				border-image-width: 8px; 
 				border-image-repeat: stretch; 
@@ -3548,7 +3553,7 @@ var beepbox = (function (exports) {
     				image-rendering: optimizeSpeed !important;             /* IE */
 				}
 			#beepboxEditorContainer {
-    				border-image-source: url("https://choptop84.github.io/abyssbox-source/website/abyssbox_border_light.png");
+    				border-image-source: url("./image_assets/abyssbox_border_light.png");
     				border-image-slice: 4 fill; 
    				border-image-width: 8px; 
 				border-image-repeat: stretch;
@@ -3580,7 +3585,7 @@ var beepbox = (function (exports) {
 				button.importInstrumentButton, 
 				.beepboxEditor select, 
 				.beepboxEditor .select2-selection__rendered {
-						border-image-source: url("https://choptop84.github.io/abyssbox-app/abyssbox_border_light.png") !important;
+						border-image-source: url("./image_assets/abyssbox_border_light.png") !important;
 						border-image-slice: 4 fill !important; 
 					   border-image-width: 4px !important; 
 					border-image-repeat: stretch !important;
@@ -3592,7 +3597,7 @@ var beepbox = (function (exports) {
 						image-rendering: pixelated !important;                 /* Future browsers */
 						image-rendering: optimizeSpeed !important;             /* IE */
 	
-						cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+						cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 					}
 	
 				div.selectRow button:not(.copyButton,.pasteButton,.exportInstrumentButton,.importInstrumentButton) {
@@ -3610,8 +3615,8 @@ var beepbox = (function (exports) {
 		--file-page-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-file.png");
 		--edit-pencil-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-edit.png");
 		--preferences-gear-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-preferences.png");
-		--instrument-copy-symbol: url("https://choptop84.github.io/abyssbox-app/icon-copy.png");
-		--instrument-paste-symbol: url("https://choptop84.github.io/abyssbox-app/icon-paste.png");
+		--instrument-copy-symbol: url("./image_assets/icon-copy.png");
+		--instrument-paste-symbol: url("./image_assets/icon-paste.png");
 		--play-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-play.png");
 		--pause-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-pause.png");
 		--record-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-record.png");
@@ -3626,39 +3631,39 @@ var beepbox = (function (exports) {
 		--export-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-export.png");
 		--export-instrument-symbol: var(--export-symbol);
 		--import-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-import.png");
-		--undo-symbol: url("https://choptop84.github.io/abyssbox-app/icon-undo.png");
-		--redo-symbol: url("https://choptop84.github.io/abyssbox-app/icon-redo.png");
-		--copy-symbol: url("https://choptop84.github.io/abyssbox-app/icon-copy.png");
-		--paste-symbol: url("https://choptop84.github.io/abyssbox-app/icon-paste.png");
-		--insert-channel-symbol: url("https://choptop84.github.io/abyssbox-app/icon-insertChannel.png");
-		--delete-channel-symbol: url("https://choptop84.github.io/abyssbox-app/icon-deleteChannel.png");
-		--select-all-symbol: url("https://choptop84.github.io/abyssbox-app/icon-SelectAll.png");
-		--duplicate-symbol: url("https://choptop84.github.io/abyssbox-app/icon-duplicate.png");
-		--notes-up-symbol: url("https://choptop84.github.io/abyssbox-app/moveNotesUp.png");
-		--notes-down-symbol: url("https://choptop84.github.io/abyssbox-app/moveNotesDown.png");
-		--loop-bar-symbol: url("https://choptop84.github.io/abyssbox-app/icon-singleBarLoop.png");
-		--fullscreen-symbol: url("https://choptop84.github.io/abyssbox-app/icon-fullscreen.png");
-		--loop-within-bar-symbol: url("https://choptop84.github.io/abyssbox-app/icon-loop-bar.png");
-	--loop-full-song-symbol: url("https://choptop84.github.io/abyssbox-app/icon-loop-song.png");
-	--dont-loop-symbol: url("https://choptop84.github.io/abyssbox-app/icon-loop-once.png");
+		--undo-symbol: url("./image_assets/icon-undo.png");
+		--redo-symbol: url("./image_assets/icon-redo.png");
+		--copy-symbol: url("./image_assets/icon-copy.png");
+		--paste-symbol: url("./image_assets/icon-paste.png");
+		--insert-channel-symbol: url("./image_assets/icon-insertChannel.png");
+		--delete-channel-symbol: url("./image_assets/icon-deleteChannel.png");
+		--select-all-symbol: url("./image_assets/icon-SelectAll.png");
+		--duplicate-symbol: url("./image_assets/icon-duplicate.png");
+		--notes-up-symbol: url("./image_assets/moveNotesUp.png");
+		--notes-down-symbol: url("./image_assets/moveNotesDown.png");
+		--loop-bar-symbol: url("./image_assets/icon-singleBarLoop.png");
+		--fullscreen-symbol: url("./image_assets/icon-fullscreen.png");
+		--loop-within-bar-symbol: url("./image_assets/icon-loop-bar.png");
+	--loop-full-song-symbol: url("./image_assets/icon-loop-song.png");
+	--dont-loop-symbol: url("./image_assets/icon-loop-once.png");
 		}
 		
 			@font-face {
 		   font-family: "AbyssType";
 		   src:
- 		   url("abysstype.otf") format("opentype") tech(color-COLRv1),
+ 		   url("./image_assets/abysstype.otf") format("opentype") tech(color-COLRv1),
 			}
 
 			@font-face {
 		   font-family: "AbyssType";
 		   src:
- 		   url("abysstype.otf") format("opentype") tech(color-COLRv1),
+ 		   url("./image_assets/abysstype.otf") format("opentype") tech(color-COLRv1),
 			}
 
 			@font-face {
 		   font-family: "AbyssType_small";
 		   src:
- 		   url("abysstype_small.otf") format("opentype") tech(color-COLRv1),
+ 		   url("./image_assets/abysstype_small.otf") format("opentype") tech(color-COLRv1),
 			}
 
 			button.envelopeDropdown, div.selectRow button:not(.copyButton,.pasteButton,.exportInstrumentButton,.importInstrumentButton) {
@@ -3675,72 +3680,72 @@ var beepbox = (function (exports) {
 
 			.beepboxEditor input[type="range"]::-webkit-slider-thumb
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]::-webkit-slider-runnable-track
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]:focus::-webkit-slider-runnable-track
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]::-ms-thumb
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]::-ms-track
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]:focus::-ms-track
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]::-moz-range-thumb
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]::-moz-range-track
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]:focus::-moz-range-track
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="text"],
 			.beepboxEditor input[type="number"]
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="checkbox"]
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="checkbox"]:checked
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="checkbox"]:checked:after
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 
 			div.selectRow span {
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 
 			`,
@@ -4026,8 +4031,8 @@ var beepbox = (function (exports) {
 		--file-page-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-file.png");
 		--edit-pencil-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-edit.png");
 		--preferences-gear-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-preferences.png");
-		--instrument-copy-symbol: url("https://choptop84.github.io/abyssbox-app/icon-copy.png");
-		--instrument-paste-symbol: url("https://choptop84.github.io/abyssbox-app/icon-paste.png");
+		--instrument-copy-symbol: url("./image_assets/icon-copy.png");
+		--instrument-paste-symbol: url("./image_assets/icon-paste.png");
 		--play-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-play.png");
 		--pause-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-pause.png");
 		--record-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-record.png");
@@ -4042,27 +4047,27 @@ var beepbox = (function (exports) {
 		--export-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-export.png");
 		--export-instrument-symbol: var(--export-symbol);
 		--import-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-import.png");
-		--undo-symbol: url("https://choptop84.github.io/abyssbox-app/icon-undo.png");
-		--redo-symbol: url("https://choptop84.github.io/abyssbox-app/icon-redo.png");
-		--copy-symbol: url("https://choptop84.github.io/abyssbox-app/icon-copy.png");
-		--paste-symbol: url("https://choptop84.github.io/abyssbox-app/icon-paste.png");
-		--insert-channel-symbol: url("https://choptop84.github.io/abyssbox-app/icon-insertChannel.png");
-		--delete-channel-symbol: url("https://choptop84.github.io/abyssbox-app/icon-deleteChannel.png");
-		--select-all-symbol: url("https://choptop84.github.io/abyssbox-app/icon-SelectAll.png");
-		--duplicate-symbol: url("https://choptop84.github.io/abyssbox-app/icon-duplicate.png");
-		--notes-up-symbol: url("https://choptop84.github.io/abyssbox-app/moveNotesUp.png");
-		--notes-down-symbol: url("https://choptop84.github.io/abyssbox-app/moveNotesDown.png");
-		--loop-bar-symbol: url("https://choptop84.github.io/abyssbox-app/icon-singleBarLoop.png");
-		--fullscreen-symbol: url("https://choptop84.github.io/abyssbox-app/icon-fullscreen.png");
-		--loop-within-bar-symbol: url("https://choptop84.github.io/abyssbox-app/icon-loop-bar.png");
-	--loop-full-song-symbol: url("https://choptop84.github.io/abyssbox-app/icon-loop-song.png");
-	--dont-loop-symbol: url("https://choptop84.github.io/abyssbox-app/icon-loop-once.png");
+		--undo-symbol: url("./image_assets/icon-undo.png");
+		--redo-symbol: url("./image_assets/icon-redo.png");
+		--copy-symbol: url("./image_assets/icon-copy.png");
+		--paste-symbol: url("./image_assets/icon-paste.png");
+		--insert-channel-symbol: url("./image_assets/icon-insertChannel.png");
+		--delete-channel-symbol: url("./image_assets/icon-deleteChannel.png");
+		--select-all-symbol: url("./image_assets/icon-SelectAll.png");
+		--duplicate-symbol: url("./image_assets/icon-duplicate.png");
+		--notes-up-symbol: url("./image_assets/moveNotesUp.png");
+		--notes-down-symbol: url("./image_assets/moveNotesDown.png");
+		--loop-bar-symbol: url("./image_assets/icon-singleBarLoop.png");
+		--fullscreen-symbol: url("./image_assets/icon-fullscreen.png");
+		--loop-within-bar-symbol: url("./image_assets/icon-loop-bar.png");
+	--loop-full-song-symbol: url("./image_assets/icon-loop-song.png");
+	--dont-loop-symbol: url("./image_assets/icon-loop-once.png");
 		}
 		
 			@font-face {
 		   font-family: "AbyssType";
 		   src:
- 		   url("abysstype.otf") format("opentype") tech(color-COLRv1),
+ 		   url("./image_assets/abysstype.otf") format("opentype") tech(color-COLRv1),
 			}
 
 			/* sets background image */
@@ -4140,7 +4145,7 @@ var beepbox = (function (exports) {
     				image-rendering: pixelated !important;                 /* Future browsers */
     				image-rendering: optimizeSpeed !important;             /* IE */
 
-					cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+					cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 				}
 
 			div.selectRow button:not(.copyButton,.pasteButton,.exportInstrumentButton,.importInstrumentButton) {
@@ -4160,7 +4165,7 @@ var beepbox = (function (exports) {
 			@font-face {
 		   font-family: "AbyssType_small";
 		   src:
- 		   url("abysstype_small.otf") format("opentype") tech(color-COLRv1),
+ 		   url("./image_assets/abysstype_small.otf") format("opentype") tech(color-COLRv1),
 			}
 
 			html {
@@ -4173,72 +4178,72 @@ var beepbox = (function (exports) {
 
 			.beepboxEditor input[type="range"]::-webkit-slider-thumb
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]::-webkit-slider-runnable-track
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]:focus::-webkit-slider-runnable-track
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]::-ms-thumb
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]::-ms-track
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]:focus::-ms-track
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]::-moz-range-thumb
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]::-moz-range-track
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]:focus::-moz-range-track
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="text"],
 			.beepboxEditor input[type="number"]
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="checkbox"]
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="checkbox"]:checked
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="checkbox"]:checked:after
 			{
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 
 			div.selectRow span {
-				cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			`,
         "Frutiger Aero": `
@@ -4509,19 +4514,6 @@ var beepbox = (function (exports) {
 				  box-shadow: inset 0 0 2000px rgba(255, 255, 255, .5);
 			}
 
-				.beepboxEditor select
-				{
-					box-shadow: 0px 1px 3px 0px rgb(0, 0, 0), inset 0px -12px 14px 0px rgba(0, 0, 0, 0.3), inset 0px -15px 0px 0px rgba(0, 0, 0, 0.2);
-
-					--ui-widget-background: linear-gradient(#84aef0, #4f6db3) !important;
-					border-image-source:url("https://choptop84.github.io/choptop84s-image-repository/buttonshading.png") !important;
-					border-image-slice: 40 fill !important; 
-   					border-image-width: 4px !important; 
-					border-image-repeat: stretch; 
-				
-
-				}
-
 				div.playback-bar-controls button.playButton, 
 				div.playback-bar-controls button.pauseButton, 
 				div.playback-bar-controls button.recordButton, 
@@ -4533,20 +4525,19 @@ var beepbox = (function (exports) {
 				div.editor-controls button.exportInstrumentButton, 
 				div.editor-controls button.importInstrumentButton,
 				div.editor-controls div button.add-envelope,
-				div.editor-controls div button.delete-envelope  { 
-					box-shadow: 0px 1px 3px 0px rgb(0, 0, 0), inset 0px -12px 14px 0px rgba(0, 0, 0, 0.3), inset 0px -15px 0px 0px rgba(0, 0, 0, 0.2);
-
-					--ui-widget-background: linear-gradient(#84aef0, #4f6db3) !important;
-					border-image-source:url("https://choptop84.github.io/choptop84s-image-repository/buttonshading.png") !important;
-					border-image-slice: 40 fill !important; 
-   					border-image-width: 4px !important; 
-					border-image-repeat: stretch; 
+				div.editor-controls div button.delete-envelope, 
+				.beepboxEditor .select2-selection__rendered,
+				.beepboxEditor .instrument-bar button,
+				.beepboxEditor .eq-filter-type-bar button .deactivated,
+				.beepboxEditor .note-filter-type-bar button .deactivated,
+				.beepboxEditor select  { 
+					box-shadow: 0px 1px 3px 0px rgb(0, 0, 0), inset 0px -12px 14px 0px rgba(0, 0, 0, 0.3), inset 0px -7px 4px 0px rgba(79, 99, 204, 0.71), inset 0px -15px 0px 0px rgba(0, 0, 0, 0.2), inset 0px 1px 2px 1px #ffffff54;
+					--ui-widget-background: linear-gradient(#b6cfffcc, #628ef2cc) !important;
 				}
 
 				.beepboxEditor select:focus
 				{
 					border-image-source: none;
-					
 					--ui-widget-background: linear-gradient(#2a3d6a, #2a3d6a) !important;
 					box-shadow:
 						0px 0px 1px 1px rgba(0, 0, 0, 0.7),
@@ -4556,19 +4547,6 @@ var beepbox = (function (exports) {
 					;
 				}
 
-				.beepboxEditor .select2-selection__rendered,
-				.beepboxEditor .instrument-bar button,
-				.beepboxEditor .eq-filter-type-bar button .deactivated,
-				.beepboxEditor .note-filter-type-bar button .deactivated
-				{
-					box-shadow: 0px 1px 3px 0px rgb(0, 0, 0), inset 0px -12px 14px 0px rgba(0, 0, 0, 0.3), inset 0px -15px 0px 0px rgba(0, 0, 0, 0.2);
-					--ui-widget-background: linear-gradient(#84aef0, #4f6db3) !important;
-
-					border-image-source:url("https://choptop84.github.io/choptop84s-image-repository/buttonshading.png") !important;
-					border-image-slice: 40 fill !important; 
-   					border-image-width: 4px !important; 
-					border-image-repeat: stretch; 
-				}
 				.beepboxEditor button, button
 				{
 					--ui-widget-background: linear-gradient(#84aef0, #2a3d6a) !important;
@@ -5423,7 +5401,7 @@ var beepbox = (function (exports) {
 			@font-face {
 		   font-family: "Varela";
 		   src:
- 		   url("https://choptop84.github.io/abyssbox-app/Varela.ttf") format("truetype") tech(color-COLRv1),
+ 		   url("./image_assets/Varela.ttf") format("truetype") tech(color-COLRv1),
 			}
 
 			/* sets background image */
@@ -5763,7 +5741,7 @@ var beepbox = (function (exports) {
 			@font-face {
 		   font-family: "AbyssType";
 		   src:
- 		   url("abysstype.otf") format("opentype") tech(color-COLRv1),
+ 		   url("./image_assets/abysstype.otf") format("opentype") tech(color-COLRv1),
 			}
 
 			button.envelopeDropdown, div.selectRow button:not(.copyButton,.pasteButton,.exportInstrumentButton,.importInstrumentButton) {
@@ -5772,7 +5750,7 @@ var beepbox = (function (exports) {
 			}
 
 			#text-content {
-    				border-image-source: url("https://choptop84.github.io/abyssbox-app/abyssbox_border.png");
+    				border-image-source: url("./image_assets/abyssbox_border.png");
     				border-image-slice: 4 fill; 
    				border-image-width: 8px; 
 				border-image-repeat: stretch; 
@@ -5785,7 +5763,7 @@ var beepbox = (function (exports) {
     				image-rendering: optimizeSpeed !important;             /* IE */
 				}
 			#beepboxEditorContainer {
-    				border-image-source: url("https://choptop84.github.io/abyssbox-app/abyssbox_border.png");
+    				border-image-source: url("./image_assets/abyssbox_border.png");
     				border-image-slice: 4 fill; 
    				border-image-width: 8px; 
 				border-image-repeat: stretch;
@@ -5799,7 +5777,7 @@ var beepbox = (function (exports) {
 
 				}
 			 .beepboxEditor button, .beepboxEditor select, .beepboxEditor .select2-selection__rendered {
-    				border-image-source: url("https://choptop84.github.io/abyssbox-app/abyssbox_border.png") !important;
+    				border-image-source: url("./image_assets/abyssbox_border.png") !important;
     				border-image-slice: 4 fill !important; 
    				border-image-width: 4px !important; 
 				border-image-repeat: stretch !important;
@@ -5817,7 +5795,7 @@ var beepbox = (function (exports) {
 				}
 
 				#firstImage {
-					background-image: url("https://choptop84.github.io/abyssbox-source/website/viviandbelle.png") !important;
+					background-image: url("./image_assets/viviandbelle.png") !important;
 					background-repeat: no-repeat !important;
 					background-size: 100% 100% !important;
 				}
@@ -5826,7 +5804,7 @@ var beepbox = (function (exports) {
 			@font-face {
 		   font-family: "AbyssType_small";
 		   src:
- 		   url("abysstype_small.otf") format("opentype") tech(color-COLRv1),
+ 		   url("./image_assets/abysstype_small.otf") format("opentype") tech(color-COLRv1),
 			}
 
 			html {
@@ -5981,7 +5959,7 @@ var beepbox = (function (exports) {
 		}
 		/* sets background image */
 		body {
-		background-image: url("https://choptop84.github.io/abyssbox-source/website/lambda.png") !important;
+		background-image: url("./image_assets/lambda.png") !important;
 		background-size: cover !important;
 		background-position: center !important;
 		background-repeat: no-repeat !important;
@@ -5993,7 +5971,7 @@ var beepbox = (function (exports) {
 			@font-face {
 		   font-family: "trebuc";
 		   src:
- 		   url("trebuc.otf") format("opentype") tech(color-COLRv1),
+ 		   url("./image_assets/trebuc.otf") format("opentype") tech(color-COLRv1),
 			}
 
 			html {
@@ -6149,7 +6127,7 @@ var beepbox = (function (exports) {
 		}
 		/* sets background image */
 		body {
-		background-image: url("https://choptop84.github.io/abyssbox-source/website/lambda.png") !important;
+		background-image: url("./image_assets/lambda.png") !important;
 		background-position: center;
 		background-repeat: repeat;
 			}
@@ -6972,7 +6950,7 @@ var beepbox = (function (exports) {
 			@font-face {
 		   font-family: "doomfont";
 		   src:
- 		   url("doomfont.otf") format("opentype") tech(color-COLRv1),
+ 		   url("./image_assets/doomfont.otf") format("opentype") tech(color-COLRv1),
 			}
 
 			html {
@@ -7362,8 +7340,8 @@ var beepbox = (function (exports) {
 		--file-page-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-file.png");
 		--edit-pencil-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-edit.png");
 		--preferences-gear-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-preferences.png");
-		--instrument-copy-symbol: url("https://choptop84.github.io/abyssbox-app/icon-copy.png");
-		--instrument-paste-symbol: url("https://choptop84.github.io/abyssbox-app/icon-paste.png");
+		--instrument-copy-symbol: url("./image_assets/icon-copy.png");
+		--instrument-paste-symbol: url("./image_assets/icon-paste.png");
 		--play-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-play.png");
 		--pause-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-pause.png");
 		--record-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-record.png");
@@ -7378,23 +7356,27 @@ var beepbox = (function (exports) {
 		--export-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-export.png");
 		--export-instrument-symbol: var(--export-symbol);
 		--import-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-import.png");
-		--undo-symbol: url("https://choptop84.github.io/abyssbox-app/icon-undo.png");
-		--redo-symbol: url("https://choptop84.github.io/abyssbox-app/icon-redo.png");
-		--copy-symbol: url("https://choptop84.github.io/abyssbox-app/icon-copy.png");
-		--paste-symbol: url("https://choptop84.github.io/abyssbox-app/icon-paste.png");
-		--insert-channel-symbol: url("https://choptop84.github.io/abyssbox-app/icon-insertChannel.png");
-		--delete-channel-symbol: url("https://choptop84.github.io/abyssbox-app/icon-deleteChannel.png");
-		--select-all-symbol: url("https://choptop84.github.io/abyssbox-app/icon-SelectAll.png");
-		--duplicate-symbol: url("https://choptop84.github.io/abyssbox-app/icon-duplicate.png");
-		--notes-up-symbol: url("https://choptop84.github.io/abyssbox-app/moveNotesUp.png");
-		--notes-down-symbol: url("https://choptop84.github.io/abyssbox-app/moveNotesDown.png");
-		--loop-bar-symbol: url("https://choptop84.github.io/abyssbox-app/icon-singleBarLoop.png");
-		--fullscreen-symbol: url("https://choptop84.github.io/abyssbox-app/icon-fullscreen.png");
-		--loop-within-bar-symbol: url("https://choptop84.github.io/abyssbox-app/icon-loop-bar.png");
-	--loop-full-song-symbol: url("https://choptop84.github.io/abyssbox-app/icon-loop-song.png");
-	--dont-loop-symbol: url("https://choptop84.github.io/abyssbox-app/icon-loop-once.png");
+		--undo-symbol: url("./image_assets/icon-undo.png");
+		--redo-symbol: url("./image_assets/icon-redo.png");
+		--copy-symbol: url("./image_assets/icon-copy.png");
+		--paste-symbol: url("./image_assets/icon-paste.png");
+		--insert-channel-symbol: url("./image_assets/icon-insertChannel.png");
+		--delete-channel-symbol: url("./image_assets/icon-deleteChannel.png");
+		--select-all-symbol: url("./image_assets/icon-SelectAll.png");
+		--duplicate-symbol: url("./image_assets/icon-duplicate.png");
+		--notes-up-symbol: url("./image_assets/moveNotesUp.png");
+		--notes-down-symbol: url("./image_assets/moveNotesDown.png");
+		--loop-bar-symbol: url("./image_assets/icon-singleBarLoop.png");
+		--fullscreen-symbol: url("./image_assets/icon-fullscreen.png");
+		--loop-within-bar-symbol: url("./image_assets/icon-loop-bar.png");
+		--loop-full-song-symbol: url("./image_assets/icon-loop-song.png");
+		--dont-loop-symbol: url("./image_assets/icon-loop-once.png");
 		}
 		
+		.spIcon {
+		--ui-widget-background: #93090f;
+		}
+
 		.beepboxEditor input[type="range"]::-moz-range-track
 		{
 			background: #4a0008 !important;
@@ -7404,7 +7386,7 @@ var beepbox = (function (exports) {
 			@font-face {
 		   font-family: "AbyssType";
 		   src:
- 		   url("abysstype.otf") format("opentype") tech(color-COLRv1),
+ 		   url("./image_assets/abysstype.otf") format("opentype") tech(color-COLRv1),
 			}
 
 			/*#Hotdog {
@@ -7453,7 +7435,12 @@ var beepbox = (function (exports) {
 				}
 
 				.beepboxEditor select:focus,
-				.beepboxEditor .selectContainer:focus-within
+				.beepboxEditor select:hover,
+				.beepboxEditor .selectContainer:focus-within,
+				.beepboxEditor button:hover,
+				.beepboxEditor button:focus,
+				#select2-pitchPresetSelect-container:hover,
+				#select2-pitchPresetSelect-container:focus
 				{
 					--ui-widget-background: black !important;
 					
@@ -7654,7 +7641,7 @@ var beepbox = (function (exports) {
 				@font-face {
 					font-family: "tahoma";
 					src:
-					 url("https://choptop84.github.io/abyssbox-app/tahoma.otf") format("opentype") tech(color-COLRv1),
+					 url("./image_assets/tahoma.otf") format("opentype") tech(color-COLRv1),
 					 image-rendering: -moz-crisp-edges !important;         /* Firefox */
 					 image-rendering: -webkit-optimize-contrast !important; /* Webkit (Chrome/Safari) */
 					 image-rendering: -o-crisp-edges !important;            /* Opera */
@@ -7822,21 +7809,21 @@ var beepbox = (function (exports) {
 				}
 
 		* {
-		cursor: url("https://choptop84.github.io/abyssbox-app/xpcursor.png"), auto !important;
-		--play-symbol:url("https://choptop84.github.io/abyssbox-app/xpPlay.png");
-		--pause-symbol:url("https://choptop84.github.io/abyssbox-app/xpPause.png");
-		--record-symbol:url("https://choptop84.github.io/abyssbox-app/xpRecord.png");
-		--stop-symbol:url("https://choptop84.github.io/abyssbox-app/xpStop.png");
-		--prev-bar-symbol:url("https://choptop84.github.io/abyssbox-app/xpBackward.png");
-		--next-bar-symbol:url("https://choptop84.github.io/abyssbox-app/xpForward.png");
-		--file-page-symbol: url("https://choptop84.github.io/abyssbox-app/xpFile.png");
-		--edit-pencil-symbol: url("https://choptop84.github.io/abyssbox-app/xpEdit.png");
-		--preferences-gear-symbol: url("https://choptop84.github.io/abyssbox-app/xpPreferences.png");
-		--muted-symbol: url("https://choptop84.github.io/abyssbox-app/xpSpeakerMute.png");
-		--unmuted-symbol: url("https://choptop84.github.io/abyssbox-app/xpSpeaker.png");
-		--volume-symbol: url("https://choptop84.github.io/abyssbox-app/xpSpeaker.png");
-		--zoom-in-symbol: url("https://choptop84.github.io/abyssbox-app/xpZoomIn.png");
-		--zoom-out-symbol: url("https://choptop84.github.io/abyssbox-app/xpZoomOut.png");
+		cursor: url("./image_assets/xpcursor.png"), auto !important;
+		--play-symbol:url("./image_assets/xpPlay.png");
+		--pause-symbol:url("./image_assets/xpPause.png");
+		--record-symbol:url("./image_assets/xpRecord.png");
+		--stop-symbol:url("./image_assets/xpStop.png");
+		--prev-bar-symbol:url("./image_assets/xpBackward.png");
+		--next-bar-symbol:url("./image_assets/xpForward.png");
+		--file-page-symbol: url("./image_assets/xpFile.png");
+		--edit-pencil-symbol: url("./image_assets/xpEdit.png");
+		--preferences-gear-symbol: url("./image_assets/xpPreferences.png");
+		--muted-symbol: url("./image_assets/xpSpeakerMute.png");
+		--unmuted-symbol: url("./image_assets/xpSpeaker.png");
+		--volume-symbol: url("./image_assets/xpSpeaker.png");
+		--zoom-in-symbol: url("./image_assets/xpZoomIn.png");
+		--zoom-out-symbol: url("./image_assets/xpZoomOut.png");
 		}
 
 		.beepboxEditor button,
@@ -7863,7 +7850,7 @@ var beepbox = (function (exports) {
 			}
 
 		div.mute-button::before {
-			background-image: url("https://choptop84.github.io/abyssbox-app/xpSpeaker.png") !important;
+			background-image: url("./image_assets/xpSpeaker.png") !important;
 			background-size: 120% !important;
 			background-position-x: center !important;
 			background-position-y: center !important;
@@ -7877,7 +7864,7 @@ var beepbox = (function (exports) {
 		}
 
 		div.mute-button.muted::before {
-			background-image: url("https://choptop84.github.io/abyssbox-app/xpSpeakerMute.png") !important;
+			background-image: url("./image_assets/xpSpeakerMute.png") !important;
 			background-size: 120% !important;
 			background-position-x: center !important;
 			background-position-y: center !important;
@@ -7891,7 +7878,7 @@ var beepbox = (function (exports) {
 		}
 
 		button.recordButton::Before {
-			background-image: url("https://choptop84.github.io/abyssbox-app/xpRecord.png") !important;
+			background-image: url("./image_assets/xpRecord.png") !important;
 			background-size: 64% !important;
 			background-position: center !important;
 			background-repeat: no-repeat !important;
@@ -7905,7 +7892,7 @@ var beepbox = (function (exports) {
 		}
 
 		button.stopButton::Before {
-			background-image: url("https://choptop84.github.io/abyssbox-app/xpStop.png") !important;
+			background-image: url("./image_assets/xpStop.png") !important;
 			background-size: 64% !important;
 			background-position: center !important;
 			background-repeat: no-repeat !important;
@@ -7919,7 +7906,7 @@ var beepbox = (function (exports) {
 		}
 
 		button.pauseButton::Before {
-			background-image: url("https://choptop84.github.io/abyssbox-app/xpPause.png") !important;
+			background-image: url("./image_assets/xpPause.png") !important;
 			background-size: 64% !important;
 			background-position: center !important;
 			background-repeat: no-repeat !important;
@@ -7933,7 +7920,7 @@ var beepbox = (function (exports) {
 		}
 
 		.beepboxEditor span.volume-speaker {
-			background-image: url("https://choptop84.github.io/abyssbox-app/xpSpeaker.png");
+			background-image: url("./image_assets/xpSpeaker.png");
 			background-position: center !important;
 			background-repeat: no-repeat !important;
 
@@ -7946,7 +7933,7 @@ var beepbox = (function (exports) {
 
 		div.selectContainer.menu.file::before {
 
-			background-image: url("https://choptop84.github.io/abyssbox-app/xpFile.png");
+			background-image: url("./image_assets/xpFile.png");
 			background-size: 64%;
 			background-position-x: center;
 			background-position-y: center;
@@ -7960,7 +7947,7 @@ var beepbox = (function (exports) {
 
 		div.selectContainer.menu.edit::before {
 
-			background-image: url("https://choptop84.github.io/abyssbox-app/xpEdit.png");
+			background-image: url("./image_assets/xpEdit.png");
 			background-size: 64%;
 			background-position-x: center;
 			background-position-y: center;
@@ -7973,7 +7960,7 @@ var beepbox = (function (exports) {
 		}
 		div.selectContainer.menu.preferences::before {
 
-			background-image: url("https://choptop84.github.io/abyssbox-app/xpPreferences.png");
+			background-image: url("./image_assets/xpPreferences.png");
 			background-size: 64%;
 			background-position-x: center;
 			background-position-y: center;
@@ -7986,7 +7973,7 @@ var beepbox = (function (exports) {
 		}
 		button.playButton::before {
 
-			background-image: url("https://choptop84.github.io/abyssbox-app/xpPlay.png") !important;
+			background-image: url("./image_assets/xpPlay.png") !important;
 			background-size: 64% !important;
 			background-position: center !important;
 
@@ -7999,7 +7986,7 @@ var beepbox = (function (exports) {
 		}
 
 		.beepboxEditor button.prevBarButton::before {
-			background-image: url("https://choptop84.github.io/abyssbox-app/xpBackward.png") !important;
+			background-image: url("./image_assets/xpBackward.png") !important;
 			background-size: 64% !important;
 			background-position: center !important;
 
@@ -8013,7 +8000,7 @@ var beepbox = (function (exports) {
 		}
 
 		.beepboxEditor button.nextBarButton::before {
-			background-image: url("https://choptop84.github.io/abyssbox-app/xpForward.png") !important;
+			background-image: url("./image_assets/xpForward.png") !important;
 			background-size: 64% !important;
 			background-position: center !important;
 
@@ -8027,7 +8014,7 @@ var beepbox = (function (exports) {
 		}
 
 		.beepboxEditor .zoomInButton::before {
-			background-image: url("https://choptop84.github.io/abyssbox-app/xpZoomIn.png") !important;
+			background-image: url("./image_assets/xpZoomIn.png") !important;
 			background-position: center !important;
 
 
@@ -8040,7 +8027,7 @@ var beepbox = (function (exports) {
 		}
 
 		.beepboxEditor .zoomOutButton::before {
-			background-image: url("https://choptop84.github.io/abyssbox-app/xpZoomOut.png") !important;
+			background-image: url("./image_assets/xpZoomOut.png") !important;
 			background-position: center !important;
 
 
@@ -8053,7 +8040,7 @@ var beepbox = (function (exports) {
 		}
 
 		.beepboxEditor input[type="range"]::-moz-range-thumb {
-			background-image: url("https://choptop84.github.io/abyssbox-app/scrollbar.png") !important;
+			background-image: url("./image_assets/scrollbar.png") !important;
 			background-position: center !important;
 			background-size: inherit !important;
 
@@ -8075,19 +8062,19 @@ var beepbox = (function (exports) {
 		}
 		#text-content > section > h1 {
 		margin: auto;
-		content: url("https://choptop84.github.io/abyssbox-app/AbyssBox_XP.png");
+		content: url("./image_assets/AbyssBox_XP.png");
 		}
 
 				/* sets background image */
 		body {
-		background-image: url("https://choptop84.github.io/abyssbox-app/xphills.png") !important;
+		background-image: url("./image_assets/xphills.png") !important;
 		background-size: cover;
 		background-position: center;
 		background-repeat: no-repeat;
 			}
 
 			#text-content {
-    				border-image-source: url("https://choptop84.github.io/abyssbox-app/xptextbg.png");
+    				border-image-source: url("./image_assets/xptextbg.png");
     				border-image-slice: 11 fill; 
    				border-image-width: 11px; 
 				border-image-repeat: stretch;
@@ -8095,7 +8082,7 @@ var beepbox = (function (exports) {
     				padding: 14px; 
 				}
 			#beepboxEditorContainer {
-    				border-image-source: url("https://choptop84.github.io/abyssbox-app/xptextbg.png");
+    				border-image-source: url("./image_assets/xptextbg.png");
     				border-image-slice: 11 fill; 
    				border-image-width: 11px; 
 				border-image-repeat: stretch;
@@ -8104,7 +8091,7 @@ var beepbox = (function (exports) {
 				}
 
 			#firstImage {
-				background-image: url("https://choptop84.github.io/abyssbox-app/xpsongeditorbg.png") !important;
+				background-image: url("./image_assets/xpsongeditorbg.png") !important;
 				background-repeat: no-repeat !important;
 				background-size: 100% 100% !important;
 			}
@@ -8136,7 +8123,7 @@ var beepbox = (function (exports) {
 			}
 			
 			.beepboxEditor select:focus {
-					border-image-source: url("https://choptop84.github.io/abyssbox-app/xpbuttonpressedbg.png");
+					border-image-source: url("./image_assets/xpbuttonpressedbg.png");
 					border-image-slice: 4 fill; 
 					border-image-width: 4px; 
 					border-image-repeat: repeat;
@@ -8153,7 +8140,7 @@ var beepbox = (function (exports) {
 					border-radius: 0px;
 					width: 13px !important;
 					height: 13px !important;
-					background-image:url("https://choptop84.github.io/abyssbox-app/xpCheckmarkBlank.png");
+					background-image:url("./image_assets/xpCheckmarkBlank.png");
 					background-repeat:no-repeat;
 
 					image-rendering: -moz-crisp-edges !important;         /* Firefox */
@@ -8178,7 +8165,7 @@ var beepbox = (function (exports) {
 					text-align: center;
 					content: "";
 					background-repeat:no-repeat;
-					background-image:url("https://choptop84.github.io/abyssbox-app/xpCheckmark.png");
+					background-image:url("./image_assets/xpCheckmark.png");
 					image-rendering: -moz-crisp-edges !important;         /* Firefox */
 					image-rendering: -webkit-optimize-contrast !important; /* Webkit (Chrome/Safari) */
 					image-rendering: -o-crisp-edges !important;            /* Opera */
@@ -8265,6 +8252,290 @@ var beepbox = (function (exports) {
 
 
 			`,
+        "corporate dark": `
+			:root {
+			--page-margin: #1f1f1f;
+			--editor-background: #1f1f1f;
+			--hover-preview: white;
+			--playhead: white;
+			--primary-text: #e8e8e8;
+			--secondary-text: #8c8c8c;
+			--inverted-text: #1D1C1D;
+			--text-selection: #C249DD;
+			--box-selection-fill: rgba(0,0,0,0.2);
+			--loop-accent: #C249DD;
+			--link-accent: #0E9DD3;
+			--ui-widget-background: #303134;
+			--ui-widget-focus: #5B5957;
+			--pitch-background: #3e3f42;
+			--tonic: #303134;
+			--fifth-note: #98809D;
+			--third-note: #62738b;
+			--white-piano-key: white;
+			--black-piano-key: #1D1C1D;
+			--white-piano-key-text: #1D1C1D;
+			--black-piano-key-text: white;
+			--use-color-formula: false;
+			--track-editor-bg-pitch: #303134;
+			--track-editor-bg-pitch-dim: #1d1e20;
+			--track-editor-bg-noise: #303134;
+			--track-editor-bg-noise-dim: #1d1e20;
+			--track-editor-bg-mod: #46524a;
+			--track-editor-bg-mod-dim: #2c352f;
+			--multiplicative-mod-slider: #456;
+			--overwriting-mod-slider: #654;
+			--indicator-primary: #C249DD;
+			--indicator-secondary: #602670;
+			--select2-opt-group: #474747;
+			--input-box-outline: #F4EDE4;
+			--mute-button-normal: #DE8969;
+			--mute-button-mod: #C05B8C;
+			--pitch-channel-limit: 4;
+			--noise-channel-limit: 3;
+			--pitch1-secondary-channel: #17616B;
+			--pitch1-primary-channel:   #36C5F0;
+			--pitch1-secondary-note:    #17616B;
+			--pitch1-primary-note:      #36C5F0;
+			--pitch2-secondary-channel: #185F34;
+			--pitch2-primary-channel:   #2EB67D;
+			--pitch2-secondary-note:    #185F34;
+			--pitch2-primary-note:      #2EB67D;
+			--pitch3-secondary-channel: #755617;
+			--pitch3-primary-channel:   #ECB22E;
+			--pitch3-secondary-note:    #755617;
+			--pitch3-primary-note:      #ECB22E;
+			--pitch4-secondary-channel: #821237;
+			--pitch4-primary-channel:   #E01E5A;
+			--pitch4-secondary-note:    #821237;
+			--pitch4-primary-note:      #E01E5A;
+			--pitch5-secondary-channel: #D020D0;
+			--pitch5-primary-channel:   #FF90FF;
+			--pitch5-secondary-note:    #E040E0;
+			--pitch5-primary-note:      #FFC0FF;
+			--pitch6-secondary-channel: #7777B0;
+			--pitch6-primary-channel:   #A0A0FF;
+			--pitch6-secondary-note:    #8888D0;
+			--pitch6-primary-note:      #D0D0FF;
+			--pitch7-secondary-channel: #8AA100;
+			--pitch7-primary-channel:   #DEFF25;
+			--pitch7-secondary-note:    #AAC700;
+			--pitch7-primary-note:      #E6FF92;
+			--pitch8-secondary-channel: #DF0019;
+			--pitch8-primary-channel:   #FF98A4;
+			--pitch8-secondary-note:    #FF4E63;
+			--pitch8-primary-note:      #FFB2BB;
+			--pitch9-secondary-channel: #00A170;
+			--pitch9-primary-channel:   #50FFC9;
+			--pitch9-secondary-note:    #00C78A;
+			--pitch9-primary-note:      #83FFD9;
+			--pitch10-secondary-channel:#A11FFF;
+			--pitch10-primary-channel:  #CE8BFF;
+			--pitch10-secondary-note:   #B757FF;
+			--pitch10-primary-note:     #DFACFF;
+			--noise1-secondary-channel: #424242;
+			--noise1-primary-channel:   #AAAAAA;
+			--noise1-secondary-note:    #424242;
+			--noise1-primary-note:      #AAAAAA;
+			--noise2-secondary-channel: #5E3A2D;
+			--noise2-primary-channel:   #DE8969;
+			--noise2-secondary-note:    #5E3A2D;
+			--noise2-primary-note:      #DE8969;
+			--noise3-secondary-channel: #32595B;
+			--noise3-primary-channel:   #78D7DD;
+			--noise3-secondary-note:    #32595B;
+			--noise3-primary-note:      #78D7DD;
+			--noise4-secondary-channel: #7A4F9A;
+			--noise4-primary-channel:   #AF82D2;
+			--noise4-secondary-note:    #9E71C1;
+			--noise4-primary-note:      #D4C1EA;
+			--noise5-secondary-channel: #607837;
+			--noise5-primary-channel:   #A2BB77;
+			--noise5-secondary-note:    #91AA66;
+			--noise5-primary-note:      #C5E2B2;
+			--mod1-secondary-channel:   #339955;
+			--mod1-primary-channel:     #77fc55;
+			--mod1-secondary-note:      #77ff8a;
+			--mod1-primary-note:        #cdffee;
+			--mod2-secondary-channel:   #993355;
+			--mod2-primary-channel:     #f04960;
+			--mod2-secondary-note:      #f057a0;
+			--mod2-primary-note:        #ffb8de;
+			--mod3-secondary-channel:   #553399;
+			--mod3-primary-channel:     #8855fc;
+			--mod3-secondary-note:      #aa64ff;
+			--mod3-primary-note:	    #f8ddff;
+			--mod4-secondary-channel:   #a86436;
+			--mod4-primary-channel:     #c8a825;
+			--mod4-secondary-note:      #e8ba46;
+			--mod4-primary-note:        #fff6d3;
+			--mod-label-primary:        #999;
+			--mod-label-secondary-text: #333;
+			--mod-label-primary-text:   black;
+			--disabled-note-primary:    #999;
+			--disabled-note-secondary:  #666;
+			--mod-title: #1D1C1D;
+			}
+
+			.channelBox {
+			border-radius: 25px;
+			}
+
+			button:hover {
+			border-radius: 4px;
+			background-color: #1d1e20 !important;
+			}
+
+			select:hover {
+			border-radius: 4px !important;
+			background-color: #1d1e20 !important;
+			}
+
+			#select2-pitchPresetSelect-container:hover {
+			border-radius: 4px !important;
+			background-color: #1d1e20 !important;
+			}`,
+        "corporate light": `
+			:root {
+			--page-margin: white;
+			--editor-background: white;
+			--hover-preview: white;
+			--playhead: white;
+			--primary-text: #1D1C1D;
+			--secondary-text: #A5A19B;
+			--inverted-text: #1D1C1D;
+			--text-selection: #C249DD;
+			--box-selection-fill: rgba(0,0,0,0.2);
+			--loop-accent: #C249DD;
+			--link-accent: #0E9DD3;
+			--ui-widget-background: #F4EDE4;
+			--ui-widget-focus: white;
+			--pitch-background: #E8DED1;
+			--tonic: #E6B8A8;
+			--fifth-note: #DB99EA;
+			--third-note: #99c3ff;
+			--white-piano-key: white;
+			--black-piano-key: #1D1C1D;
+			--white-piano-key-text: #1D1C1D;
+			--black-piano-key-text: white;
+			--use-color-formula: false;
+			--track-editor-bg-pitch: #E8DED1;
+			--track-editor-bg-pitch-dim: #ecc6ba;
+			--track-editor-bg-noise: #E8DED1;
+			--track-editor-bg-noise-dim: #ecc6ba;
+			--track-editor-bg-mod: #87BB9B;
+			--track-editor-bg-mod-dim: #6baa83;
+			--multiplicative-mod-slider: #456;
+			--overwriting-mod-slider: #654;
+			--indicator-primary: #C249DD;
+			--indicator-secondary: #602670;
+			--select2-opt-group: #474747;
+			--input-box-outline: #F4EDE4;
+			--mute-button-normal: #DE8969;
+			--mute-button-mod: #C05B8C;
+			--pitch-channel-limit: 4;
+			--noise-channel-limit: 3;
+			--pitch1-secondary-channel: #17616B;
+			--pitch1-primary-channel:   #36C5F0;
+			--pitch1-secondary-note:    #17616B;
+			--pitch1-primary-note:      #36C5F0;
+			--pitch2-secondary-channel: #185F34;
+			--pitch2-primary-channel:   #2EB67D;
+			--pitch2-secondary-note:    #185F34;
+			--pitch2-primary-note:      #2EB67D;
+			--pitch3-secondary-channel: #755617;
+			--pitch3-primary-channel:   #ECB22E;
+			--pitch3-secondary-note:    #755617;
+			--pitch3-primary-note:      #ECB22E;
+			--pitch4-secondary-channel: #821237;
+			--pitch4-primary-channel:   #E01E5A;
+			--pitch4-secondary-note:    #821237;
+			--pitch4-primary-note:      #E01E5A;
+			--pitch5-secondary-channel: #D020D0;
+			--pitch5-primary-channel:   #FF90FF;
+			--pitch5-secondary-note:    #E040E0;
+			--pitch5-primary-note:      #FFC0FF;
+			--pitch6-secondary-channel: #7777B0;
+			--pitch6-primary-channel:   #A0A0FF;
+			--pitch6-secondary-note:    #8888D0;
+			--pitch6-primary-note:      #D0D0FF;
+			--pitch7-secondary-channel: #8AA100;
+			--pitch7-primary-channel:   #DEFF25;
+			--pitch7-secondary-note:    #AAC700;
+			--pitch7-primary-note:      #E6FF92;
+			--pitch8-secondary-channel: #DF0019;
+			--pitch8-primary-channel:   #FF98A4;
+			--pitch8-secondary-note:    #FF4E63;
+			--pitch8-primary-note:      #FFB2BB;
+			--pitch9-secondary-channel: #00A170;
+			--pitch9-primary-channel:   #50FFC9;
+			--pitch9-secondary-note:    #00C78A;
+			--pitch9-primary-note:      #83FFD9;
+			--pitch10-secondary-channel:#A11FFF;
+			--pitch10-primary-channel:  #CE8BFF;
+			--pitch10-secondary-note:   #B757FF;
+			--pitch10-primary-note:     #DFACFF;
+			--noise1-secondary-channel: #424242;
+			--noise1-primary-channel:   #AAAAAA;
+			--noise1-secondary-note:    #424242;
+			--noise1-primary-note:      #AAAAAA;
+			--noise2-secondary-channel: #5E3A2D;
+			--noise2-primary-channel:   #DE8969;
+			--noise2-secondary-note:    #5E3A2D;
+			--noise2-primary-note:      #DE8969;
+			--noise3-secondary-channel: #32595B;
+			--noise3-primary-channel:   #78D7DD;
+			--noise3-secondary-note:    #32595B;
+			--noise3-primary-note:      #78D7DD;
+			--noise4-secondary-channel: #7A4F9A;
+			--noise4-primary-channel:   #AF82D2;
+			--noise4-secondary-note:    #9E71C1;
+			--noise4-primary-note:      #D4C1EA;
+			--noise5-secondary-channel: #607837;
+			--noise5-primary-channel:   #A2BB77;
+			--noise5-secondary-note:    #91AA66;
+			--noise5-primary-note:      #C5E2B2;
+			--mod1-secondary-channel:   #339955;
+			--mod1-primary-channel:     #77fc55;
+			--mod1-secondary-note:      #77ff8a;
+			--mod1-primary-note:        #cdffee;
+			--mod2-secondary-channel:   #993355;
+			--mod2-primary-channel:     #f04960;
+			--mod2-secondary-note:      #f057a0;
+			--mod2-primary-note:        #ffb8de;
+			--mod3-secondary-channel:   #553399;
+			--mod3-primary-channel:     #8855fc;
+			--mod3-secondary-note:      #aa64ff;
+			--mod3-primary-note:	    #f8ddff;
+			--mod4-secondary-channel:   #a86436;
+			--mod4-primary-channel:     #c8a825;
+			--mod4-secondary-note:      #e8ba46;
+			--mod4-primary-note:        #fff6d3;
+			--mod-label-primary:        #999;
+			--mod-label-secondary-text: #333;
+			--mod-label-primary-text:   black;
+			--disabled-note-primary:    #999;
+			--disabled-note-secondary:  #666;
+			--mod-title: #1D1C1D;
+			}
+
+			.channelBox {
+			border-radius: 25px;
+			}
+
+			button:hover {
+			border-radius: 4px;
+			background-color: #dbd2c5 !important;
+			}
+
+			select:hover {
+			border-radius: 4px !important;
+			background-color: #dbd2c5 !important;
+			}
+
+			#select2-pitchPresetSelect-container:hover {
+			border-radius: 4px !important;
+			background-color: #dbd2c5 !important;
+			}`,
         "Terminal 2.0 (AB)": `
 			:root { 
 			--page-margin: black; 
@@ -8397,7 +8668,7 @@ var beepbox = (function (exports) {
 						@font-face {
 					   font-family: "Workbench";
 					   src:
-						url("https://choptop84.github.io/abyssbox-app/Workbench.ttf") format("truetype") tech(color-COLRv1),
+						url("./image_assets/Workbench.ttf") format("truetype") tech(color-COLRv1),
 						}
 			
 						html {
@@ -8667,8 +8938,8 @@ var beepbox = (function (exports) {
 				--file-page-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-file.png");
 				--edit-pencil-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-edit.png");
 				--preferences-gear-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-preferences.png");
-				--instrument-copy-symbol: url("https://choptop84.github.io/abyssbox-app/icon-copy.png");
-				--instrument-paste-symbol: url("https://choptop84.github.io/abyssbox-app/icon-paste.png");
+				--instrument-copy-symbol: url("./image_assets/icon-copy.png");
+				--instrument-paste-symbol: url("./image_assets/icon-paste.png");
 				--play-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-play.png");
 				--pause-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-pause.png");
 				--record-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-record.png");
@@ -8683,32 +8954,32 @@ var beepbox = (function (exports) {
 				--export-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-export.png");
 				--export-instrument-symbol: var(--export-symbol);
 				--import-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-import.png");
-				--undo-symbol: url("https://choptop84.github.io/abyssbox-app/icon-undo.png");
-				--redo-symbol: url("https://choptop84.github.io/abyssbox-app/icon-redo.png");
-				--copy-symbol: url("https://choptop84.github.io/abyssbox-app/icon-copy.png");
-				--paste-symbol: url("https://choptop84.github.io/abyssbox-app/icon-paste.png");
-				--insert-channel-symbol: url("https://choptop84.github.io/abyssbox-app/icon-insertChannel.png");
-				--delete-channel-symbol: url("https://choptop84.github.io/abyssbox-app/icon-deleteChannel.png");
-				--select-all-symbol: url("https://choptop84.github.io/abyssbox-app/icon-SelectAll.png");
-				--duplicate-symbol: url("https://choptop84.github.io/abyssbox-app/icon-duplicate.png");
-				--notes-up-symbol: url("https://choptop84.github.io/abyssbox-app/moveNotesUp.png");
-				--notes-down-symbol: url("https://choptop84.github.io/abyssbox-app/moveNotesDown.png");
-				--loop-bar-symbol: url("https://choptop84.github.io/abyssbox-app/icon-singleBarLoop.png");
-				--fullscreen-symbol: url("https://choptop84.github.io/abyssbox-app/icon-fullscreen.png");
-				--loop-within-bar-symbol: url("https://choptop84.github.io/abyssbox-app/icon-loop-bar.png");
-	--loop-full-song-symbol: url("https://choptop84.github.io/abyssbox-app/icon-loop-song.png");
-	--dont-loop-symbol: url("https://choptop84.github.io/abyssbox-app/icon-loop-once.png");
+				--undo-symbol: url("./image_assets/icon-undo.png");
+				--redo-symbol: url("./image_assets/icon-redo.png");
+				--copy-symbol: url("./image_assets/icon-copy.png");
+				--paste-symbol: url("./image_assets/icon-paste.png");
+				--insert-channel-symbol: url("./image_assets/icon-insertChannel.png");
+				--delete-channel-symbol: url("./image_assets/icon-deleteChannel.png");
+				--select-all-symbol: url("./image_assets/icon-SelectAll.png");
+				--duplicate-symbol: url("./image_assets/icon-duplicate.png");
+				--notes-up-symbol: url("./image_assets/moveNotesUp.png");
+				--notes-down-symbol: url("./image_assets/moveNotesDown.png");
+				--loop-bar-symbol: url("./image_assets/icon-singleBarLoop.png");
+				--fullscreen-symbol: url("./image_assets/icon-fullscreen.png");
+				--loop-within-bar-symbol: url("./image_assets/icon-loop-bar.png");
+	--loop-full-song-symbol: url("./image_assets/icon-loop-song.png");
+	--dont-loop-symbol: url("./image_assets/icon-loop-once.png");
 				} 
 					@font-face {
 				   font-family: "AbyssType";
 				   src:
-					url("abysstype.otf") format("opentype") tech(color-COLRv1),
+					url("./image_assets/abysstype.otf") format("opentype") tech(color-COLRv1),
 					}
 			
 					@font-face {
 				   font-family: "AbyssType_small";
 				   src:
-					url("abysstype_small.otf") format("opentype") tech(color-COLRv1),
+					url("./image_assets/abysstype_small.otf") format("opentype") tech(color-COLRv1),
 					}
 			
 					body {
@@ -8889,7 +9160,7 @@ var beepbox = (function (exports) {
 				--pitch-background: #444;
 				--tonic: #864;
 				--fifth-note: #468;
-				--third-note: #578844;
+				--third-note: #486;
 				--white-piano-key: #bbb;
 				--black-piano-key: #444;
 				--white-piano-key-text: #131200;
@@ -9028,7 +9299,7 @@ var beepbox = (function (exports) {
 				--pitch-background: #444;
 				--tonic: #864;
 				--fifth-note: #468;
-				--third-note: #578844;
+				--third-note: #486;
 				--white-piano-key: #bbb;
 				--black-piano-key: #444;
 				--white-piano-key-text: #131200;
@@ -9163,7 +9434,7 @@ var beepbox = (function (exports) {
 				--pitch-background: #444;
 				--tonic: #864;
 				--fifth-note: #468;
-				--third-note: #578844;
+				--third-note: #486;
 				--white-piano-key: #bbb;
 				--black-piano-key: #444;
 				--white-piano-key-text: #131200;
@@ -9272,8 +9543,8 @@ var beepbox = (function (exports) {
 					--file-page-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-file.png");
 					--edit-pencil-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-edit.png");
 					--preferences-gear-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-preferences.png");
-					--instrument-copy-symbol: url("https://choptop84.github.io/abyssbox-app/icon-copy.png");
-					--instrument-paste-symbol: url("https://choptop84.github.io/abyssbox-app/icon-paste.png");
+					--instrument-copy-symbol: url("./image_assets/icon-copy.png");
+					--instrument-paste-symbol: url("./image_assets/icon-paste.png");
 					--play-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-play.png");
 					--pause-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-pause.png");
 					--record-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-record.png");
@@ -9288,32 +9559,32 @@ var beepbox = (function (exports) {
 					--export-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-export.png");
 					--export-instrument-symbol: var(--export-symbol);
 					--import-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-import.png");
-					--undo-symbol: url("https://choptop84.github.io/abyssbox-app/icon-undo.png");
-					--redo-symbol: url("https://choptop84.github.io/abyssbox-app/icon-redo.png");
-					--copy-symbol: url("https://choptop84.github.io/abyssbox-app/icon-copy.png");
-					--paste-symbol: url("https://choptop84.github.io/abyssbox-app/icon-paste.png");
-					--insert-channel-symbol: url("https://choptop84.github.io/abyssbox-app/icon-insertChannel.png");
-					--delete-channel-symbol: url("https://choptop84.github.io/abyssbox-app/icon-deleteChannel.png");
-					--select-all-symbol: url("https://choptop84.github.io/abyssbox-app/icon-SelectAll.png");
-					--duplicate-symbol: url("https://choptop84.github.io/abyssbox-app/icon-duplicate.png");
-					--notes-up-symbol: url("https://choptop84.github.io/abyssbox-app/moveNotesUp.png");
-					--notes-down-symbol: url("https://choptop84.github.io/abyssbox-app/moveNotesDown.png");
-					--loop-bar-symbol: url("https://choptop84.github.io/abyssbox-app/icon-singleBarLoop.png");
-					--fullscreen-symbol: url("https://choptop84.github.io/abyssbox-app/icon-fullscreen.png");
-					--loop-within-bar-symbol: url("https://choptop84.github.io/abyssbox-app/icon-loop-bar.png");
-	--loop-full-song-symbol: url("https://choptop84.github.io/abyssbox-app/icon-loop-song.png");
-	--dont-loop-symbol: url("https://choptop84.github.io/abyssbox-app/icon-loop-once.png");
+					--undo-symbol: url("./image_assets/icon-undo.png");
+					--redo-symbol: url("./image_assets/icon-redo.png");
+					--copy-symbol: url("./image_assets/icon-copy.png");
+					--paste-symbol: url("./image_assets/icon-paste.png");
+					--insert-channel-symbol: url("./image_assets/icon-insertChannel.png");
+					--delete-channel-symbol: url("./image_assets/icon-deleteChannel.png");
+					--select-all-symbol: url("./image_assets/icon-SelectAll.png");
+					--duplicate-symbol: url("./image_assets/icon-duplicate.png");
+					--notes-up-symbol: url("./image_assets/moveNotesUp.png");
+					--notes-down-symbol: url("./image_assets/moveNotesDown.png");
+					--loop-bar-symbol: url("./image_assets/icon-singleBarLoop.png");
+					--fullscreen-symbol: url("./image_assets/icon-fullscreen.png");
+					--loop-within-bar-symbol: url("./image_assets/icon-loop-bar.png");
+	--loop-full-song-symbol: url("./image_assets/icon-loop-song.png");
+	--dont-loop-symbol: url("./image_assets/icon-loop-once.png");
 					}
 					
 						@font-face {
 					   font-family: "AbyssType";
 					   src:
-						url("abysstype.otf") format("opentype") tech(color-COLRv1),
+						url("./image_assets/abysstype.otf") format("opentype") tech(color-COLRv1),
 						}
 
 						/* sets background image */
 						body {
-						background-image: url("https://choptop84.github.io/abyssbox-source/website/diamondsbg.gif") !important;
+						background-image: url("./image_assets/diamondsbg.gif") !important;
 						background-position: center;
 						background-repeat: repeat;
 			
@@ -9325,7 +9596,7 @@ var beepbox = (function (exports) {
 							}
 			
 						#text-content {
-								border-image-source: url("https://choptop84.github.io/abyssbox-source/website/beepbox_pixel_border.png");
+								border-image-source: url("./image_assets/beepbox_pixel_border.png");
 								border-image-slice: 4 fill; 
 							   border-image-width: 8px; 
 							border-image-repeat: stretch; 
@@ -9338,7 +9609,7 @@ var beepbox = (function (exports) {
 								image-rendering: optimizeSpeed !important;             /* IE */
 							}
 						#beepboxEditorContainer {
-								border-image-source: url("https://choptop84.github.io/abyssbox-source/website/beepbox_pixel_border.png");
+								border-image-source: url("./image_assets/beepbox_pixel_border.png");
 								border-image-slice: 4 fill; 
 							   border-image-width: 8px; 
 							border-image-repeat: stretch;
@@ -9370,7 +9641,7 @@ var beepbox = (function (exports) {
 						button.importInstrumentButton, 
 						.beepboxEditor select, 
 						.beepboxEditor .select2-selection__rendered {
-								border-image-source: url("https://choptop84.github.io/abyssbox-source/website/beepbox_pixel_border.png") !important;
+								border-image-source: url("./image_assets/beepbox_pixel_border.png") !important;
 								border-image-slice: 4 fill !important; 
 							   border-image-width: 4px !important; 
 							border-image-repeat: stretch !important;
@@ -9382,7 +9653,7 @@ var beepbox = (function (exports) {
 								image-rendering: pixelated !important;                 /* Future browsers */
 								image-rendering: optimizeSpeed !important;             /* IE */
 			
-								cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+								cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 							}
 			
 						.beepboxEditor .channelBox {
@@ -9431,7 +9702,7 @@ var beepbox = (function (exports) {
 						@font-face {
 					   font-family: "AbyssType_small";
 					   src:
-						url("abysstype_small.otf") format("opentype") tech(color-COLRv1),
+						url("./image_assets/abysstype_small.otf") format("opentype") tech(color-COLRv1),
 						}
 			
 						html {
@@ -9444,72 +9715,72 @@ var beepbox = (function (exports) {
 			
 						.beepboxEditor input[type="range"]::-webkit-slider-thumb
 						{
-							cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+							cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 						}
 						 
 						.beepboxEditor input[type="range"]::-webkit-slider-runnable-track
 						{
-							cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+							cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 						}
 						 
 						.beepboxEditor input[type="range"]:focus::-webkit-slider-runnable-track
 						{
-							cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+							cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 						}
 						 
 						.beepboxEditor input[type="range"]::-ms-thumb
 						{
-							cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+							cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 						}
 						 
 						.beepboxEditor input[type="range"]::-ms-track
 						{
-							cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+							cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 						}
 						 
 						.beepboxEditor input[type="range"]:focus::-ms-track
 						{
-							cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+							cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 						}
 						 
 						.beepboxEditor input[type="range"]::-moz-range-thumb
 						{
-							cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+							cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 						}
 						 
 						.beepboxEditor input[type="range"]::-moz-range-track
 						{
-							cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+							cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 						}
 						 
 						.beepboxEditor input[type="range"]:focus::-moz-range-track
 						{
-							cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+							cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 						}
 						 
 						.beepboxEditor input[type="text"],
 						.beepboxEditor input[type="number"]
 						{
-							cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+							cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 						}
 						 
 						.beepboxEditor input[type="checkbox"]
 						{
-							cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+							cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 						}
 						 
 						.beepboxEditor input[type="checkbox"]:checked
 						{
-							cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+							cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 						}
 						 
 						.beepboxEditor input[type="checkbox"]:checked:after
 						{
-							cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+							cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 						}
 			
 						div.selectRow span {
-							cursor: url("https://choptop84.github.io/abyssbox-app/abyssbox_cursor_hand.png"), pointer !important;
+							cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 						}
 			
 			`,
@@ -9531,7 +9802,7 @@ var beepbox = (function (exports) {
 				--pitch-background: #444;
 				--tonic: #864;
 				--fifth-note: #468;
-				--third-note: #578844;
+				--third-note: #486;
 				--white-piano-key: #bbb;
 				--black-piano-key: #444;
 				--white-piano-key-text: #131200;
@@ -9653,7 +9924,7 @@ var beepbox = (function (exports) {
 					--pitch-background: #353333;
 					--tonic: #884a44;
 					--fifth-note: #415498;
-					--third-note: #578844;
+					--third-note: #486;
 					--white-piano-key: #bbb;
 					--black-piano-key: #444;
                     --white-piano-key-text: #131200;
@@ -10035,7 +10306,7 @@ var beepbox = (function (exports) {
 					--pitch-background: #203829;
 					--tonic: #2b8d20;
 					--fifth-note: #385840;
-					--third-note: #578844;
+					--third-note: #486;
 					--white-piano-key: #bda;
 					--black-piano-key: #573;
                     --white-piano-key-text: #131200;
@@ -10155,7 +10426,7 @@ var beepbox = (function (exports) {
 					--pitch-background: #30583c; 
 					--tonic: #4dac5b; 
 					--fifth-note: #458343; 
-					--third-note: #578844;
+					--third-note: #486;
 					--white-piano-key: #bee9bf; 
 					--black-piano-key: #395e3c;
 					--white-piano-key-text: #024a0c;		
@@ -10308,7 +10579,7 @@ var beepbox = (function (exports) {
 
 					/* sets background image */
 					body {
-						background-image: url("https://choptop84.github.io/abyssbox-app/Forest2Trees.png") !important;
+						background-image: url("./image_assets/Forest2Trees.png") !important;
 						background-size: cover;
 						background-position: center top; /* Adjusted to align with the top */
   						background-repeat: no-repeat;
@@ -10321,7 +10592,7 @@ var beepbox = (function (exports) {
 						}
 						#text-content {
 						--editor-background: (255, 255, 255, 0);
-							border-image-source: url("https://choptop84.github.io/abyssbox-app/forest2_border.png");
+							border-image-source: url("./image_assets/forest2_border.png");
 							border-image-slice: 16 fill; 
 						   	border-image-width: 32px; 
 							border-image-repeat: repeat; 
@@ -10335,7 +10606,7 @@ var beepbox = (function (exports) {
 						}
 					#beepboxEditorContainer {
 						--editor-background: (255, 255, 255, 0);
-							border-image-source: url("https://choptop84.github.io/abyssbox-app/forest2_border.png");
+							border-image-source: url("./image_assets/forest2_border.png");
 							border-image-slice: 16 fill; 
 						   	border-image-width: 32px; 
 							border-image-repeat: repeat; 
@@ -10351,7 +10622,7 @@ var beepbox = (function (exports) {
 							image-rendering: optimizeSpeed !important;             /* IE */ 
 						}
 					.beepboxEditor button, .beepboxEditor select, .beepboxEditor .select2-selection__rendered, button {
-							border-image-source: url("https://choptop84.github.io/abyssbox-app/forest2_border2.png") !important;
+							border-image-source: url("./image_assets/forest2_border2.png") !important;
 							border-image-slice: 4 fill !important; 
 						   border-image-width: 4px !important; 
 						border-image-repeat: stretch !important;
@@ -10373,12 +10644,12 @@ var beepbox = (function (exports) {
 					border-radius: 5px;
 					} */
 					* {
-						cursor: url("https://choptop84.github.io/abyssbox-app/pixel_cursor.png"), auto !important;
+						cursor: url("./image_assets/pixel_cursor.png"), auto !important;
 						--file-page-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-file.png");
 						--edit-pencil-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-edit.png");
 						--preferences-gear-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-preferences.png");
-						--instrument-copy-symbol: url("https://choptop84.github.io/abyssbox-app/icon-copy.png");
-						--instrument-paste-symbol: url("https://choptop84.github.io/abyssbox-app/icon-paste.png");
+						--instrument-copy-symbol: url("./image_assets/icon-copy.png");
+						--instrument-paste-symbol: url("./image_assets/icon-paste.png");
 						--play-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-play.png");
 						--pause-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-pause.png");
 						--record-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-record.png");
@@ -10393,26 +10664,26 @@ var beepbox = (function (exports) {
 						--export-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-export.png");
 						--export-instrument-symbol: var(--export-symbol);
 						--import-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-import.png");
-						--undo-symbol: url("https://choptop84.github.io/abyssbox-app/icon-undo.png");
-						--redo-symbol: url("https://choptop84.github.io/abyssbox-app/icon-redo.png");
-						--copy-symbol: url("https://choptop84.github.io/abyssbox-app/icon-copy.png");
-						--paste-symbol: url("https://choptop84.github.io/abyssbox-app/icon-paste.png");
-						--insert-channel-symbol: url("https://choptop84.github.io/abyssbox-app/icon-insertChannel.png");
-						--delete-channel-symbol: url("https://choptop84.github.io/abyssbox-app/icon-deleteChannel.png");
-						--select-all-symbol: url("https://choptop84.github.io/abyssbox-app/icon-SelectAll.png");
-						--duplicate-symbol: url("https://choptop84.github.io/abyssbox-app/icon-duplicate.png");
-						--notes-up-symbol: url("https://choptop84.github.io/abyssbox-app/moveNotesUp.png");
-						--notes-down-symbol: url("https://choptop84.github.io/abyssbox-app/moveNotesDown.png");
-						--loop-bar-symbol: url("https://choptop84.github.io/abyssbox-app/icon-singleBarLoop.png");
-						--fullscreen-symbol: url("https://choptop84.github.io/abyssbox-app/icon-fullscreen.png");
-						--loop-within-bar-symbol: url("https://choptop84.github.io/abyssbox-app/icon-loop-bar.png");
-	--loop-full-song-symbol: url("https://choptop84.github.io/abyssbox-app/icon-loop-song.png");
-	--dont-loop-symbol: url("https://choptop84.github.io/abyssbox-app/icon-loop-once.png");
+						--undo-symbol: url("./image_assets/icon-undo.png");
+						--redo-symbol: url("./image_assets/icon-redo.png");
+						--copy-symbol: url("./image_assets/icon-copy.png");
+						--paste-symbol: url("./image_assets/icon-paste.png");
+						--insert-channel-symbol: url("./image_assets/icon-insertChannel.png");
+						--delete-channel-symbol: url("./image_assets/icon-deleteChannel.png");
+						--select-all-symbol: url("./image_assets/icon-SelectAll.png");
+						--duplicate-symbol: url("./image_assets/icon-duplicate.png");
+						--notes-up-symbol: url("./image_assets/moveNotesUp.png");
+						--notes-down-symbol: url("./image_assets/moveNotesDown.png");
+						--loop-bar-symbol: url("./image_assets/icon-singleBarLoop.png");
+						--fullscreen-symbol: url("./image_assets/icon-fullscreen.png");
+						--loop-within-bar-symbol: url("./image_assets/icon-loop-bar.png");
+	--loop-full-song-symbol: url("./image_assets/icon-loop-song.png");
+	--dont-loop-symbol: url("./image_assets/icon-loop-once.png");
 						} 
 							@font-face {
 						   font-family: "AbyssType";
 						   src:
-							url("abysstype.otf") format("opentype") tech(color-COLRv1),
+							url("./image_assets/abysstype.otf") format("opentype") tech(color-COLRv1),
 							}
 				
 							button.envelopeDropdown, div.selectRow button:not(.copyButton,.pasteButton,.exportInstrumentButton,.importInstrumentButton) {
@@ -10423,7 +10694,7 @@ var beepbox = (function (exports) {
 							@font-face {
 						   font-family: "AbyssType_small";
 						   src:
-							url("abysstype_small.otf") format("opentype") tech(color-COLRv1),
+							url("./image_assets/abysstype_small.otf") format("opentype") tech(color-COLRv1),
 							}
 				
 							html {
@@ -10672,12 +10943,12 @@ var beepbox = (function (exports) {
 			}
 			
 			* {
-				cursor: url("https://choptop84.github.io/abyssbox-app/pixel_cursor.png"), auto !important;
+				cursor: url("./image_assets/pixel_cursor.png"), auto !important;
 				--file-page-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-file.png");
 				--edit-pencil-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-edit.png");
 				--preferences-gear-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-preferences.png");
-				--instrument-copy-symbol: url("https://choptop84.github.io/abyssbox-app/icon-copy.png");
-				--instrument-paste-symbol: url("https://choptop84.github.io/abyssbox-app/icon-paste.png");
+				--instrument-copy-symbol: url("./image_assets/icon-copy.png");
+				--instrument-paste-symbol: url("./image_assets/icon-paste.png");
 				--play-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-play.png");
 				--pause-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-pause.png");
 				--record-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-record.png");
@@ -10692,33 +10963,33 @@ var beepbox = (function (exports) {
 				--export-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-export.png");
 				--export-instrument-symbol: var(--export-symbol);
 				--import-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-import.png");
-				--undo-symbol: url("https://choptop84.github.io/abyssbox-app/icon-undo.png");
-				--redo-symbol: url("https://choptop84.github.io/abyssbox-app/icon-redo.png");
-				--copy-symbol: url("https://choptop84.github.io/abyssbox-app/icon-copy.png");
-				--paste-symbol: url("https://choptop84.github.io/abyssbox-app/icon-paste.png");
-				--insert-channel-symbol: url("https://choptop84.github.io/abyssbox-app/icon-insertChannel.png");
-				--delete-channel-symbol: url("https://choptop84.github.io/abyssbox-app/icon-deleteChannel.png");
-				--select-all-symbol: url("https://choptop84.github.io/abyssbox-app/icon-SelectAll.png");
-				--duplicate-symbol: url("https://choptop84.github.io/abyssbox-app/icon-duplicate.png");
-				--notes-up-symbol: url("https://choptop84.github.io/abyssbox-app/moveNotesUp.png");
-				--notes-down-symbol: url("https://choptop84.github.io/abyssbox-app/moveNotesDown.png");
-				--loop-bar-symbol: url("https://choptop84.github.io/abyssbox-app/icon-singleBarLoop.png");
-				--fullscreen-symbol: url("https://choptop84.github.io/abyssbox-app/icon-fullscreen.png");
-				--loop-within-bar-symbol: url("https://choptop84.github.io/abyssbox-app/icon-loop-bar.png");
-	--loop-full-song-symbol: url("https://choptop84.github.io/abyssbox-app/icon-loop-song.png");
-	--dont-loop-symbol: url("https://choptop84.github.io/abyssbox-app/icon-loop-once.png");
+				--undo-symbol: url("./image_assets/icon-undo.png");
+				--redo-symbol: url("./image_assets/icon-redo.png");
+				--copy-symbol: url("./image_assets/icon-copy.png");
+				--paste-symbol: url("./image_assets/icon-paste.png");
+				--insert-channel-symbol: url("./image_assets/icon-insertChannel.png");
+				--delete-channel-symbol: url("./image_assets/icon-deleteChannel.png");
+				--select-all-symbol: url("./image_assets/icon-SelectAll.png");
+				--duplicate-symbol: url("./image_assets/icon-duplicate.png");
+				--notes-up-symbol: url("./image_assets/moveNotesUp.png");
+				--notes-down-symbol: url("./image_assets/moveNotesDown.png");
+				--loop-bar-symbol: url("./image_assets/icon-singleBarLoop.png");
+				--fullscreen-symbol: url("./image_assets/icon-fullscreen.png");
+				--loop-within-bar-symbol: url("./image_assets/icon-loop-bar.png");
+	--loop-full-song-symbol: url("./image_assets/icon-loop-song.png");
+	--dont-loop-symbol: url("./image_assets/icon-loop-once.png");
 				} 
 			
 			@font-face {
 				font-family: "AbyssType";
 				src:
-				 url("abysstype.otf") format("opentype") tech(color-COLRv1),
+				 url("./image_assets/abysstype.otf") format("opentype") tech(color-COLRv1),
 				 }
 			
 				 @font-face {
 				font-family: "AbyssType_small";
 				src:
-				 url("abysstype_small.otf") format("opentype") tech(color-COLRv1),
+				 url("./image_assets/abysstype_small.otf") format("opentype") tech(color-COLRv1),
 				 }
 			
 				 #pattern-area {
@@ -10959,7 +11230,7 @@ var beepbox = (function (exports) {
 					--pitch-background: #8daf96;
 					--tonic: #a16fb1;
 					--fifth-note: #d08c8c;
-					--third-note: #578844;
+					--third-note: #486;
 					--white-piano-key: #fbffee;
 					--black-piano-key: #c9d8e5;
 					--white-piano-key-text: #101160;
@@ -12328,7 +12599,7 @@ var beepbox = (function (exports) {
 			--pitch-background: hsl(61deg 100% 70% / 25%);
 			--tonic: #66a3ff40;
 			--fifth-note: #ff666640;
-			--third-note: #57884440;
+			--third-note: #48640;
 			--white-piano-key: #cdcdcd;
 			--black-piano-key: #232323;
 			--white-piano-key-text: #131200;
@@ -12850,7 +13121,7 @@ var beepbox = (function (exports) {
 			}
 
 			body {
-				background-image: url("https://choptop84.github.io/abyssbox-app/stars.gif") !important;
+				background-image: url("./image_assets/stars.gif") !important;
 				background-size: contain !important;
 				background-position: center top !important;
 				  background-repeat: repeat !important;
@@ -12863,7 +13134,7 @@ var beepbox = (function (exports) {
 				}
 			#text-content {
 				--editor-background: rgba(255, 255, 255, 0);
-					border-image-source: url("https://choptop84.github.io/abyssbox-app/nebula2_border.png");
+					border-image-source: url("./image_assets/nebula2_border.png");
 					border-image-slice: 16 fill; 
 					   border-image-width: 32px; 
 					border-image-repeat: repeat; 
@@ -12877,7 +13148,7 @@ var beepbox = (function (exports) {
 				}
 			#beepboxEditorContainer {
 				--editor-background: rgba(255, 255, 255, 0);
-					border-image-source: url("https://choptop84.github.io/abyssbox-app/nebula2_border.png");
+					border-image-source: url("./image_assets/nebula2_border.png");
 					border-image-slice: 16 fill; 
 					   border-image-width: 32px; 
 					border-image-repeat: repeat; 
@@ -12893,7 +13164,7 @@ var beepbox = (function (exports) {
 					image-rendering: optimizeSpeed !important;             /* IE */ 
 				}
 			.beepboxEditor button, .beepboxEditor select, .beepboxEditor .select2-selection__rendered, button {
-					border-image-source: url("https://choptop84.github.io/abyssbox-app/nebula2_border2.png") !important;
+					border-image-source: url("./image_assets/nebula2_border2.png") !important;
 					border-image-slice: 4 fill !important; 
 				   border-image-width: 4px !important; 
 				border-image-repeat: stretch !important;
@@ -12912,12 +13183,12 @@ var beepbox = (function (exports) {
 			border-radius: 5px;
 			} */
 			* {
-				cursor: url("https://choptop84.github.io/abyssbox-app/pixel_cursor.png"), auto !important;
+				cursor: url("./image_assets/pixel_cursor.png"), auto !important;
 				--file-page-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-file.png");
 				--edit-pencil-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-edit.png");
 				--preferences-gear-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-preferences.png");
-				--instrument-copy-symbol: url("https://choptop84.github.io/abyssbox-app/icon-copy.png");
-				--instrument-paste-symbol: url("https://choptop84.github.io/abyssbox-app/icon-paste.png");
+				--instrument-copy-symbol: url("./image_assets/icon-copy.png");
+				--instrument-paste-symbol: url("./image_assets/icon-paste.png");
 				--play-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-play.png");
 				--pause-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-pause.png");
 				--record-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-record.png");
@@ -12932,32 +13203,32 @@ var beepbox = (function (exports) {
 				--export-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-export.png");
 				--export-instrument-symbol: var(--export-symbol);
 				--import-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-import.png");
-				--undo-symbol: url("https://choptop84.github.io/abyssbox-app/icon-undo.png");
-				--redo-symbol: url("https://choptop84.github.io/abyssbox-app/icon-redo.png");
-				--copy-symbol: url("https://choptop84.github.io/abyssbox-app/icon-copy.png");
-				--paste-symbol: url("https://choptop84.github.io/abyssbox-app/icon-paste.png");
-				--insert-channel-symbol: url("https://choptop84.github.io/abyssbox-app/icon-insertChannel.png");
-				--delete-channel-symbol: url("https://choptop84.github.io/abyssbox-app/icon-deleteChannel.png");
-				--select-all-symbol: url("https://choptop84.github.io/abyssbox-app/icon-SelectAll.png");
-				--duplicate-symbol: url("https://choptop84.github.io/abyssbox-app/icon-duplicate.png");
-				--notes-up-symbol: url("https://choptop84.github.io/abyssbox-app/moveNotesUp.png");
-				--notes-down-symbol: url("https://choptop84.github.io/abyssbox-app/moveNotesDown.png");
-				--loop-bar-symbol: url("https://choptop84.github.io/abyssbox-app/icon-singleBarLoop.png");
-				--fullscreen-symbol: url("https://choptop84.github.io/abyssbox-app/icon-fullscreen.png");
-				--loop-within-bar-symbol: url("https://choptop84.github.io/abyssbox-app/icon-loop-bar.png");
-	--loop-full-song-symbol: url("https://choptop84.github.io/abyssbox-app/icon-loop-song.png");
-	--dont-loop-symbol: url("https://choptop84.github.io/abyssbox-app/icon-loop-once.png");
+				--undo-symbol: url("./image_assets/icon-undo.png");
+				--redo-symbol: url("./image_assets/icon-redo.png");
+				--copy-symbol: url("./image_assets/icon-copy.png");
+				--paste-symbol: url("./image_assets/icon-paste.png");
+				--insert-channel-symbol: url("./image_assets/icon-insertChannel.png");
+				--delete-channel-symbol: url("./image_assets/icon-deleteChannel.png");
+				--select-all-symbol: url("./image_assets/icon-SelectAll.png");
+				--duplicate-symbol: url("./image_assets/icon-duplicate.png");
+				--notes-up-symbol: url("./image_assets/moveNotesUp.png");
+				--notes-down-symbol: url("./image_assets/moveNotesDown.png");
+				--loop-bar-symbol: url("./image_assets/icon-singleBarLoop.png");
+				--fullscreen-symbol: url("./image_assets/icon-fullscreen.png");
+				--loop-within-bar-symbol: url("./image_assets/icon-loop-bar.png");
+	--loop-full-song-symbol: url("./image_assets/icon-loop-song.png");
+	--dont-loop-symbol: url("./image_assets/icon-loop-once.png");
 				} 
 					@font-face {
 				   font-family: "AbyssType";
 				   src:
-					url("abysstype.otf") format("opentype") tech(color-COLRv1),
+					url("./image_assets/abysstype.otf") format("opentype") tech(color-COLRv1),
 					}
 		
 					@font-face {
 				   font-family: "AbyssType_small";
 				   src:
-					url("abysstype_small.otf") format("opentype") tech(color-COLRv1),
+					url("./image_assets/abysstype_small.otf") format("opentype") tech(color-COLRv1),
 					}
 		
 					html {
@@ -13944,12 +14215,12 @@ var beepbox = (function (exports) {
 		--note-flash-secondary: #ffffff77; }
 	
 		* {
-		cursor: url("https://choptop84.github.io/abyssbox-app/pixel_cursor.png"), auto !important;
+		cursor: url("./image_assets/pixel_cursor.png"), auto !important;
 		--file-page-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-file.png");
 		--edit-pencil-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-edit.png");
 		--preferences-gear-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-preferences.png");
-		--instrument-copy-symbol: url("https://choptop84.github.io/abyssbox-app/icon-copy.png");
-		--instrument-paste-symbol: url("https://choptop84.github.io/abyssbox-app/icon-paste.png");
+		--instrument-copy-symbol: url("./image_assets/icon-copy.png");
+		--instrument-paste-symbol: url("./image_assets/icon-paste.png");
 		--play-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-play.png");
 		--pause-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-pause.png");
 		--record-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-record.png");
@@ -13964,26 +14235,26 @@ var beepbox = (function (exports) {
 		--export-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-export.png");
 		--export-instrument-symbol: var(--export-symbol);
 		--import-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-import.png");
-		--undo-symbol: url("https://choptop84.github.io/abyssbox-app/icon-undo.png");
-		--redo-symbol: url("https://choptop84.github.io/abyssbox-app/icon-redo.png");
-		--copy-symbol: url("https://choptop84.github.io/abyssbox-app/icon-copy.png");
-		--paste-symbol: url("https://choptop84.github.io/abyssbox-app/icon-paste.png");
-		--insert-channel-symbol: url("https://choptop84.github.io/abyssbox-app/icon-insertChannel.png");
-		--delete-channel-symbol: url("https://choptop84.github.io/abyssbox-app/icon-deleteChannel.png");
-		--select-all-symbol: url("https://choptop84.github.io/abyssbox-app/icon-SelectAll.png");
-		--duplicate-symbol: url("https://choptop84.github.io/abyssbox-app/icon-duplicate.png");
-		--notes-up-symbol: url("https://choptop84.github.io/abyssbox-app/moveNotesUp.png");
-		--notes-down-symbol: url("https://choptop84.github.io/abyssbox-app/moveNotesDown.png");
-		--loop-bar-symbol: url("https://choptop84.github.io/abyssbox-app/icon-singleBarLoop.png");
-		--fullscreen-symbol: url("https://choptop84.github.io/abyssbox-app/icon-fullscreen.png");
-		--loop-within-bar-symbol: url("https://choptop84.github.io/abyssbox-app/icon-loop-bar.png");
-	--loop-full-song-symbol: url("https://choptop84.github.io/abyssbox-app/icon-loop-song.png");
-	--dont-loop-symbol: url("https://choptop84.github.io/abyssbox-app/icon-loop-once.png");
+		--undo-symbol: url("./image_assets/icon-undo.png");
+		--redo-symbol: url("./image_assets/icon-redo.png");
+		--copy-symbol: url("./image_assets/icon-copy.png");
+		--paste-symbol: url("./image_assets/icon-paste.png");
+		--insert-channel-symbol: url("./image_assets/icon-insertChannel.png");
+		--delete-channel-symbol: url("./image_assets/icon-deleteChannel.png");
+		--select-all-symbol: url("./image_assets/icon-SelectAll.png");
+		--duplicate-symbol: url("./image_assets/icon-duplicate.png");
+		--notes-up-symbol: url("./image_assets/moveNotesUp.png");
+		--notes-down-symbol: url("./image_assets/moveNotesDown.png");
+		--loop-bar-symbol: url("./image_assets/icon-singleBarLoop.png");
+		--fullscreen-symbol: url("./image_assets/icon-fullscreen.png");
+		--loop-within-bar-symbol: url("./image_assets/icon-loop-bar.png");
+	--loop-full-song-symbol: url("./image_assets/icon-loop-song.png");
+	--dont-loop-symbol: url("./image_assets/icon-loop-once.png");
 		} 
 			@font-face {
 		   font-family: "AbyssType";
 		   src:
-			url("abysstype.otf") format("opentype") tech(color-COLRv1),
+			url("./image_assets/abysstype.otf") format("opentype") tech(color-COLRv1),
 			}
 	
 			#beepboxEditorContainer, .track-area, .beepboxEditor, #text-content, div.noSelection, .beepboxEditor .loopEditor {
@@ -13993,7 +14264,7 @@ var beepbox = (function (exports) {
 			@font-face {
 		   font-family: "AbyssType_small";
 		   src:
-			url("abysstype_small.otf") format("opentype") tech(color-COLRv1),
+			url("./image_assets/abysstype_small.otf") format("opentype") tech(color-COLRv1),
 			}
 	
 			body {
@@ -14106,7 +14377,7 @@ var beepbox = (function (exports) {
 				--pitch-background: #444;
 				--tonic: #864;
 				--fifth-note: #468;
-				--third-note: #578844;
+				--third-note: #486;
 				--white-piano-key: #bbb;
 				--black-piano-key: #444;
 				--white-piano-key-text: #131200;
@@ -17792,7 +18063,7 @@ var beepbox = (function (exports) {
 				--pitch-background: #444;
 				--tonic: #864;
 				--fifth-note: #468;
-				--third-note: #578844;
+				--third-note: #486;
 				--white-piano-key: #bbb;
 				--black-piano-key: #444;
 				--white-piano-key-text: #131200;
@@ -17918,7 +18189,7 @@ var beepbox = (function (exports) {
 				--pitch-background: #444;
 				--tonic: #864;
 				--fifth-note: #468;
-				--third-note: #578844;
+				--third-note: #486;
 				--white-piano-key: #bbb;
 				--black-piano-key: #444;
 				--white-piano-key-text: #131200;
@@ -18045,7 +18316,7 @@ var beepbox = (function (exports) {
 				--pitch-background: #444;
 				--tonic: #864;
 				--fifth-note: #468;
-				--third-note: #578844;
+				--third-note: #486;
 				--white-piano-key: #bbb;
 				--black-piano-key: #444;
 				--white-piano-key-text: #131200;
@@ -18190,7 +18461,7 @@ var beepbox = (function (exports) {
 			   --pitch-background: #444;
 			   --tonic: #864;
 			   --fifth-note: #468;
-			   --third-note: #578844;
+			   --third-note: #486;
 			   --white-piano-key: #bbb;
 			   --black-piano-key: #444;
 			   --white-piano-key-text: #131200;
@@ -18500,7 +18771,7 @@ var beepbox = (function (exports) {
 				--pitch-background: #444;
 				--tonic: #864;
 				--fifth-note: #468;
-				--third-note: #578844;
+				--third-note: #486;
 				--white-piano-key: #bbb;
 				--black-piano-key: #444;
 				--white-piano-key-text: #131200;
@@ -19052,7 +19323,7 @@ var beepbox = (function (exports) {
 			   --pitch-background: #444;
 			   --tonic: #864;
 			   --fifth-note: #468;
-			   --third-note: #578844;
+			   --third-note: #486;
 			   --white-piano-key: #bbb;
 			   --black-piano-key: #444;
 			   --white-piano-key-text: #131200;
@@ -19218,7 +19489,7 @@ var beepbox = (function (exports) {
 				--pitch-background: #444;
 				--tonic: #864;
 				--fifth-note: #468;
-				--third-note: #578844;
+				--third-note: #486;
 				--white-piano-key: #bbb;
 				--black-piano-key: #444;
 				--white-piano-key-text: #131200;
@@ -19847,7 +20118,7 @@ var beepbox = (function (exports) {
 					--pitch-background: #444;
 					--tonic: #864;
 					--fifth-note: #468;
-					--third-note: #578844;
+					--third-note: #486;
 					--white-piano-key: #bbb;
 					--black-piano-key: #444;
 						--white-piano-key-text: #131200;
@@ -20229,7 +20500,7 @@ var beepbox = (function (exports) {
 				--pitch-background: #444;
 				--tonic: #864;
 				--fifth-note: #468;
-				--third-note: #578844;
+				--third-note: #486;
 				--white-piano-key: #bbb;
 				--black-piano-key: #444;
 				--white-piano-key-text: #131200;
@@ -20354,7 +20625,7 @@ var beepbox = (function (exports) {
 				--pitch-background: #444;
 				--tonic: #864;
 				--fifth-note: #468;
-				--third-note: #578844;
+				--third-note: #486;
 				--white-piano-key: #bbb;
 				--black-piano-key: #444;
 				--white-piano-key-text: #131200;
@@ -20479,7 +20750,7 @@ var beepbox = (function (exports) {
 				--pitch-background: #444;
 				--tonic: #864;
 				--fifth-note: #468;
-				--third-note: #578844;
+				--third-note: #486;
 				--white-piano-key: #bbb;
 				--black-piano-key: #444;
 				--white-piano-key-text: #131200;
@@ -20585,48 +20856,48 @@ var beepbox = (function (exports) {
 				}
 
 			* {
-				cursor: url('wackybox_cursor.png'), auto;
+				cursor: url('./image_assets/wackybox_cursor.png'), auto;
 			}
 
 
 .beepboxEditor {
-	cursor: url('wackybox_cursor.png'), auto !important;;
+	cursor: url('./image_assets/wackybox_cursor.png'), auto !important;;
 }
 		
 .beepboxEditor .tip {
-	cursor: url('wackybox_cursor.png'), auto !important;;
+	cursor: url('./image_assets/wackybox_cursor.png'), auto !important;;
 }
 
 .beepboxEditor .prompt label {
-	cursor: url('wackybox_cursor.png'), auto !important;;
+	cursor: url('./image_assets/wackybox_cursor.png'), auto !important;;
 }
 
 .beepboxEditor .layout-option {
-	cursor: url('wackybox_cursor.png'), auto !important;;
+	cursor: url('./image_assets/wackybox_cursor.png'), auto !important;;
 }
 
 .beepboxEditor select {
-	cursor: url('wackybox_cursor.png'), auto !important;;
+	cursor: url('./image_assets/wackybox_cursor.png'), auto !important;;
 }
 
 .select2-selection__rendered {
-	cursor: url('wackybox_cursor.png'), auto !important;;
+	cursor: url('./image_assets/wackybox_cursor.png'), auto !important;;
 }
 
 .select2-container--default .select2-results__group {
-    cursor: url('wackybox_cursor.png'), auto !important;;
+    cursor: url('./image_assets/wackybox_cursor.png'), auto !important;;
 }
 
 .beepboxEditor button {
-	 cursor: url('wackybox_cursor.png'), auto !important;;
+	 cursor: url('./image_assets/wackybox_cursor.png'), auto !important;;
 }
 
 .beepboxEditor canvas {
-	cursor: url('wackybox_cursor.png'), auto !important;;
+	cursor: url('./image_assets/wackybox_cursor.png'), auto !important;;
 }
 
 .beepboxEditor input {
-	cursor: url('wackybox_cursor.png'), auto !important;;
+	cursor: url('./image_assets/wackybox_cursor.png'), auto !important;;
 }
 
 			`,
@@ -21294,7 +21565,7 @@ var beepbox = (function (exports) {
 			--pitch-background: #20468b73;
 			--tonic: #c9c9c9;
 			--fifth-note: #731d1d;
-			--third-note: #578844;
+			--third-note: #486;
 			--white-piano-key: #eee;
 			--black-piano-key: #000;
 			--white-piano-key-text: #131200;
@@ -22105,7 +22376,7 @@ var beepbox = (function (exports) {
     --pitch-background: #3e3e3e;
     --tonic: #861057;
     --fifth-note: #7e7e7e;
-	--third-note: #578844;
+	--third-note: #486;
     --use-color-formula: false;
 			--pitch-channel-limit: 10;
     --track-editor-bg-pitch: #666161;
@@ -22225,7 +22496,7 @@ var beepbox = (function (exports) {
 				--pitch-background: #393e4f99;
 				--tonic: #725491;
 				--fifth-note: #54547a;
-				--third-note: #578844;
+				--third-note: #486;
 				--white-piano-key: #eee;
 				--black-piano-key: #666;
 				--use-color-formula: true;
@@ -26563,6 +26834,7 @@ li.select2-results__option[role=group] > strong:hover {
             this.ringModulationHz = 0;
             this.rmWaveformIndex = 0;
             this.rmPulseWidth = 0;
+            this.rmHzOffset = 200;
             this.bitcrusherFreq = 0;
             this.bitcrusherQuantization = 0;
             this.chorus = 0;
@@ -26655,6 +26927,7 @@ li.select2-results__option[role=group] > strong:hover {
             this.ringModulationHz = 0;
             this.rmPulseWidth = 0;
             this.rmWaveformIndex = 0;
+            this.rmHzOffset = 200;
             this.phaserFreq = 0;
             this.phaserFeedback = 0;
             this.phaserStages = 2;
@@ -26969,6 +27242,7 @@ li.select2-results__option[role=group] > strong:hover {
                 instrumentObject["ringModHz"] = Math.round(100 * this.ringModulationHz / (Config.ringModHzRange - 1));
                 instrumentObject["rmWaveformIndex"] = this.rmWaveformIndex;
                 instrumentObject["rmPulseWidth"] = Math.round(100 * this.rmPulseWidth / (Config.pulseWidthRange - 1));
+                instrumentObject["rmHzOffset"] = Math.round(100 * this.rmHzOffset / (Config.rmHzOffsetMax));
             }
             if (effectsIncludePhaser(this.effects)) {
                 instrumentObject["phaserMix"] = Math.round(100 * this.phaserMix / (Config.phaserMixRange - 1));
@@ -27407,6 +27681,9 @@ li.select2-results__option[role=group] > strong:hover {
             }
             if (instrumentObject["rmPulseWidth"] != undefined) {
                 this.rmPulseWidth = clamp(0, Config.pulseWidthRange, Math.round((Config.pulseWidthRange - 1) * (instrumentObject["rmPulseWidth"] | 0) / 100));
+            }
+            if (instrumentObject["rmHzOffset"] != undefined) {
+                this.rmHzOffset = clamp(0, Config.rmHzOffsetMax, Math.round((Config.rmHzOffsetMax - 1) * (instrumentObject["rmHzOffset"] | 0) / 100));
             }
             if (instrumentObject["phaserMix"] != undefined) {
                 this.phaserMix = clamp(0, Config.phaserMixRange, Math.round((Config.phaserMixRange - 1) * (instrumentObject["phaserMix"] | 0) / 100));
@@ -28077,7 +28354,7 @@ li.select2-results__option[role=group] > strong:hover {
             if (andResetChannels) {
                 this.pitchChannelCount = 3;
                 this.noiseChannelCount = 1;
-                this.modChannelCount = 0;
+                this.modChannelCount = 1;
                 for (let channelIndex = 0; channelIndex < this.getChannelCount(); channelIndex++) {
                     const isNoiseChannel = channelIndex >= this.pitchChannelCount && channelIndex < this.pitchChannelCount + this.noiseChannelCount;
                     const isModChannel = channelIndex >= this.pitchChannelCount + this.noiseChannelCount;
@@ -28297,6 +28574,7 @@ li.select2-results__option[role=group] > strong:hover {
                         buffer.push(base64IntToCharCode[instrument.ringModulationHz]);
                         buffer.push(base64IntToCharCode[instrument.rmWaveformIndex]);
                         buffer.push(base64IntToCharCode[instrument.rmPulseWidth]);
+                        buffer.push(base64IntToCharCode[(instrument.rmHzOffset - Config.rmHzOffsetMin) >> 6], base64IntToCharCode[(instrument.rmHzOffset - Config.rmHzOffsetMin) & 0x3F]);
                     }
                     if (effectsIncludePhaser(instrument.effects)) {
                         buffer.push(base64IntToCharCode[instrument.phaserFreq]);
@@ -29897,6 +30175,9 @@ li.select2-results__option[role=group] > strong:hover {
                                     instrument.ringModulationHz = clamp(0, Config.ringModHzRange, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
                                     instrument.rmWaveformIndex = clamp(0, Config.operatorWaves.length, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
                                     instrument.rmPulseWidth = clamp(0, Config.pulseWidthRange, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
+                                    if (fromAbyssBox && !beforeThree) {
+                                        instrument.rmHzOffset = clamp(Config.rmHzOffsetMin, Config.rmHzOffsetMax + 1, (base64CharCodeToInt[compressed.charCodeAt(charIndex++)] << 6) + base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
+                                    }
                                 }
                                 if (effectsIncludePhaser(instrument.effects)) {
                                     instrument.phaserFreq = clamp(0, Config.phaserFreqRange, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
@@ -32315,6 +32596,7 @@ li.select2-results__option[role=group] > strong:hover {
             this.ringModPhaseDeltaScale = 1.0;
             this.rmWaveformIndex = 0.0;
             this.rmPulseWidth = 0.0;
+            this.rmHzOffset = 0.0;
             this.echoDelayLineL = null;
             this.echoDelayLineR = null;
             this.echoDelayLineDirty = false;
@@ -32747,8 +33029,9 @@ li.select2-results__option[role=group] > strong:hover {
                 let ringModEnd = Math.min(1.0, useRingModEnd / (Config.ringModRange - 1));
                 this.ringModMix = ringModStart;
                 this.ringModMixDelta = (ringModEnd - ringModStart) / roundedSamplesPerTick;
-                let ringModPhaseDeltaStart = (ringModMinHz * Math.pow(ringModMaxHz / ringModMinHz, useRingModHzStart)) / synth.samplesPerSecond;
-                let ringModPhaseDeltaEnd = (ringModMinHz * Math.pow(ringModMaxHz / ringModMinHz, useRingModHzEnd)) / synth.samplesPerSecond;
+                this.rmHzOffset = instrument.rmHzOffset;
+                let ringModPhaseDeltaStart = (clamp(1, ringModMaxHz + Config.rmHzOffsetCenter, (ringModMinHz * Math.pow(ringModMaxHz / ringModMinHz, useRingModHzStart)) + (this.rmHzOffset - Config.rmHzOffsetCenter))) / synth.samplesPerSecond;
+                let ringModPhaseDeltaEnd = (clamp(1, ringModMaxHz + Config.rmHzOffsetCenter, (ringModMinHz * Math.pow(ringModMaxHz / ringModMinHz, useRingModHzEnd)) + (this.rmHzOffset - Config.rmHzOffsetCenter))) / synth.samplesPerSecond;
                 this.ringModPhaseDelta = ringModPhaseDeltaStart;
                 this.ringModPhaseDeltaScale = Math.pow(ringModPhaseDeltaEnd / ringModPhaseDeltaStart, 1.0 / roundedSamplesPerTick);
                 this.rmWaveformIndex = instrument.rmWaveformIndex;
@@ -39996,6 +40279,15 @@ li.select2-results__option[role=group] > strong:hover {
                 this._didSomething();
         }
     }
+    class ChangeRmHzOffset extends ChangeInstrumentSlider {
+        constructor(doc, oldValue, newValue) {
+            super(doc);
+            this._instrument.rmHzOffset = newValue + Config.rmHzOffsetCenter;
+            doc.notifier.changed();
+            if (oldValue != newValue)
+                this._didSomething();
+        }
+    }
     class ChangeDistortion extends ChangeInstrumentSlider {
         constructor(doc, oldValue, newValue) {
             super(doc);
@@ -43871,7 +44163,7 @@ li.select2-results__option[role=group] > strong:hover {
         @font-face {
             font-family: "CustomThemeFont";
             src:
-             url("abysstype.otf") format("opentype") tech(color-COLRv1),
+             url("./image_assets/abysstype.otf") format("opentype") tech(color-COLRv1),
             }
 
             html {
@@ -43887,7 +44179,7 @@ li.select2-results__option[role=group] > strong:hover {
         @font-face {
             font-family: "CustomThemeFont";
             src:
-             url("abysstype_small.otf") format("opentype") tech(color-COLRv1),
+             url("./image_assets/abysstype_small.otf") format("opentype") tech(color-COLRv1),
             }
 
             html {
@@ -43903,13 +44195,13 @@ li.select2-results__option[role=group] > strong:hover {
         @font-face {
             font-family: "CustomThemeFont";
             src:
-             url("abysstype.otf") format("opentype") tech(color-COLRv1),
+             url("./image_assets/abysstype.otf") format("opentype") tech(color-COLRv1),
             }
 
             @font-face {
             font-family: "AbyssTypeSmall";
             src:
-             url("abysstype_small.otf") format("opentype") tech(color-COLRv1),
+             url("./image_assets/abysstype_small.otf") format("opentype") tech(color-COLRv1),
             }    
 
             html {
@@ -43925,7 +44217,7 @@ li.select2-results__option[role=group] > strong:hover {
         @font-face {
             font-family: "CustomThemeFont";
             src:
-             url("doomfont.otf") format("opentype") tech(color-COLRv1),
+             url("./image_assets/doomfont.otf") format("opentype") tech(color-COLRv1),
             }
 
             html {
@@ -43940,7 +44232,7 @@ li.select2-results__option[role=group] > strong:hover {
         @font-face {
             font-family: "CustomThemeFont";
             src:
-             url("tahoma.otf") format("opentype") tech(color-COLRv1),
+             url("./image_assets/tahoma.otf") format("opentype") tech(color-COLRv1),
             }
 
             html {
@@ -43955,7 +44247,7 @@ li.select2-results__option[role=group] > strong:hover {
         @font-face {
             font-family: "CustomThemeFont";
             src:
-             url("trebuc.otf") format("opentype") tech(color-COLRv1),
+             url("./image_assets/trebuc.otf") format("opentype") tech(color-COLRv1),
             }
 
             html {
@@ -43995,7 +44287,7 @@ li.select2-results__option[role=group] > strong:hover {
         @font-face {
             font-family: "CustomThemeFont";
             src:
-            url("https://choptop84.github.io/abyssbox-app/Workbench.ttf") format("truetype") tech(color-COLRv1),
+            url("./image_assets/Workbench.ttf") format("truetype") tech(color-COLRv1),
             }
 
             html {
@@ -44010,7 +44302,7 @@ li.select2-results__option[role=group] > strong:hover {
         @font-face {
             font-family: "CustomThemeFont";
             src:
-            url("https://choptop84.github.io/abyssbox-app/Varela.ttf") format("truetype") tech(color-COLRv1),
+            url("./image_assets/Varela.ttf") format("truetype") tech(color-COLRv1),
             }
 
             html {
@@ -44067,7 +44359,7 @@ li.select2-results__option[role=group] > strong:hover {
         `,
         "AbyssBox Classic": `
 			#text-content {
-    				border-image-source: url("https://choptop84.github.io/abyssbox-app/abyssbox_border.png");
+    				border-image-source: url("./image_assets/abyssbox_border.png");
     				border-image-slice: 4 fill; 
    				border-image-width: 8px; 
 				border-image-repeat: stretch; 
@@ -44080,7 +44372,7 @@ li.select2-results__option[role=group] > strong:hover {
     				image-rendering: optimizeSpeed !important;             /* IE */
 				}
 			#beepboxEditorContainer {
-    				border-image-source: url("https://choptop84.github.io/abyssbox-app/abyssbox_border.png");
+    				border-image-source: url("./image_assets/abyssbox_border.png");
     				border-image-slice: 4 fill; 
    				border-image-width: 8px; 
 				border-image-repeat: stretch;
@@ -44112,7 +44404,7 @@ li.select2-results__option[role=group] > strong:hover {
 			button.importInstrumentButton, 
 			.beepboxEditor select, 
 			.beepboxEditor .select2-selection__rendered {
-    				border-image-source: url("https://choptop84.github.io/abyssbox-app/abyssbox_border.png") !important;
+    				border-image-source: url("./image_assets/abyssbox_border.png") !important;
     				border-image-slice: 4 fill !important; 
    				border-image-width: 4px !important; 
 				border-image-repeat: stretch !important;
@@ -44214,7 +44506,7 @@ li.select2-results__option[role=group] > strong:hover {
 
         /* sets background image */
         body {
-        background-image: url("https://choptop84.github.io/abyssbox-source/website/stripesbg_light.gif") !important;
+        background-image: url("./image_assets//stripesbg_light.gif") !important;
         background-position: center;
         background-repeat: repeat;
 
@@ -44225,7 +44517,7 @@ li.select2-results__option[role=group] > strong:hover {
         image-rendering: optimizeSpeed !important;             /* IE */
             }		
     #text-content {
-            border-image-source: url("https://choptop84.github.io/abyssbox-source/website/abyssbox_border_light.png");
+            border-image-source: url("./image_assets//abyssbox_border_light.png");
             border-image-slice: 4 fill; 
            border-image-width: 8px; 
         border-image-repeat: stretch; 
@@ -44238,7 +44530,7 @@ li.select2-results__option[role=group] > strong:hover {
             image-rendering: optimizeSpeed !important;             /* IE */
         }
     #beepboxEditorContainer {
-            border-image-source: url("https://choptop84.github.io/abyssbox-source/website/abyssbox_border_light.png");
+            border-image-source: url("./image_assets//abyssbox_border_light.png");
             border-image-slice: 4 fill; 
            border-image-width: 8px; 
         border-image-repeat: stretch;
@@ -44270,7 +44562,7 @@ li.select2-results__option[role=group] > strong:hover {
         button.importInstrumentButton, 
         .beepboxEditor select, 
         .beepboxEditor .select2-selection__rendered {
-                border-image-source: url("https://choptop84.github.io/abyssbox-app/abyssbox_border_light.png") !important;
+                border-image-source: url("./image_assets/abyssbox_border_light.png") !important;
                 border-image-slice: 4 fill !important; 
                border-image-width: 4px !important; 
             border-image-repeat: stretch !important;
@@ -44688,7 +44980,7 @@ li.select2-results__option[role=group] > strong:hover {
         "Windows Xp": `
 
 			#text-content {
-    				border-image-source: url("https://choptop84.github.io/abyssbox-app/xptextbg.png");
+    				border-image-source: url("./image_assets/xptextbg.png");
     				border-image-slice: 11 fill; 
    				border-image-width: 11px; 
 				border-image-repeat: stretch;
@@ -44696,7 +44988,7 @@ li.select2-results__option[role=group] > strong:hover {
     				padding: 14px; 
 				}
 			#beepboxEditorContainer {
-    				border-image-source: url("https://choptop84.github.io/abyssbox-app/xptextbg.png");
+    				border-image-source: url("./image_assets/xptextbg.png");
     				border-image-slice: 11 fill; 
    				border-image-width: 11px; 
 				border-image-repeat: stretch;
@@ -44705,7 +44997,7 @@ li.select2-results__option[role=group] > strong:hover {
 				}
 
 			#firstImage {
-				background-image: url("https://choptop84.github.io/abyssbox-app/xpsongeditorbg.png") !important;
+				background-image: url("./image_assets/xpsongeditorbg.png") !important;
 				background-repeat: no-repeat !important;
 				background-size: 100% 100% !important;
 			}
@@ -44737,7 +45029,7 @@ li.select2-results__option[role=group] > strong:hover {
 			}
 			
 			.beepboxEditor select:focus {
-					border-image-source: url("https://choptop84.github.io/abyssbox-app/xpbuttonpressedbg.png");
+					border-image-source: url("./image_assets/xpbuttonpressedbg.png");
 					border-image-slice: 4 fill; 
 					border-image-width: 4px; 
 					border-image-repeat: repeat;
@@ -45530,7 +45822,7 @@ li.select2-results__option[role=group] > strong:hover {
         "BeepBox Pixel": `
         /* sets background image */
         #text-content {
-            border-image-source: url("https://choptop84.github.io/abyssbox-source/website/beepbox_pixel_border.png");
+            border-image-source: url("./image_assets//beepbox_pixel_border.png");
             border-image-slice: 4 fill; 
            border-image-width: 8px; 
         border-image-repeat: stretch; 
@@ -45543,7 +45835,7 @@ li.select2-results__option[role=group] > strong:hover {
             image-rendering: optimizeSpeed !important;             /* IE */
         }
     #beepboxEditorContainer {
-            border-image-source: url("https://choptop84.github.io/abyssbox-source/website/beepbox_pixel_border.png");
+            border-image-source: url("./image_assets//beepbox_pixel_border.png");
             border-image-slice: 4 fill; 
            border-image-width: 8px; 
         border-image-repeat: stretch;
@@ -45575,7 +45867,7 @@ li.select2-results__option[role=group] > strong:hover {
         button.importInstrumentButton, 
         .beepboxEditor select, 
         .beepboxEditor .select2-selection__rendered {
-            border-image-source: url("https://choptop84.github.io/abyssbox-source/website/beepbox_pixel_border.png") !important;
+            border-image-source: url("./image_assets//beepbox_pixel_border.png") !important;
             border-image-slice: 4 fill !important; 
            border-image-width: 4px !important; 
         border-image-repeat: stretch !important;
@@ -45592,7 +45884,7 @@ li.select2-results__option[role=group] > strong:hover {
         /* sets background image */
         #text-content {
             --editor-background: (255, 255, 255, 0);
-                border-image-source: url("https://choptop84.github.io/abyssbox-app/forest2_border.png");
+                border-image-source: url("./image_assets/forest2_border.png");
                 border-image-slice: 16 fill; 
                    border-image-width: 32px; 
                 border-image-repeat: repeat; 
@@ -45606,7 +45898,7 @@ li.select2-results__option[role=group] > strong:hover {
             }
         #beepboxEditorContainer {
             --editor-background: (255, 255, 255, 0);
-                border-image-source: url("https://choptop84.github.io/abyssbox-app/forest2_border.png");
+                border-image-source: url("./image_assets/forest2_border.png");
                 border-image-slice: 16 fill; 
                    border-image-width: 32px; 
                 border-image-repeat: repeat; 
@@ -45622,7 +45914,7 @@ li.select2-results__option[role=group] > strong:hover {
                 image-rendering: optimizeSpeed !important;             /* IE */ 
             }
         .beepboxEditor button, .beepboxEditor select, .beepboxEditor .select2-selection__rendered, button {
-                border-image-source: url("https://choptop84.github.io/abyssbox-app/forest2_border2.png") !important;
+                border-image-source: url("./image_assets/forest2_border2.png") !important;
                 border-image-slice: 4 fill !important; 
                border-image-width: 4px !important; 
             border-image-repeat: stretch !important;
@@ -45727,7 +46019,7 @@ li.select2-results__option[role=group] > strong:hover {
         "Nebula 2": `
         #text-content {
             --editor-background: rgba(255, 255, 255, 0);
-                border-image-source: url("https://choptop84.github.io/abyssbox-app/nebula2_border.png");
+                border-image-source: url("./image_assets/nebula2_border.png");
                 border-image-slice: 16 fill; 
                    border-image-width: 32px; 
                 border-image-repeat: repeat; 
@@ -45741,7 +46033,7 @@ li.select2-results__option[role=group] > strong:hover {
             }
         #beepboxEditorContainer {
             --editor-background: rgba(255, 255, 255, 0);
-                border-image-source: url("https://choptop84.github.io/abyssbox-app/nebula2_border.png");
+                border-image-source: url("./image_assets/nebula2_border.png");
                 border-image-slice: 16 fill; 
                    border-image-width: 32px; 
                 border-image-repeat: repeat; 
@@ -45757,7 +46049,7 @@ li.select2-results__option[role=group] > strong:hover {
                 image-rendering: optimizeSpeed !important;             /* IE */ 
             }
         .beepboxEditor button, .beepboxEditor select, .beepboxEditor .select2-selection__rendered, button {
-                border-image-source: url("https://choptop84.github.io/abyssbox-app/nebula2_border2.png") !important;
+                border-image-source: url("./image_assets/nebula2_border2.png") !important;
                 border-image-slice: 4 fill !important; 
                border-image-width: 4px !important; 
             border-image-repeat: stretch !important;
@@ -45854,7 +46146,7 @@ li.select2-results__option[role=group] > strong:hover {
         "AbyssBox Classic": `
         /* sets background image */
 		body {
-			background-image: url("https://choptop84.github.io/abyssbox-source/website/stripesbg.gif") !important;
+			background-image: url("./image_assets//stripesbg.gif") !important;
 			background-position: center;
 			background-repeat: repeat;
 
@@ -45868,7 +46160,7 @@ li.select2-results__option[role=group] > strong:hover {
         "AbyssBox Light": `
         /* sets background image */
         body {
-            background-image: url("https://choptop84.github.io/abyssbox-source/website/stripesbg_light.gif") !important;
+            background-image: url("./image_assets//stripesbg_light.gif") !important;
             background-position: center;
             background-repeat: repeat;
 
@@ -45882,7 +46174,7 @@ li.select2-results__option[role=group] > strong:hover {
         "Half-Life": `
         /* sets background image */
             body {
-            background-image: url("https://choptop84.github.io/abyssbox-source/website/lambda.png") !important;
+            background-image: url("./image_assets//lambda.png") !important;
             background-position: top;
             background-attachment: fixed;
             background-repeat: no-repeat;
@@ -45911,7 +46203,7 @@ li.select2-results__option[role=group] > strong:hover {
         "Windows Xp": `
         /* sets background image */
 		body {
-            background-image: url("https://choptop84.github.io/abyssbox-app/xphills.png") !important;
+            background-image: url("./image_assets/xphills.png") !important;
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -45988,7 +46280,7 @@ li.select2-results__option[role=group] > strong:hover {
         "BeepBox Pixel": `
         /* sets background image */
         body {
-            background-image: url("https://choptop84.github.io/abyssbox-source/website/diamondsbg.gif") !important;
+            background-image: url("./image_assets//diamondsbg.gif") !important;
             background-position: center;
             background-repeat: repeat;
 
@@ -46002,7 +46294,7 @@ li.select2-results__option[role=group] > strong:hover {
         "Forest 2": `
         /* sets background image */
         body {
-            background-image: url("https://choptop84.github.io/abyssbox-app/Forest2Trees.png") !important;
+            background-image: url("./image_assets/Forest2Trees.png") !important;
             background-size: cover;
             background-position: center top; /* Adjusted to align with the top */
               background-repeat: no-repeat;
@@ -46030,7 +46322,7 @@ li.select2-results__option[role=group] > strong:hover {
         `,
         "Nebula 2": `
         body {
-            background-image: url("https://choptop84.github.io/abyssbox-app/stars.gif") !important;
+            background-image: url("./image_assets/stars.gif") !important;
             background-size: contain !important;
             background-position: center top !important;
             background-repeat: repeat !important;
@@ -46074,8 +46366,8 @@ li.select2-results__option[role=group] > strong:hover {
             --file-page-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-file.png");
             --edit-pencil-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-edit.png");
             --preferences-gear-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-preferences.png");
-            --instrument-copy-symbol: url("https://choptop84.github.io/abyssbox-app/icon-copy.png");
-            --instrument-paste-symbol: url("https://choptop84.github.io/abyssbox-app/icon-paste.png");
+            --instrument-copy-symbol: url("./image_assets/icon-copy.png");
+            --instrument-paste-symbol: url("./image_assets/icon-paste.png");
             --play-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-play.png");
             --pause-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-pause.png");
             --record-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-record.png");
@@ -46136,25 +46428,25 @@ li.select2-results__option[role=group] > strong:hover {
         `,
         "Windows Xp": `
 * {
-cursor: url("https://choptop84.github.io/abyssbox-app/xpcursor.png"), auto !important;
---play-symbol:url("https://choptop84.github.io/abyssbox-app/xpPlay.png");
---pause-symbol:url("https://choptop84.github.io/abyssbox-app/xpPause.png");
---record-symbol:url("https://choptop84.github.io/abyssbox-app/xpRecord.png");
---stop-symbol:url("https://choptop84.github.io/abyssbox-app/xpStop.png");
---prev-bar-symbol:url("https://choptop84.github.io/abyssbox-app/xpBackward.png");
---next-bar-symbol:url("https://choptop84.github.io/abyssbox-app/xpForward.png");
---file-page-symbol: url("https://choptop84.github.io/abyssbox-app/xpFile.png");
---edit-pencil-symbol: url("https://choptop84.github.io/abyssbox-app/xpEdit.png");
---preferences-gear-symbol: url("https://choptop84.github.io/abyssbox-app/xpPreferences.png");
---muted-symbol: url("https://choptop84.github.io/abyssbox-app/xpSpeakerMute.png");
---unmuted-symbol: url("https://choptop84.github.io/abyssbox-app/xpSpeaker.png");
---volume-symbol: url("https://choptop84.github.io/abyssbox-app/xpSpeaker.png");
---zoom-in-symbol: url("https://choptop84.github.io/abyssbox-app/xpZoomIn.png");
---zoom-out-symbol: url("https://choptop84.github.io/abyssbox-app/xpZoomOut.png");
+cursor: url("./image_assets/xpcursor.png"), auto !important;
+--play-symbol:url("./image_assets/xpPlay.png");
+--pause-symbol:url("./image_assets/xpPause.png");
+--record-symbol:url("./image_assets/xpRecord.png");
+--stop-symbol:url("./image_assets/xpStop.png");
+--prev-bar-symbol:url("./image_assets/xpBackward.png");
+--next-bar-symbol:url("./image_assets/xpForward.png");
+--file-page-symbol: url("./image_assets/xpFile.png");
+--edit-pencil-symbol: url("./image_assets/xpEdit.png");
+--preferences-gear-symbol: url("./image_assets/xpPreferences.png");
+--muted-symbol: url("./image_assets/xpSpeakerMute.png");
+--unmuted-symbol: url("./image_assets/xpSpeaker.png");
+--volume-symbol: url("./image_assets/xpSpeaker.png");
+--zoom-in-symbol: url("./image_assets/xpZoomIn.png");
+--zoom-out-symbol: url("./image_assets/xpZoomOut.png");
 }
 
 div.mute-button::before {
-    background-image: url("https://choptop84.github.io/abyssbox-app/xpSpeaker.png") !important;
+    background-image: url("./image_assets/xpSpeaker.png") !important;
     background-size: 120% !important;
     background-position-x: center !important;
     background-position-y: center !important;
@@ -46168,7 +46460,7 @@ div.mute-button::before {
 }
 
 div.mute-button.muted::before {
-    background-image: url("https://choptop84.github.io/abyssbox-app/xpSpeakerMute.png") !important;
+    background-image: url("./image_assets/xpSpeakerMute.png") !important;
     background-size: 120% !important;
     background-position-x: center !important;
     background-position-y: center !important;
@@ -46182,7 +46474,7 @@ div.mute-button.muted::before {
 }
 
 button.recordButton::Before {
-    background-image: url("https://choptop84.github.io/abyssbox-app/xpRecord.png") !important;
+    background-image: url("./image_assets/xpRecord.png") !important;
     background-size: 64% !important;
     background-position: center !important;
     background-repeat: no-repeat !important;
@@ -46196,7 +46488,7 @@ button.recordButton::Before {
 }
 
 button.stopButton::Before {
-    background-image: url("https://choptop84.github.io/abyssbox-app/xpStop.png") !important;
+    background-image: url("./image_assets/xpStop.png") !important;
     background-size: 64% !important;
     background-position: center !important;
     background-repeat: no-repeat !important;
@@ -46210,7 +46502,7 @@ button.stopButton::Before {
 }
 
 button.pauseButton::Before {
-    background-image: url("https://choptop84.github.io/abyssbox-app/xpPause.png") !important;
+    background-image: url("./image_assets/xpPause.png") !important;
     background-size: 64% !important;
     background-position: center !important;
     background-repeat: no-repeat !important;
@@ -46224,7 +46516,7 @@ button.pauseButton::Before {
 }
 
 .beepboxEditor span.volume-speaker {
-    background-image: url("https://choptop84.github.io/abyssbox-app/xpSpeaker.png");
+    background-image: url("./image_assets/xpSpeaker.png");
     background-position: center !important;
     background-repeat: no-repeat !important;
 
@@ -46237,7 +46529,7 @@ button.pauseButton::Before {
 
 div.selectContainer.menu.file::before {
 
-    background-image: url("https://choptop84.github.io/abyssbox-app/xpFile.png");
+    background-image: url("./image_assets/xpFile.png");
     background-size: 64%;
     background-position-x: center;
     background-position-y: center;
@@ -46251,7 +46543,7 @@ div.selectContainer.menu.file::before {
 
 div.selectContainer.menu.edit::before {
 
-    background-image: url("https://choptop84.github.io/abyssbox-app/xpEdit.png");
+    background-image: url("./image_assets/xpEdit.png");
     background-size: 64%;
     background-position-x: center;
     background-position-y: center;
@@ -46264,7 +46556,7 @@ div.selectContainer.menu.edit::before {
 }
 div.selectContainer.menu.preferences::before {
 
-    background-image: url("https://choptop84.github.io/abyssbox-app/xpPreferences.png");
+    background-image: url("./image_assets/xpPreferences.png");
     background-size: 64%;
     background-position-x: center;
     background-position-y: center;
@@ -46277,7 +46569,7 @@ div.selectContainer.menu.preferences::before {
 }
 button.playButton::before {
 
-    background-image: url("https://choptop84.github.io/abyssbox-app/xpPlay.png") !important;
+    background-image: url("./image_assets/xpPlay.png") !important;
     background-size: 64% !important;
     background-position: center !important;
 
@@ -46290,7 +46582,7 @@ button.playButton::before {
 }
 
 .beepboxEditor button.prevBarButton::before {
-    background-image: url("https://choptop84.github.io/abyssbox-app/xpBackward.png") !important;
+    background-image: url("./image_assets/xpBackward.png") !important;
     background-size: 64% !important;
     background-position: center !important;
 
@@ -46304,7 +46596,7 @@ button.playButton::before {
 }
 
 .beepboxEditor button.nextBarButton::before {
-    background-image: url("https://choptop84.github.io/abyssbox-app/xpForward.png") !important;
+    background-image: url("./image_assets/xpForward.png") !important;
     background-size: 64% !important;
     background-position: center !important;
 
@@ -46318,7 +46610,7 @@ button.playButton::before {
 }
 
 .beepboxEditor .zoomInButton::before {
-    background-image: url("https://choptop84.github.io/abyssbox-app/xpZoomIn.png") !important;
+    background-image: url("./image_assets/xpZoomIn.png") !important;
     background-position: center !important;
 
 
@@ -46331,7 +46623,7 @@ button.playButton::before {
 }
 
 .beepboxEditor .zoomOutButton::before {
-    background-image: url("https://choptop84.github.io/abyssbox-app/xpZoomOut.png") !important;
+    background-image: url("./image_assets/xpZoomOut.png") !important;
     background-position: center !important;
 
 
@@ -46344,7 +46636,7 @@ button.playButton::before {
 }
 
 .beepboxEditor input[type="range"]::-moz-range-thumb {
-    background-image: url("https://choptop84.github.io/abyssbox-app/scrollbar.png") !important;
+    background-image: url("./image_assets/scrollbar.png") !important;
     background-position: center !important;
     background-size: inherit !important;
 
@@ -46367,7 +46659,7 @@ button.playButton::before {
             border-radius: 0px;
             width: 13px !important;
             height: 13px !important;
-            background-image:url("https://choptop84.github.io/abyssbox-app/xpCheckmarkBlank.png");
+            background-image:url("./image_assets/xpCheckmarkBlank.png");
             background-repeat:no-repeat;
 
             image-rendering: -moz-crisp-edges !important;         /* Firefox */
@@ -46392,7 +46684,7 @@ button.playButton::before {
             text-align: center;
             content: "";
             background-repeat:no-repeat;
-            background-image:url("https://choptop84.github.io/abyssbox-app/xpCheckmark.png");
+            background-image:url("./image_assets/xpCheckmark.png");
             image-rendering: -moz-crisp-edges !important;         /* Firefox */
             image-rendering: -webkit-optimize-contrast !important; /* Webkit (Chrome/Safari) */
             image-rendering: -o-crisp-edges !important;            /* Opera */
@@ -46411,7 +46703,7 @@ button.playButton::before {
         `,
         "Retro": `
         * {
-        cursor: url("https://choptop84.github.io/abyssbox-app/pixel_cursor.png"), auto !important;
+        cursor: url("./image_assets/pixel_cursor.png"), auto !important;
         }
         `,
         "Slushie 2": `
@@ -46421,12 +46713,12 @@ button.playButton::before {
         `,
         "Ghost House 2": `
         * {
-		cursor: url("https://choptop84.github.io/abyssbox-app/pixel_cursor.png"), auto !important;
+		cursor: url("./image_assets/pixel_cursor.png"), auto !important;
         }
         `,
         "Windows Xp": `
         * {
-		cursor: url("https://choptop84.github.io/abyssbox-app/xpcursor.png"), auto !important;
+		cursor: url("./image_assets/xpcursor.png"), auto !important;
         }
         `,
         "WackyBox": `
@@ -46450,7 +46742,7 @@ button.playButton::before {
     class SetThemePrompt {
         constructor(_doc) {
             this._doc = _doc;
-            this._themeSelect = select$e({ style: "width: 100%;", id: "themeSelect" }, option$e({ value: "none" }, "None"), optgroup$2({ label: "AbyssBox Themes" }, option$e({ value: "AbyssBox Classic" }, "AbyssBox Classic"), option$e({ value: "AbyssBox Competitive" }, "AbyssBox Competitive"), option$e({ value: "AbyssBox Light" }, "AbyssBox Light"), option$e({ value: "AbyssBox 0.8" }, "AbyssBox 0.8"), option$e({ value: "AbyssBox Piano" }, "AbyssBox Piano [!]"), option$e({ value: "Half-Life" }, "Half-Life"), option$e({ value: "Half-Life: Source" }, "Half-Life: Source"), option$e({ value: "Doom 1993" }, "Doom 1993"), option$e({ value: "Undertale" }, "Undertale"), option$e({ value: "Yume Nikki" }, "Yume Nikki [!]"), option$e({ value: "Scratch" }, "Scratch"), option$e({ value: "Scratch Addons" }, "Scratch Addons"), option$e({ value: "Windows Xp" }, "Windows Xp"), option$e({ value: "Frutiger Aero" }, "Frutiger Aero"), option$e({ value: "Skeuomorphic" }, "Skeuomorphic/Early 2000's (LeoV)"), option$e({ value: "Glyde" }, "Glyde"), option$e({ value: "starry studio" }, "Starry Studio"), option$e({ value: "Terminal 2.0 (AB)" }, "Terminal 2.0 (AB)"), option$e({ value: "Slushie" }, "Slushie"), option$e({ value: "Slushie Pixel" }, "Slushie 2"), option$e({ value: "BeepBox Pixel" }, "BeepBox Pixel"), option$e({ value: "forest 2" }, "Forest 2"), option$e({ value: "canyon 2" }, "Canyon 2"), option$e({ value: "Nebula 2" }, "Nebula 2"), option$e({ value: "Ghost House" }, "Ghost House"), option$e({ value: "Ghost House 2" }, "Ghost House 2")), optgroup$2({ label: "BeepBox Themes" }, option$e({ value: "dark classic" }, "BeepBox Dark"), option$e({ value: "light classic" }, "BeepBox Light"), option$e({ value: "dark competition" }, "BeepBox Competition Dark")), optgroup$2({ label: "JummBox Themes" }, option$e({ value: "jummbox classic" }, "JummBox Dark"), option$e({ value: "jummbox light" }, "JummBox Light"), option$e({ value: "forest" }, "Forest"), option$e({ value: "canyon" }, "Canyon"), option$e({ value: "midnight" }, "Midnight"), option$e({ value: "beachcombing" }, "Beachcombing"), option$e({ value: "violet verdant" }, "Violet Verdant"), option$e({ value: "sunset" }, "Sunset"), option$e({ value: "autumn" }, "Autumn"), option$e({ value: "fruit" }, "Shadowfruit"), option$e({ value: "toxic" }, "Toxic"), option$e({ value: "roe" }, "Roe"), option$e({ value: "moonlight" }, "Moonlight"), option$e({ value: "portal" }, "Portal"), option$e({ value: "fusion" }, "Fusion"), option$e({ value: "inverse" }, "Inverse"), option$e({ value: "nebula" }, "Nebula"), option$e({ value: "roe light" }, "Roe Light"), option$e({ value: "amoled dark" }, "High Contrast Dark"), option$e({ value: "energized" }, "Energized"), option$e({ value: "neapolitan" }, "Neapolitan"), option$e({ value: "mono" }, "Poly"), option$e({ value: "blutonium" }, "Blutonium")), optgroup$2({ label: "ModBox Themes" }, option$e({ value: "modbox classic" }, "Modbox"), option$e({ value: "modbox 2" }, "Modbox 2.0"), option$e({ value: "modbox artic" }, "Artic"), option$e({ value: "modbox cinnamon" }, "Cinnamon Roll [!]"), option$e({ value: "modbox ocean" }, "Ocean"), option$e({ value: "modbox rainbow" }, "Rainbow [!]"), option$e({ value: "modbox float" }, "Float [!]"), option$e({ value: "modbox windows" }, "Windows"), option$e({ value: "modbox grassland" }, "Grassland"), option$e({ value: "modbox dessert" }, "Dessert"), option$e({ value: "modbox kahoot" }, "Kahootiest"), option$e({ value: "modbox bitbeam" }, "Beam to the Bit [!]"), option$e({ value: "modbox egg" }, "Pretty Egg"), option$e({ value: "modbox pony" }, "Poniryoshka"), option$e({ value: "modbox gameboy" }, "Gameboy [!]"), option$e({ value: "modbox woodkid" }, "Woodkid [!]"), option$e({ value: "modbox midnight" }, "Midnight [!]"), option$e({ value: "modbox snedbox" }, "Snedbox"), option$e({ value: "modbox unnamed" }, "unnamed [!]"), option$e({ value: "modbox piano" }, "Piano [!]"), option$e({ value: "modbox halloween" }, "Halloween [!]"), option$e({ value: "modbox frozen" }, "FrozenOver❄️ [!]")), optgroup$2({ label: "ShitBox Themes" }, option$e({ value: "shitbox 1.0" }, "Shitbox 1.0"), option$e({ value: "shitbox 2.0" }, "Shitbox 2.0"), option$e({ value: "shitbox 3.0" }, "Shitbox 3.0/shitbox4"), option$e({ value: "shitbox ModBox 2.0" }, "Shitbox ModBox 2.0"), option$e({ value: "shitbox Realm" }, "Shitbox Realm [!]")), optgroup$2({ label: "Nepbox Themes" }, option$e({ value: "nepbox" }, "Nepbox"), option$e({ value: "nepbox laffey" }, "Laffey"), option$e({ value: "nepbox snedbox" }, "Snedbox (Nb) [!]"), option$e({ value: "nepbox piano" }, "Piano (Nb) [!]")), optgroup$2({ label: "Mod Default Themes" }, option$e({ value: "sandbox classic" }, "Sandbox"), option$e({ value: "harrybox" }, "Haileybox"), option$e({ value: "brucebox" }, "Brucebox"), option$e({ value: "nerdbox" }, "NerdBox"), option$e({ value: "zefbox" }, "Zefbox"), option$e({ value: "cardboardbox classic" }, "Cardboardbox"), option$e({ value: "blubox classic" }, "Blubox"), option$e({ value: "dogebox classic" }, "Dogebox"), option$e({ value: "dogebox dark" }, "Way too Dark (DB)/TOO DARK(BluB)"), option$e({ value: "wackybox" }, "Wackybox"), option$e({ value: "todbox dark mode" }, "Todbox Dark Mode"), option$e({ value: "mainbox 1.0" }, "Mainbox"), option$e({ value: "microbox" }, "MicroBox"), option$e({ value: "paandorasbox" }, "PaandorasBox"), option$e({ value: "foxbox" }, "FoxBox"), option$e({ value: "midbox" }, "Midbox"), option$e({ value: "gold light" }, "Gold Light"), option$e({ value: "dogebox2" }, "Dogebox2"), option$e({ value: "WeebBox" }, "WeebBox"), option$e({ value: "BoxBeep Dark" }, "BoxBeep Dark"), option$e({ value: "BoxBeep light" }, "BoxBeep Light"), option$e({ value: "birdbox dark" }, "BirdBox Dark"), option$e({ value: "birdbox light" }, "BirdBox Light")), optgroup$2({ label: "Miscellaneous Themes" }, option$e({ value: "azur lane" }, "Azur Lane"), option$e({ value: "AWeebyssBox" }, "AWeebyssBox"), option$e({ value: "Deuteranopia" }, "Deuteranopia"), option$e({ value: "Protanopia" }, "Protanopia"), option$e({ value: "Tritanopia" }, "Tritanopia"), option$e({ value: "2012 Video Tutorial" }, "2012 Video Tutorial"), option$e({ value: "I am on fire" }, "I am on fire")));
+            this._themeSelect = select$e({ style: "width: 100%;", id: "themeSelect" }, option$e({ value: "none" }, "None"), optgroup$2({ label: "AbyssBox Themes" }, option$e({ value: "AbyssBox Classic" }, "AbyssBox Classic"), option$e({ value: "AbyssBox Competitive" }, "AbyssBox Competitive"), option$e({ value: "AbyssBox Light" }, "AbyssBox Light"), option$e({ value: "AbyssBox 0.8" }, "AbyssBox 0.8"), option$e({ value: "AbyssBox Piano" }, "AbyssBox Piano [!]"), option$e({ value: "Half-Life" }, "Half-Life"), option$e({ value: "Half-Life: Source" }, "Half-Life: Source"), option$e({ value: "Doom 1993" }, "Doom 1993"), option$e({ value: "Undertale" }, "Undertale"), option$e({ value: "Yume Nikki" }, "Yume Nikki [!]"), option$e({ value: "Scratch" }, "Scratch"), option$e({ value: "Scratch Addons" }, "Scratch Addons"), option$e({ value: "Windows Xp" }, "Windows Xp"), option$e({ value: "Frutiger Aero" }, "Frutiger Aero"), option$e({ value: "Skeuomorphic" }, "Skeuomorphic/Early 2000's (LeoV)"), option$e({ value: "corporate dark" }, "Corporate Dark"), option$e({ value: "corporate light" }, "Corporate Light"), option$e({ value: "Glyde" }, "Glyde"), option$e({ value: "starry studio" }, "Starry Studio"), option$e({ value: "Terminal 2.0 (AB)" }, "Terminal 2.0 (AB)"), option$e({ value: "Slushie" }, "Slushie"), option$e({ value: "Slushie Pixel" }, "Slushie 2"), option$e({ value: "BeepBox Pixel" }, "BeepBox Pixel"), option$e({ value: "forest 2" }, "Forest 2"), option$e({ value: "canyon 2" }, "Canyon 2"), option$e({ value: "Nebula 2" }, "Nebula 2"), option$e({ value: "Ghost House" }, "Ghost House"), option$e({ value: "Ghost House 2" }, "Ghost House 2")), optgroup$2({ label: "BeepBox Themes" }, option$e({ value: "dark classic" }, "BeepBox Dark"), option$e({ value: "light classic" }, "BeepBox Light"), option$e({ value: "dark competition" }, "BeepBox Competition Dark")), optgroup$2({ label: "JummBox Themes" }, option$e({ value: "jummbox classic" }, "JummBox Dark"), option$e({ value: "jummbox light" }, "JummBox Light"), option$e({ value: "forest" }, "Forest"), option$e({ value: "canyon" }, "Canyon"), option$e({ value: "midnight" }, "Midnight"), option$e({ value: "beachcombing" }, "Beachcombing"), option$e({ value: "violet verdant" }, "Violet Verdant"), option$e({ value: "sunset" }, "Sunset"), option$e({ value: "autumn" }, "Autumn"), option$e({ value: "fruit" }, "Shadowfruit"), option$e({ value: "toxic" }, "Toxic"), option$e({ value: "roe" }, "Roe"), option$e({ value: "moonlight" }, "Moonlight"), option$e({ value: "portal" }, "Portal"), option$e({ value: "fusion" }, "Fusion"), option$e({ value: "inverse" }, "Inverse"), option$e({ value: "nebula" }, "Nebula"), option$e({ value: "roe light" }, "Roe Light"), option$e({ value: "amoled dark" }, "High Contrast Dark"), option$e({ value: "energized" }, "Energized"), option$e({ value: "neapolitan" }, "Neapolitan"), option$e({ value: "mono" }, "Poly"), option$e({ value: "blutonium" }, "Blutonium")), optgroup$2({ label: "ModBox Themes" }, option$e({ value: "modbox classic" }, "Modbox"), option$e({ value: "modbox 2" }, "Modbox 2.0"), option$e({ value: "modbox artic" }, "Artic"), option$e({ value: "modbox cinnamon" }, "Cinnamon Roll [!]"), option$e({ value: "modbox ocean" }, "Ocean"), option$e({ value: "modbox rainbow" }, "Rainbow [!]"), option$e({ value: "modbox float" }, "Float [!]"), option$e({ value: "modbox windows" }, "Windows"), option$e({ value: "modbox grassland" }, "Grassland"), option$e({ value: "modbox dessert" }, "Dessert"), option$e({ value: "modbox kahoot" }, "Kahootiest"), option$e({ value: "modbox bitbeam" }, "Beam to the Bit [!]"), option$e({ value: "modbox egg" }, "Pretty Egg"), option$e({ value: "modbox pony" }, "Poniryoshka"), option$e({ value: "modbox gameboy" }, "Gameboy [!]"), option$e({ value: "modbox woodkid" }, "Woodkid [!]"), option$e({ value: "modbox midnight" }, "Midnight [!]"), option$e({ value: "modbox snedbox" }, "Snedbox"), option$e({ value: "modbox unnamed" }, "unnamed [!]"), option$e({ value: "modbox piano" }, "Piano [!]"), option$e({ value: "modbox halloween" }, "Halloween [!]"), option$e({ value: "modbox frozen" }, "FrozenOver❄️ [!]")), optgroup$2({ label: "ShitBox Themes" }, option$e({ value: "shitbox 1.0" }, "Shitbox 1.0"), option$e({ value: "shitbox 2.0" }, "Shitbox 2.0"), option$e({ value: "shitbox 3.0" }, "Shitbox 3.0/shitbox4"), option$e({ value: "shitbox ModBox 2.0" }, "Shitbox ModBox 2.0"), option$e({ value: "shitbox Realm" }, "Shitbox Realm [!]")), optgroup$2({ label: "Nepbox Themes" }, option$e({ value: "nepbox" }, "Nepbox"), option$e({ value: "nepbox laffey" }, "Laffey"), option$e({ value: "nepbox snedbox" }, "Snedbox (Nb) [!]"), option$e({ value: "nepbox piano" }, "Piano (Nb) [!]")), optgroup$2({ label: "Mod Default Themes" }, option$e({ value: "sandbox classic" }, "Sandbox"), option$e({ value: "harrybox" }, "Haileybox"), option$e({ value: "brucebox" }, "Brucebox"), option$e({ value: "nerdbox" }, "NerdBox"), option$e({ value: "zefbox" }, "Zefbox"), option$e({ value: "cardboardbox classic" }, "Cardboardbox"), option$e({ value: "blubox classic" }, "Blubox"), option$e({ value: "dogebox classic" }, "Dogebox"), option$e({ value: "dogebox dark" }, "Way too Dark (DB)/TOO DARK(BluB)"), option$e({ value: "wackybox" }, "Wackybox"), option$e({ value: "todbox dark mode" }, "Todbox Dark Mode"), option$e({ value: "mainbox 1.0" }, "Mainbox"), option$e({ value: "microbox" }, "MicroBox"), option$e({ value: "paandorasbox" }, "PaandorasBox"), option$e({ value: "foxbox" }, "FoxBox"), option$e({ value: "midbox" }, "Midbox"), option$e({ value: "gold light" }, "Gold Light"), option$e({ value: "dogebox2" }, "Dogebox2"), option$e({ value: "WeebBox" }, "WeebBox"), option$e({ value: "BoxBeep Dark" }, "BoxBeep Dark"), option$e({ value: "BoxBeep light" }, "BoxBeep Light"), option$e({ value: "birdbox dark" }, "BirdBox Dark"), option$e({ value: "birdbox light" }, "BirdBox Light")), optgroup$2({ label: "Miscellaneous Themes" }, option$e({ value: "azur lane" }, "Azur Lane"), option$e({ value: "AWeebyssBox" }, "AWeebyssBox"), option$e({ value: "Deuteranopia" }, "Deuteranopia"), option$e({ value: "Protanopia" }, "Protanopia"), option$e({ value: "Tritanopia" }, "Tritanopia"), option$e({ value: "2012 Video Tutorial" }, "2012 Video Tutorial"), option$e({ value: "I am on fire" }, "I am on fire")));
             this._cancelButton = button$n({ class: "cancelButton" });
             this._okayButton = button$n({ class: "okayButton", style: "width:45%;" }, "Okay");
             this.lastTheme = this._doc.song.setSongTheme;
@@ -47553,1136 +47845,6 @@ button.playButton::before {
         }
     }
 
-    function transfer(source, length) {
-        const dest = new ArrayBuffer(length);
-        let nextOffset = 0;
-        let leftBytes = Math.min(source.byteLength, dest.byteLength);
-        const wordSizes = [8, 4, 2, 1];
-        for (const wordSize of wordSizes) {
-            if (leftBytes >= wordSize) {
-                const done = transferWith(wordSize, source, dest, nextOffset, leftBytes);
-                nextOffset = done.nextOffset;
-                leftBytes = done.leftBytes;
-            }
-        }
-        return dest;
-        function transferWith(wordSize, source, dest, nextOffset, leftBytes) {
-            let ViewClass = Uint8Array;
-            switch (wordSize) {
-                case 8:
-                    ViewClass = Float64Array;
-                    break;
-                case 4:
-                    ViewClass = Float32Array;
-                    break;
-                case 2:
-                    ViewClass = Uint16Array;
-                    break;
-                case 1:
-                    ViewClass = Uint8Array;
-                    break;
-                default:
-                    ViewClass = Uint8Array;
-                    break;
-            }
-            const view_source = new ViewClass(source, nextOffset, (leftBytes / wordSize) | 0);
-            const view_dest = new ViewClass(dest, nextOffset, (leftBytes / wordSize) | 0);
-            for (let i = 0; i < view_dest.length; i++) {
-                view_dest[i] = view_source[i];
-            }
-            return {
-                nextOffset: view_source.byteOffset + view_source.byteLength,
-                leftBytes: leftBytes - view_dest.length * wordSize,
-            };
-        }
-    }
-    class ArrayBufferWriter {
-        constructor(initialCapacity) {
-            this._writeIndex = 0;
-            this._fileSize = 0;
-            this._arrayBuffer = new ArrayBuffer(initialCapacity);
-            this._data = new DataView(this._arrayBuffer);
-        }
-        _addBytes(numBytes) {
-            this._fileSize += numBytes;
-            if (this._fileSize > this._arrayBuffer.byteLength) {
-                this._arrayBuffer = transfer(this._arrayBuffer, Math.max(this._arrayBuffer.byteLength * 2, this._fileSize));
-                this._data = new DataView(this._arrayBuffer);
-            }
-        }
-        getWriteIndex() {
-            return this._writeIndex;
-        }
-        rewriteUint32(index, value) {
-            this._data.setUint32(index, value >>> 0, false);
-        }
-        writeUint32(value) {
-            value = value >>> 0;
-            this._addBytes(4);
-            this._data.setUint32(this._writeIndex, value, false);
-            this._writeIndex = this._fileSize;
-        }
-        writeUint24(value) {
-            value = value >>> 0;
-            this._addBytes(3);
-            this._data.setUint8(this._writeIndex, (value >> 16) & 0xff);
-            this._data.setUint8(this._writeIndex + 1, (value >> 8) & 0xff);
-            this._data.setUint8(this._writeIndex + 2, (value) & 0xff);
-            this._writeIndex = this._fileSize;
-        }
-        writeUint16(value) {
-            value = value >>> 0;
-            this._addBytes(2);
-            this._data.setUint16(this._writeIndex, value, false);
-            this._writeIndex = this._fileSize;
-        }
-        writeUint8(value) {
-            value = value >>> 0;
-            this._addBytes(1);
-            this._data.setUint8(this._writeIndex, value);
-            this._writeIndex = this._fileSize;
-        }
-        writeInt8(value) {
-            value = value | 0;
-            this._addBytes(1);
-            this._data.setInt8(this._writeIndex, value);
-            this._writeIndex = this._fileSize;
-        }
-        writeMidi7Bits(value) {
-            value = value >>> 0;
-            if (value >= 0x80)
-                throw new Error("7 bit value contained 8th bit!");
-            this._addBytes(1);
-            this._data.setUint8(this._writeIndex, value);
-            this._writeIndex = this._fileSize;
-        }
-        writeMidiVariableLength(value) {
-            value = value >>> 0;
-            if (value > 0x0fffffff)
-                throw new Error("writeVariableLength value too big.");
-            let startWriting = false;
-            for (let i = 0; i < 4; i++) {
-                const shift = 21 - i * 7;
-                const bits = (value >>> shift) & 0x7f;
-                if (bits != 0 || i == 3)
-                    startWriting = true;
-                if (startWriting)
-                    this.writeUint8((i == 3 ? 0x00 : 0x80) | bits);
-            }
-        }
-        writeMidiAscii(string) {
-            this.writeMidiVariableLength(string.length);
-            for (let i = 0; i < string.length; i++) {
-                const charCode = string.charCodeAt(i);
-                if (charCode > 0x7f)
-                    throw new Error("Trying to write unicode character as ascii.");
-                this.writeUint8(charCode);
-            }
-        }
-        toCompactArrayBuffer() {
-            return transfer(this._arrayBuffer, this._fileSize);
-        }
-    }
-
-    const defaultMidiExpression = 0x7F;
-    const defaultMidiPitchBend = 0x2000;
-    const analogousDrumMap = {
-        35: { frequency: 0, duration: 2, volume: 3 },
-        36: { frequency: 0, duration: 2, volume: 3 },
-        37: { frequency: 5, duration: 1, volume: 3 },
-        38: { frequency: 4, duration: 2, volume: 3 },
-        39: { frequency: 5, duration: 2, volume: 3 },
-        40: { frequency: 4, duration: 2, volume: 3 },
-        41: { frequency: 1, duration: 2, volume: 3 },
-        42: { frequency: 8, duration: 1, volume: 3 },
-        43: { frequency: 1, duration: 2, volume: 3 },
-        44: { frequency: 8, duration: 1, volume: 2 },
-        45: { frequency: 2, duration: 2, volume: 3 },
-        46: { frequency: 8, duration: 4, volume: 3 },
-        47: { frequency: 2, duration: 2, volume: 3 },
-        48: { frequency: 3, duration: 2, volume: 3 },
-        49: { frequency: 7, duration: 4, volume: 3 },
-        50: { frequency: 3, duration: 2, volume: 3 },
-        51: { frequency: 6, duration: 4, volume: 2 },
-        52: { frequency: 7, duration: 4, volume: 3 },
-        53: { frequency: 6, duration: 2, volume: 3 },
-        54: { frequency: 11, duration: 2, volume: 3 },
-        55: { frequency: 9, duration: 4, volume: 3 },
-        56: { frequency: 7, duration: 1, volume: 2 },
-        57: { frequency: 7, duration: 4, volume: 3 },
-        58: { frequency: 10, duration: 2, volume: 2 },
-        59: { frequency: 6, duration: 4, volume: 3 },
-        69: { frequency: 10, duration: 2, volume: 3 },
-        70: { frequency: 10, duration: 2, volume: 3 },
-        73: { frequency: 10, duration: 1, volume: 2 },
-        74: { frequency: 10, duration: 2, volume: 2 },
-    };
-    function midiVolumeToVolumeMult(volume) {
-        return Math.pow(volume / 127, 4.0) / 0.3844015376046128;
-    }
-    function volumeMultToMidiVolume(volumeMult) {
-        return Math.pow(volumeMult * 0.3844015376046128, 0.25) * 127;
-    }
-    function midiExpressionToVolumeMult(expression) {
-        return Math.pow(expression / 127, 4.0);
-    }
-    function volumeMultToMidiExpression(volumeMult) {
-        return Math.pow(volumeMult, 0.25) * 127;
-    }
-
-    const { button: button$l, div: div$l, h2: h2$k, input: input$d, select: select$d, option: option$d } = HTML;
-    function lerp(low, high, t) {
-        return low + t * (high - low);
-    }
-    function save$1(blob, name) {
-        if (navigator.msSaveOrOpenBlob) {
-            navigator.msSaveOrOpenBlob(blob, name);
-            return;
-        }
-        const anchor = document.createElement("a");
-        if (anchor.download != undefined) {
-            const url = URL.createObjectURL(blob);
-            setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
-            anchor.href = url;
-            anchor.download = name;
-            setTimeout(function () { anchor.dispatchEvent(new MouseEvent("click")); }, 0);
-        }
-        else {
-            const url = URL.createObjectURL(blob);
-            setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
-            if (!window.open(url, "_blank"))
-                window.location.href = url;
-        }
-    }
-    class ExportPrompt {
-        constructor(_doc) {
-            this._doc = _doc;
-            this.outputStarted = false;
-            this._fileName = input$d({ type: "text", style: "width: 10em;", value: "BeepBox-Song", maxlength: 250, "autofocus": "autofocus" });
-            this._computedSamplesLabel = div$l({ style: "width: 10em;" }, new Text("0:00"));
-            this._enableIntro = input$d({ type: "checkbox" });
-            this._loopDropDown = input$d({ style: "width: 3em;", type: "number", min: "1", max: "16", step: "1" });
-            this._enableOutro = input$d({ type: "checkbox" });
-            this._formatSelect = select$d({ style: "width: 100%;" }, option$d({ value: "wav" }, "Export to .wav file."), option$d({ value: "mp3" }, "Export to .mp3 file."), option$d({ value: "ogg" }, "Export to .ogg file."), option$d({ value: "opus" }, "Export to .opus file."), option$d({ value: "midi" }, "Export to .mid file."), option$d({ value: "json" }, "Export to .json file."), option$d({ value: "html" }, "Export to .html file."));
-            this._removeWhitespace = input$d({ type: "checkbox" });
-            this._removeWhitespaceDiv = div$l({ style: "vertical-align: middle; align-items: center; justify-content: space-between; margin-bottom: 14px;" }, "Remove Whitespace: ", this._removeWhitespace);
-            this._oggWarning = div$l({ style: "vertical-align: middle; align-items: center; justify-content: space-between; margin-bottom: 14px;" }, "Warning: .ogg files aren't supported on as many devices as mp3 or wav. So Playback might not be possible on specific devices.");
-            this._opusWarning = div$l({ style: "vertical-align: middle; align-items: center; justify-content: space-between; margin-bottom: 14px;" }, "Warning: .opus files aren't supported on as many devices as mp3 or wav. So Playback might not be possible on specific devices.");
-            this._cancelButton = button$l({ class: "cancelButton" });
-            this._exportButton = button$l({ class: "exportButton", style: "width:45%;" }, "Export");
-            this._outputProgressBar = div$l({ style: `width: 0%; background: ${ColorConfig.loopAccent}; height: 100%; position: absolute; z-index: 2;` });
-            this._outputProgressLabel = div$l({ style: `position: relative; top: -1px; z-index: 3;` }, "0%");
-            this._outputProgressContainer = div$l({ style: `height: 12px; background: ${ColorConfig.uiWidgetBackground}; display: block; position: relative; z-index: 1; margin-bottom: 14px;` }, this._outputProgressBar, this._outputProgressLabel);
-            this._exportPrompt = div$l({}, div$l({ class: "promptTitle", style: "margin-bottom: 14px;" }, h2$k({ class: "exportExt", style: "text-align: inherit;" }, ""), h2$k({ class: "exportTitle" }, "Export Options")), div$l({ style: "display: flex; flex-direction: row; align-items: center; justify-content: space-between; margin-bottom: 14px;" }, "File name:", this._fileName), div$l({ style: "display: flex; flex-direction: row; align-items: center; justify-content: space-between; margin-bottom: 14px;" }, "Length:", this._computedSamplesLabel), div$l({ style: "display: table; width: 100%; margin-bottom: 14px;" }, div$l({ style: "display: table-row;" }, div$l({ style: "display: table-cell;" }, "Intro:"), div$l({ style: "display: table-cell;" }, "Loop Count:"), div$l({ style: "display: table-cell;" }, "Outro:")), div$l({ style: "display: table-row; margin-bottom: 14px;" }, div$l({ style: "display: table-cell; vertical-align: middle;" }, this._enableIntro), div$l({ style: "display: table-cell; vertical-align: middle;" }, this._loopDropDown), div$l({ style: "display: table-cell; vertical-align: middle;" }, this._enableOutro))), this._removeWhitespaceDiv, this._oggWarning, div$l({ class: "selectContainer", style: "width: 100%; margin-bottom: 14px;" }, this._formatSelect), div$l({ style: "text-align: left; margin-bottom: 14px;" }, "Exporting can be slow. Reloading the page or clicking the X will cancel it. Please be patient."), this._outputProgressContainer, div$l({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between; margin-bottom: 14px;" }, this._exportButton), this._cancelButton);
-            this.container = div$l({ class: "prompt noSelection", style: "width: 200px;" }, this._exportPrompt);
-            this._close = () => {
-                if (this.synth != null)
-                    this.synth.renderingSong = false;
-                this.outputStarted = false;
-                this._doc.undo();
-            };
-            this.cleanUp = () => {
-                this._fileName.removeEventListener("input", ExportPrompt._validateFileName);
-                this._loopDropDown.removeEventListener("blur", ExportPrompt._validateNumber);
-                this._exportButton.removeEventListener("click", this._export);
-                this._cancelButton.removeEventListener("click", this._close);
-                this.container.removeEventListener("keydown", this._whenKeyPressed);
-            };
-            this._whenKeyPressed = (event) => {
-                if (event.target.tagName != "BUTTON" && event.keyCode == 13) {
-                    this._export();
-                }
-            };
-            this._export = () => {
-                if (this.outputStarted == true)
-                    return;
-                window.localStorage.setItem("exportFormat", this._formatSelect.value);
-                window.localStorage.setItem("exportWhitespace", this._removeWhitespace.value);
-                window.localStorage.setItem("exportFormat", this._formatSelect.value);
-                switch (this._formatSelect.value) {
-                    case "wav":
-                        this.outputStarted = true;
-                        this._exportTo("wav");
-                        break;
-                    case "mp3":
-                        this.outputStarted = true;
-                        this._exportTo("mp3");
-                        break;
-                    case "ogg":
-                        this.outputStarted = true;
-                        this._exportTo("ogg");
-                        break;
-                    case "opus":
-                        this.outputStarted = true;
-                        this._exportTo("opus");
-                        break;
-                    case "midi":
-                        this.outputStarted = true;
-                        this._exportToMidi();
-                        break;
-                    case "json":
-                        this.outputStarted = true;
-                        this._exportToJson();
-                        break;
-                    case "html":
-                        this._exportToHtml();
-                        break;
-                    default:
-                        throw new Error("Unhandled file export type.");
-                }
-            };
-            this._loopDropDown.value = "1";
-            if (this._doc.song.loopStart == 0) {
-                this._enableIntro.checked = false;
-                this._enableIntro.disabled = true;
-            }
-            else {
-                this._enableIntro.checked = true;
-                this._enableIntro.disabled = false;
-            }
-            if (this._doc.song.loopStart + this._doc.song.loopLength == this._doc.song.barCount) {
-                this._enableOutro.checked = false;
-                this._enableOutro.disabled = true;
-            }
-            else {
-                this._enableOutro.checked = true;
-                this._enableOutro.disabled = false;
-            }
-            const lastExportFormat = window.localStorage.getItem("exportFormat");
-            if (lastExportFormat != null) {
-                this._formatSelect.value = lastExportFormat;
-            }
-            const lastExportWhitespace = window.localStorage.getItem("exportWhitespace") == "true";
-            if (lastExportWhitespace != null) {
-                this._removeWhitespace.checked = lastExportWhitespace;
-            }
-            if (this._formatSelect.value == "json") {
-                this._removeWhitespaceDiv.style.display = "block";
-            }
-            else {
-                this._removeWhitespaceDiv.style.display = "none";
-            }
-            if (this._formatSelect.value == "ogg") {
-                this._oggWarning.style.display = "block";
-            }
-            else {
-                this._oggWarning.style.display = "none";
-            }
-            if (this._formatSelect.value == "opus") {
-                this._oggWarning.style.display = "block";
-            }
-            else {
-                this._oggWarning.style.display = "none";
-            }
-            this._fileName.select();
-            setTimeout(() => this._fileName.focus());
-            this._fileName.addEventListener("input", ExportPrompt._validateFileName);
-            this._loopDropDown.addEventListener("blur", ExportPrompt._validateNumber);
-            this._exportButton.addEventListener("click", this._export);
-            this._cancelButton.addEventListener("click", this._close);
-            this._enableOutro.addEventListener("click", () => { this._computedSamplesLabel.firstChild.textContent = this._doc.samplesToTime(this._doc.synth.getTotalSamples(this._enableIntro.checked, this._enableOutro.checked, +this._loopDropDown.value - 1)); });
-            this._enableIntro.addEventListener("click", () => { this._computedSamplesLabel.firstChild.textContent = this._doc.samplesToTime(this._doc.synth.getTotalSamples(this._enableIntro.checked, this._enableOutro.checked, +this._loopDropDown.value - 1)); });
-            this._loopDropDown.addEventListener("change", () => { this._computedSamplesLabel.firstChild.textContent = this._doc.samplesToTime(this._doc.synth.getTotalSamples(this._enableIntro.checked, this._enableOutro.checked, +this._loopDropDown.value - 1)); });
-            this._formatSelect.addEventListener("change", () => { if (this._formatSelect.value == "json") {
-                this._removeWhitespaceDiv.style.display = "block";
-            }
-            else {
-                this._removeWhitespaceDiv.style.display = "none";
-            } });
-            this._formatSelect.addEventListener("change", () => {
-                if (this._formatSelect.value == "ogg") {
-                    this._oggWarning.style.display = "block";
-                }
-                else {
-                    this._oggWarning.style.display = "none";
-                }
-                if (this._formatSelect.value == "opus") {
-                    this._opusWarning.style.display = "block";
-                }
-                else {
-                    this._opusWarning.style.display = "none";
-                }
-            });
-            this.container.addEventListener("keydown", this._whenKeyPressed);
-            this._fileName.value = _doc.song.title;
-            ExportPrompt._validateFileName(null, this._fileName);
-            this._computedSamplesLabel.firstChild.textContent = this._doc.samplesToTime(this._doc.synth.getTotalSamples(this._enableIntro.checked, this._enableOutro.checked, +this._loopDropDown.value - 1));
-        }
-        changeFileName(newValue) {
-            this._fileName.value = newValue;
-        }
-        static _validateFileName(event, use) {
-            let input;
-            if (event != null) {
-                input = event.target;
-            }
-            else if (use != undefined) {
-                input = use;
-            }
-            else {
-                return;
-            }
-            const deleteChars = /[\+\*\$\?\|\{\}\\\/<>#%!`&'"=:@]/gi;
-            if (deleteChars.test(input.value)) {
-                let cursorPos = input.selectionStart;
-                input.value = input.value.replace(deleteChars, "");
-                cursorPos--;
-                input.setSelectionRange(cursorPos, cursorPos);
-            }
-        }
-        static _validateNumber(event) {
-            const input = event.target;
-            input.value = Math.floor(Math.max(Number(input.min), Math.min(Number(input.max), Number(input.value)))) + "";
-        }
-        _synthesize() {
-            if (this.outputStarted == false) {
-                return;
-            }
-            const currentFrame = this.currentChunk * this.samplesPerChunk;
-            const samplesInChunk = Math.min(this.samplesPerChunk, this.sampleFrames - currentFrame);
-            const tempSamplesL = new Float32Array(samplesInChunk);
-            const tempSamplesR = new Float32Array(samplesInChunk);
-            this.synth.renderingSong = true;
-            this.synth.synthesize(tempSamplesL, tempSamplesR, samplesInChunk);
-            this.recordedSamplesL.set(tempSamplesL, currentFrame);
-            this.recordedSamplesR.set(tempSamplesR, currentFrame);
-            this._outputProgressBar.style.setProperty("width", Math.round((this.currentChunk + 1) / this.totalChunks * 100.0) + "%");
-            this._outputProgressLabel.innerText = Math.round((this.currentChunk + 1) / this.totalChunks * 100.0) + "%";
-            this.currentChunk++;
-            if (this.currentChunk >= this.totalChunks) {
-                this.synth.renderingSong = false;
-                this._outputProgressLabel.innerText = "Encoding...";
-                if (this.thenExportTo == "wav") {
-                    this._exportToWavFinish();
-                }
-                else if (this.thenExportTo == "mp3") {
-                    this._exportToMp3Finish();
-                }
-                else if (this.thenExportTo == "ogg") {
-                    this._exportToOggFinish();
-                }
-                else if (this.thenExportTo == "opus") {
-                    this._exportToOpusFinish();
-                }
-                else {
-                    throw new Error("Unrecognized file export type chosen!");
-                }
-            }
-            else {
-                setTimeout(() => { this._synthesize(); });
-            }
-        }
-        _exportTo(type) {
-            this.thenExportTo = type;
-            this.currentChunk = 0;
-            this.synth = new Synth(this._doc.song);
-            if (type == "wav") {
-                this.synth.samplesPerSecond = 48000;
-            }
-            else if (type == "mp3") {
-                this.synth.samplesPerSecond = 44100;
-            }
-            else if (type == "ogg") {
-                this.synth.samplesPerSecond = 48000;
-            }
-            else if (type == "opus") {
-                this.synth.samplesPerSecond = 48000;
-            }
-            else {
-                throw new Error("Unrecognized file export type chosen!");
-            }
-            this._outputProgressBar.style.setProperty("width", "0%");
-            this._outputProgressLabel.innerText = "0%";
-            this.synth.loopRepeatCount = Number(this._loopDropDown.value) - 1;
-            if (!this._enableIntro.checked) {
-                for (let introIter = 0; introIter < this._doc.song.loopStart; introIter++) {
-                    this.synth.goToNextBar();
-                }
-            }
-            this.synth.initModFilters(this._doc.song);
-            this.synth.computeLatestModValues();
-            this.synth.warmUpSynthesizer(this._doc.song);
-            this.sampleFrames = this.synth.getTotalSamples(this._enableIntro.checked, this._enableOutro.checked, this.synth.loopRepeatCount);
-            this.samplesPerChunk = this.synth.samplesPerSecond * 5;
-            this.totalChunks = Math.ceil(this.sampleFrames / this.samplesPerChunk);
-            this.recordedSamplesL = new Float32Array(this.sampleFrames);
-            this.recordedSamplesR = new Float32Array(this.sampleFrames);
-            setTimeout(() => { this._synthesize(); });
-        }
-        _exportToWavFinish() {
-            const sampleFrames = this.recordedSamplesL.length;
-            const sampleRate = this.synth.samplesPerSecond;
-            const wavChannelCount = 2;
-            const bytesPerSample = 2;
-            const bitsPerSample = 8 * bytesPerSample;
-            const sampleCount = wavChannelCount * sampleFrames;
-            const totalFileSize = 44 + sampleCount * bytesPerSample;
-            let index = 0;
-            const arrayBuffer = new ArrayBuffer(totalFileSize);
-            const data = new DataView(arrayBuffer);
-            data.setUint32(index, 0x52494646, false);
-            index += 4;
-            data.setUint32(index, 36 + sampleCount * bytesPerSample, true);
-            index += 4;
-            data.setUint32(index, 0x57415645, false);
-            index += 4;
-            data.setUint32(index, 0x666D7420, false);
-            index += 4;
-            data.setUint32(index, 0x00000010, true);
-            index += 4;
-            data.setUint16(index, 0x0001, true);
-            index += 2;
-            data.setUint16(index, wavChannelCount, true);
-            index += 2;
-            data.setUint32(index, sampleRate, true);
-            index += 4;
-            data.setUint32(index, sampleRate * bytesPerSample * wavChannelCount, true);
-            index += 4;
-            data.setUint16(index, bytesPerSample * wavChannelCount, true);
-            index += 2;
-            data.setUint16(index, bitsPerSample, true);
-            index += 2;
-            data.setUint32(index, 0x64617461, false);
-            index += 4;
-            data.setUint32(index, sampleCount * bytesPerSample, true);
-            index += 4;
-            {
-                const range = (1 << (bitsPerSample - 1)) - 1;
-                for (let i = 0; i < sampleFrames; i++) {
-                    let valL = Math.floor(Math.max(-1, Math.min(1, this.recordedSamplesL[i])) * range);
-                    let valR = Math.floor(Math.max(-1, Math.min(1, this.recordedSamplesR[i])) * range);
-                    {
-                        data.setInt16(index, valL, true);
-                        index += 2;
-                        data.setInt16(index, valR, true);
-                        index += 2;
-                    }
-                }
-            }
-            const blob = new Blob([arrayBuffer], { type: "audio/wav" });
-            save$1(blob, this._fileName.value.trim() + ".wav");
-            this._close();
-        }
-        _exportToMp3Finish() {
-            const whenEncoderIsAvailable = () => {
-                const lamejs = window["lamejs"];
-                const channelCount = 2;
-                const kbps = 192;
-                const sampleBlockSize = 1152;
-                const mp3encoder = new lamejs.Mp3Encoder(channelCount, this.synth.samplesPerSecond, kbps);
-                const mp3Data = [];
-                const left = new Int16Array(this.recordedSamplesL.length);
-                const right = new Int16Array(this.recordedSamplesR.length);
-                const range = (1 << 15) - 1;
-                for (let i = 0; i < this.recordedSamplesL.length; i++) {
-                    left[i] = Math.floor(Math.max(-1, Math.min(1, this.recordedSamplesL[i])) * range);
-                    right[i] = Math.floor(Math.max(-1, Math.min(1, this.recordedSamplesR[i])) * range);
-                }
-                for (let i = 0; i < left.length; i += sampleBlockSize) {
-                    const leftChunk = left.subarray(i, i + sampleBlockSize);
-                    const rightChunk = right.subarray(i, i + sampleBlockSize);
-                    const mp3buf = mp3encoder.encodeBuffer(leftChunk, rightChunk);
-                    if (mp3buf.length > 0)
-                        mp3Data.push(mp3buf);
-                }
-                const mp3buf = mp3encoder.flush();
-                if (mp3buf.length > 0)
-                    mp3Data.push(mp3buf);
-                const blob = new Blob(mp3Data, { type: "audio/mp3" });
-                save$1(blob, this._fileName.value.trim() + ".mp3");
-                this._close();
-            };
-            if ("lamejs" in window) {
-                whenEncoderIsAvailable();
-            }
-            else {
-                var script = document.createElement("script");
-                script.src = "https://cdn.jsdelivr.net/npm/lamejs@1.2.0/lame.min.js";
-                script.onload = whenEncoderIsAvailable;
-                document.head.appendChild(script);
-            }
-        }
-        _exportToOggFinish() {
-            const scripts = [
-                "https://unpkg.com/wasm-media-encoders/dist/umd/WasmMediaEncoder.min.js",
-            ];
-            let scriptsLoaded = 0;
-            const scriptsToLoad = scripts.length;
-            const whenEncoderIsAvailable = () => {
-                scriptsLoaded++;
-                if (scriptsLoaded < scriptsToLoad)
-                    return;
-                const WasmMediaEncoder = window["WasmMediaEncoder"];
-                const channelCount = 2;
-                const quality = 10;
-                const sampleBlockSize = 4096;
-                WasmMediaEncoder.createOggEncoder().then((oggEncoder) => {
-                    oggEncoder.configure({
-                        channels: channelCount,
-                        sampleRate: this.synth.samplesPerSecond,
-                        vbrQuality: quality,
-                    });
-                    const left = this.recordedSamplesL;
-                    const right = this.recordedSamplesR;
-                    const parts = [];
-                    let sampleIndex = 0;
-                    for (; sampleIndex < left.length; sampleIndex += sampleBlockSize) {
-                        const leftChunk = left.subarray(sampleIndex, sampleIndex + sampleBlockSize);
-                        const rightChunk = right.subarray(sampleIndex, sampleIndex + sampleBlockSize);
-                        const frame = ([leftChunk, rightChunk]) ;
-                        parts.push(oggEncoder.encode(frame).slice());
-                    }
-                    parts.push(oggEncoder.finalize().slice());
-                    const blob = new Blob(parts, { type: "audio/ogg" });
-                    save$1(blob, this._fileName.value.trim() + ".ogg");
-                    this._close();
-                });
-            };
-            if ("WasmMediaEncoder" in window) {
-                scriptsLoaded = scripts.length;
-                whenEncoderIsAvailable();
-            }
-            else {
-                scriptsLoaded = 0;
-                for (const src of scripts) {
-                    const script = document.createElement("script");
-                    script.src = src;
-                    script.onload = whenEncoderIsAvailable;
-                    document.head.appendChild(script);
-                }
-            }
-        }
-        _exportToOpusFinish() {
-            const scripts = [
-                "https://cdn.jsdelivr.net/gh/mmig/opus-encdec@e33ca40b92ddff8c168c7f5aca34b626c9acc08a/dist/libopus-encoder.js",
-                "https://cdn.jsdelivr.net/gh/mmig/opus-encdec@e33ca40b92ddff8c168c7f5aca34b626c9acc08a/src/oggOpusEncoder.js"
-            ];
-            let scriptsLoaded = 0;
-            const scriptsToLoad = scripts.length;
-            const whenEncoderIsAvailable = () => {
-                scriptsLoaded++;
-                if (scriptsLoaded < scriptsToLoad)
-                    return;
-                const OggOpusEncoder = window["OggOpusEncoder"];
-                const OpusEncoderLib = window["OpusEncoderLib"];
-                OggOpusEncoder.prototype.getOpusControl = function (control) {
-                    let result = null;
-                    const doNotMangle = Math.random() > 2 ? "" : "";
-                    const location = this["_" + doNotMangle + "malloc"](4);
-                    const outputLocation = this["_" + doNotMangle + "malloc"](4);
-                    this.HEAP32[location >> 2] = outputLocation;
-                    const returnCode = this["_" + doNotMangle + "opus_encoder_ctl"](this.encoder, control, location);
-                    if (returnCode === 0) {
-                        result = this.HEAP32[outputLocation >> 2];
-                    }
-                    this["_" + doNotMangle + "free"](outputLocation);
-                    this["_" + doNotMangle + "free"](location);
-                    return result;
-                };
-                OggOpusEncoder.prototype.getLookahead = function () {
-                    var _a;
-                    return (_a = this.getOpusControl(4027)) !== null && _a !== void 0 ? _a : 0;
-                };
-                OggOpusEncoder.prototype.setBitrate = function (value) {
-                    this.setOpusControl(4002, value);
-                };
-                OggOpusEncoder.prototype.generateIdPage2 = function (lookahead) {
-                    const segmentDataView = new DataView(this.segmentData.buffer);
-                    segmentDataView.setUint32(0, 1937076303, true);
-                    segmentDataView.setUint32(4, 1684104520, true);
-                    segmentDataView.setUint8(8, 1);
-                    segmentDataView.setUint8(9, this.config.numberOfChannels);
-                    segmentDataView.setUint16(10, lookahead, true);
-                    segmentDataView.setUint32(12, this.config.originalSampleRateOverride || this.config.originalSampleRate, true);
-                    segmentDataView.setUint16(16, 0, true);
-                    segmentDataView.setUint8(18, 0);
-                    this.segmentTableIndex = 1;
-                    this.segmentDataIndex = this.segmentTable[0] = 19;
-                    this.headerType = 2;
-                    return this.generatePage();
-                };
-                const channelCount = 2;
-                const frameSizeInMilliseconds = 20;
-                const frameSizeInSeconds = frameSizeInMilliseconds / 1000;
-                const sampleBlockSize = Math.floor(this.synth.samplesPerSecond * frameSizeInSeconds);
-                const oggEncoder = new OggOpusEncoder({
-                    numberOfChannels: channelCount,
-                    originalSampleRate: this.synth.samplesPerSecond,
-                    encoderSampleRate: this.synth.samplesPerSecond,
-                    bufferLength: sampleBlockSize,
-                    encoderApplication: 2049,
-                    encoderComplexity: 10,
-                    resampleQuality: 3,
-                }, OpusEncoderLib);
-                const parts = [];
-                const left = this.recordedSamplesL;
-                const right = this.recordedSamplesR;
-                oggEncoder.setBitrate(256000);
-                parts.push(oggEncoder.generateIdPage2(oggEncoder.getLookahead()).page);
-                parts.push(oggEncoder.generateCommentPage().page);
-                let sampleIndex = 0;
-                for (; sampleIndex < left.length; sampleIndex += sampleBlockSize) {
-                    const leftChunk = left.subarray(sampleIndex, sampleIndex + sampleBlockSize);
-                    const rightChunk = right.subarray(sampleIndex, sampleIndex + sampleBlockSize);
-                    const frame = ([leftChunk, rightChunk]) ;
-                    oggEncoder.encode(frame).forEach((page) => parts.push(page.page));
-                }
-                {
-                    const paddingSize = sampleIndex - left.length;
-                    const leftChunk = new Float32Array(paddingSize);
-                    const rightChunk = new Float32Array(paddingSize);
-                    const frame = ([leftChunk, rightChunk]) ;
-                    oggEncoder.encode(frame).forEach((page) => parts.push(page.page));
-                }
-                oggEncoder.encodeFinalFrame().forEach((page) => parts.push(page.page));
-                oggEncoder.destroy();
-                const blob = new Blob(parts, { type: "audio/opus" });
-                save$1(blob, this._fileName.value.trim() + ".opus");
-                this._close();
-            };
-            if (("OggOpusEncoder" in window) && ("OpusEncoderLib" in window)) {
-                scriptsLoaded = scripts.length;
-                whenEncoderIsAvailable();
-            }
-            else {
-                scriptsLoaded = 0;
-                for (const src of scripts) {
-                    const script = document.createElement("script");
-                    script.src = src;
-                    script.onload = whenEncoderIsAvailable;
-                    document.head.appendChild(script);
-                }
-            }
-        }
-        _exportToMidi() {
-            const song = this._doc.song;
-            const midiTicksPerBeepBoxTick = 2;
-            const midiTicksPerBeat = midiTicksPerBeepBoxTick * Config.ticksPerPart * Config.partsPerBeat;
-            const midiTicksPerPart = midiTicksPerBeepBoxTick * Config.ticksPerPart;
-            const secondsPerMinute = 60;
-            const microsecondsPerMinute = secondsPerMinute * 1000000;
-            const beatsPerMinute = song.getBeatsPerMinute();
-            const microsecondsPerBeat = Math.round(microsecondsPerMinute / beatsPerMinute);
-            const midiTicksPerBar = midiTicksPerBeat * song.beatsPerBar;
-            const pitchBendRange = 24;
-            const defaultNoteVelocity = 90;
-            const unrolledBars = [];
-            if (this._enableIntro.checked) {
-                for (let bar = 0; bar < song.loopStart; bar++) {
-                    unrolledBars.push(bar);
-                }
-            }
-            for (let loopIndex = 0; loopIndex < Number(this._loopDropDown.value); loopIndex++) {
-                for (let bar = song.loopStart; bar < song.loopStart + song.loopLength; bar++) {
-                    unrolledBars.push(bar);
-                }
-            }
-            if (this._enableOutro.checked) {
-                for (let bar = song.loopStart + song.loopLength; bar < song.barCount; bar++) {
-                    unrolledBars.push(bar);
-                }
-            }
-            const tracks = [{ isMeta: true, channel: -1, midiChannel: -1, isNoise: false, isDrumset: false }];
-            let midiChannelCounter = 0;
-            let foundADrumset = false;
-            for (let channel = 0; channel < this._doc.song.pitchChannelCount + this._doc.song.noiseChannelCount; channel++) {
-                if (!foundADrumset && this._doc.song.channels[channel].instruments[0].type == 4) {
-                    tracks.push({ isMeta: false, channel: channel, midiChannel: 9, isNoise: true, isDrumset: true });
-                    foundADrumset = true;
-                }
-                else {
-                    if (midiChannelCounter >= 16)
-                        continue;
-                    tracks.push({ isMeta: false, channel: channel, midiChannel: midiChannelCounter++, isNoise: this._doc.song.getChannelIsNoise(channel), isDrumset: false });
-                    if (midiChannelCounter == 9)
-                        midiChannelCounter++;
-                }
-            }
-            const writer = new ArrayBufferWriter(1024);
-            writer.writeUint32(1297377380);
-            writer.writeUint32(6);
-            writer.writeUint16(1);
-            writer.writeUint16(tracks.length);
-            writer.writeUint16(midiTicksPerBeat);
-            for (const track of tracks) {
-                writer.writeUint32(1297379947);
-                const { isMeta, channel, midiChannel, isNoise, isDrumset } = track;
-                const trackStartIndex = writer.getWriteIndex();
-                writer.writeUint32(0);
-                let prevTime = 0;
-                let barStartTime = 0;
-                const writeEventTime = function (time) {
-                    if (time < prevTime)
-                        throw new Error("Midi event time cannot go backwards.");
-                    writer.writeMidiVariableLength(time - prevTime);
-                    prevTime = time;
-                };
-                const writeControlEvent = function (message, value) {
-                    if (!(value >= 0 && value <= 0x7F))
-                        throw new Error("Midi control event value out of range: " + value);
-                    writer.writeUint8(176 | midiChannel);
-                    writer.writeMidi7Bits(message);
-                    writer.writeMidi7Bits(value | 0);
-                };
-                if (isMeta) {
-                    writeEventTime(0);
-                    writer.writeUint8(255);
-                    writer.writeMidi7Bits(1);
-                    writer.writeMidiAscii("Composed with jummbus.bitbucket.io");
-                    writeEventTime(0);
-                    writer.writeUint8(255);
-                    writer.writeMidi7Bits(81);
-                    writer.writeMidiVariableLength(3);
-                    writer.writeUint24(microsecondsPerBeat);
-                    writeEventTime(0);
-                    writer.writeUint8(255);
-                    writer.writeMidi7Bits(88);
-                    writer.writeMidiVariableLength(4);
-                    writer.writeUint8(song.beatsPerBar);
-                    writer.writeUint8(2);
-                    writer.writeUint8(24);
-                    writer.writeUint8(8);
-                    let tempScale = song.scale == Config.scales.dictionary["Custom"].index ? song.scaleCustom : Config.scales[song.scale].flags;
-                    const isMinor = tempScale[3] && !tempScale[4];
-                    const key = song.key;
-                    let numSharps = key;
-                    if ((key & 1) == 1)
-                        numSharps += 6;
-                    if (isMinor)
-                        numSharps += 9;
-                    while (numSharps > 6)
-                        numSharps -= 12;
-                    writeEventTime(0);
-                    writer.writeUint8(255);
-                    writer.writeMidi7Bits(89);
-                    writer.writeMidiVariableLength(2);
-                    writer.writeInt8(numSharps);
-                    writer.writeUint8(isMinor ? 1 : 0);
-                    if (this._enableIntro.checked)
-                        barStartTime += midiTicksPerBar * song.loopStart;
-                    writeEventTime(barStartTime);
-                    writer.writeUint8(255);
-                    writer.writeMidi7Bits(6);
-                    writer.writeMidiAscii("Loop Start");
-                    for (let loopIndex = 0; loopIndex < parseInt(this._loopDropDown.value); loopIndex++) {
-                        barStartTime += midiTicksPerBar * song.loopLength;
-                        writeEventTime(barStartTime);
-                        writer.writeUint8(255);
-                        writer.writeMidi7Bits(6);
-                        writer.writeMidiAscii(loopIndex < Number(this._loopDropDown.value) - 1 ? "Loop Repeat" : "Loop End");
-                    }
-                    if (this._enableOutro.checked)
-                        barStartTime += midiTicksPerBar * (song.barCount - song.loopStart - song.loopLength);
-                    if (barStartTime != midiTicksPerBar * unrolledBars.length)
-                        throw new Error("Miscalculated number of bars.");
-                }
-                else {
-                    let channelName = isNoise
-                        ? "noise channel " + channel
-                        : "pitch channel " + channel;
-                    writeEventTime(0);
-                    writer.writeUint8(255);
-                    writer.writeMidi7Bits(3);
-                    writer.writeMidiAscii(channelName);
-                    writeEventTime(0);
-                    writeControlEvent(101, 0);
-                    writeEventTime(0);
-                    writeControlEvent(100, 0);
-                    writeEventTime(0);
-                    writeControlEvent(6, pitchBendRange);
-                    writeEventTime(0);
-                    writeControlEvent(38, 0);
-                    writeEventTime(0);
-                    writeControlEvent(101, 127);
-                    writeEventTime(0);
-                    writeControlEvent(100, 127);
-                    let prevInstrumentIndex = -1;
-                    function writeInstrumentSettings(instrumentIndex) {
-                        const instrument = song.channels[channel].instruments[instrumentIndex];
-                        const preset = EditorConfig.valueToPreset(instrument.preset);
-                        if (prevInstrumentIndex != instrumentIndex) {
-                            prevInstrumentIndex = instrumentIndex;
-                            writeEventTime(barStartTime);
-                            writer.writeUint8(255);
-                            writer.writeMidi7Bits(4);
-                            writer.writeMidiAscii("Instrument " + (instrumentIndex + 1));
-                            if (!isDrumset) {
-                                let instrumentProgram = 81;
-                                if (preset != null && preset.midiProgram != undefined) {
-                                    instrumentProgram = preset.midiProgram;
-                                }
-                                else if (instrument.type == 4) {
-                                    instrumentProgram = 116;
-                                }
-                                else {
-                                    if (instrument.type == 2 || instrument.type == 3) {
-                                        if (isNoise) {
-                                            instrumentProgram = 116;
-                                        }
-                                        else {
-                                            instrumentProgram = 75;
-                                        }
-                                    }
-                                    else if (instrument.type == 0) {
-                                        if (ExportPrompt.midiChipInstruments.length > instrument.chipWave) {
-                                            instrumentProgram = ExportPrompt.midiChipInstruments[instrument.chipWave];
-                                        }
-                                    }
-                                    else if (instrument.type == 6 || instrument.type == 1 || instrument.type == 11 || instrument.type == 5 || instrument.type == 8) {
-                                        instrumentProgram = 81;
-                                    }
-                                    else if (instrument.type == 7) {
-                                        instrumentProgram = 0x19;
-                                    }
-                                    else if (instrument.type == 9) {
-                                        instrumentProgram = 81;
-                                    }
-                                    else {
-                                        throw new Error("Unrecognized instrument type.");
-                                    }
-                                }
-                                writeEventTime(barStartTime);
-                                writer.writeUint8(192 | midiChannel);
-                                writer.writeMidi7Bits(instrumentProgram);
-                            }
-                            writeEventTime(barStartTime);
-                            let instrumentVolume = volumeMultToMidiVolume(Synth.instrumentVolumeToVolumeMult(instrument.volume));
-                            writeControlEvent(7, Math.min(0x7f, Math.round(instrumentVolume)));
-                            writeEventTime(barStartTime);
-                            let instrumentPan = (instrument.pan / Config.panCenter - 1) * 0x3f + 0x40;
-                            writeControlEvent(10, Math.min(0x7f, Math.round(instrumentPan)));
-                        }
-                    }
-                    if (song.getPattern(channel, 0) == null) {
-                        writeInstrumentSettings(0);
-                    }
-                    let prevPitchBend = defaultMidiPitchBend;
-                    let prevExpression = defaultMidiExpression;
-                    let shouldResetExpressionAndPitchBend = false;
-                    const channelRoot = isNoise ? Config.spectrumBasePitch : Config.keys[song.key].basePitch;
-                    const intervalScale = isNoise ? Config.noiseInterval : 1;
-                    for (const bar of unrolledBars) {
-                        const pattern = song.getPattern(channel, bar);
-                        if (pattern != null) {
-                            const instrumentIndex = pattern.instruments[0];
-                            const instrument = song.channels[channel].instruments[instrumentIndex];
-                            const preset = EditorConfig.valueToPreset(instrument.preset);
-                            writeInstrumentSettings(instrumentIndex);
-                            let usesArpeggio = instrument.getChord().arpeggiates;
-                            let polyphony = usesArpeggio ? 1 : Config.maxChordSize;
-                            if (instrument.getChord().customInterval) {
-                                if (instrument.type == 0 || instrument.type == 5) {
-                                    polyphony = 2;
-                                    usesArpeggio = true;
-                                }
-                                else if (instrument.type == 1) {
-                                    polyphony = Config.operatorCount;
-                                }
-                                else {
-                                    console.error("Unrecognized instrument type for harmonizing arpeggio: " + instrument.type);
-                                }
-                            }
-                            for (let noteIndex = 0; noteIndex < pattern.notes.length; noteIndex++) {
-                                const note = pattern.notes[noteIndex];
-                                const noteStartTime = barStartTime + note.start * midiTicksPerPart;
-                                let pinTime = noteStartTime;
-                                let pinSize = note.pins[0].size;
-                                let pinInterval = note.pins[0].interval;
-                                const prevPitches = [-1, -1, -1, -1];
-                                const nextPitches = [-1, -1, -1, -1];
-                                const toneCount = Math.min(polyphony, note.pitches.length);
-                                const velocity = isDrumset ? Math.max(1, Math.round(defaultNoteVelocity * note.pins[0].size / Config.noteSizeMax)) : defaultNoteVelocity;
-                                let mainInterval = note.pickMainInterval();
-                                let pitchOffset = mainInterval * intervalScale;
-                                if (!isDrumset) {
-                                    let maxPitchOffset = pitchBendRange;
-                                    let minPitchOffset = -pitchBendRange;
-                                    for (let pinIndex = 1; pinIndex < note.pins.length; pinIndex++) {
-                                        const interval = note.pins[pinIndex].interval * intervalScale;
-                                        maxPitchOffset = Math.min(maxPitchOffset, interval + pitchBendRange);
-                                        minPitchOffset = Math.max(minPitchOffset, interval - pitchBendRange);
-                                    }
-                                    pitchOffset = Math.min(maxPitchOffset, Math.max(minPitchOffset, pitchOffset));
-                                }
-                                for (let pinIndex = 1; pinIndex < note.pins.length; pinIndex++) {
-                                    const nextPinTime = noteStartTime + note.pins[pinIndex].time * midiTicksPerPart;
-                                    const nextPinSize = note.pins[pinIndex].size;
-                                    const nextPinInterval = note.pins[pinIndex].interval;
-                                    const length = nextPinTime - pinTime;
-                                    for (let midiTick = 0; midiTick < length; midiTick++) {
-                                        const midiTickTime = pinTime + midiTick;
-                                        const linearSize = lerp(pinSize, nextPinSize, midiTick / length);
-                                        const linearInterval = lerp(pinInterval, nextPinInterval, midiTick / length);
-                                        const interval = linearInterval * intervalScale - pitchOffset;
-                                        const pitchBend = Math.max(0, Math.min(0x3fff, Math.round(0x2000 * (1.0 + interval / pitchBendRange))));
-                                        const expression = Math.min(0x7f, Math.round(volumeMultToMidiExpression(Synth.noteSizeToVolumeMult(linearSize))));
-                                        if (pitchBend != prevPitchBend) {
-                                            writeEventTime(midiTickTime);
-                                            writer.writeUint8(224 | midiChannel);
-                                            writer.writeMidi7Bits(pitchBend & 0x7f);
-                                            writer.writeMidi7Bits((pitchBend >> 7) & 0x7f);
-                                            prevPitchBend = pitchBend;
-                                        }
-                                        if (expression != prevExpression && !isDrumset) {
-                                            writeEventTime(midiTickTime);
-                                            writeControlEvent(11, expression);
-                                            prevExpression = expression;
-                                        }
-                                        const noteStarting = midiTickTime == noteStartTime;
-                                        for (let toneIndex = 0; toneIndex < toneCount; toneIndex++) {
-                                            let nextPitch = note.pitches[toneIndex];
-                                            if (isDrumset) {
-                                                nextPitch += mainInterval;
-                                                const drumsetMap = [
-                                                    36,
-                                                    41,
-                                                    45,
-                                                    48,
-                                                    40,
-                                                    39,
-                                                    59,
-                                                    49,
-                                                    46,
-                                                    55,
-                                                    69,
-                                                    54,
-                                                ];
-                                                if (nextPitch < 0 || nextPitch >= drumsetMap.length)
-                                                    throw new Error("Could not find corresponding drumset pitch. " + nextPitch);
-                                                nextPitch = drumsetMap[nextPitch];
-                                            }
-                                            else {
-                                                if (usesArpeggio && note.pitches.length > toneIndex + 1 && toneIndex == toneCount - 1) {
-                                                    const midiTicksSinceBeat = (midiTickTime - barStartTime) % midiTicksPerBeat;
-                                                    const midiTicksPerArpeggio = Config.ticksPerArpeggio * midiTicksPerPart / Config.ticksPerPart;
-                                                    const arpeggio = Math.floor(midiTicksSinceBeat / midiTicksPerArpeggio);
-                                                    nextPitch = note.pitches[toneIndex + getArpeggioPitchIndex(note.pitches.length - toneIndex, instrument.fastTwoNoteArp, arpeggio)];
-                                                }
-                                                nextPitch = channelRoot + nextPitch * intervalScale + pitchOffset;
-                                                if (preset != null && preset.midiSubharmonicOctaves != undefined) {
-                                                    nextPitch += 12 * preset.midiSubharmonicOctaves;
-                                                }
-                                                else if (isNoise) {
-                                                    nextPitch += 12 * (+EditorConfig.presetCategories.dictionary["Drum Presets"].presets.dictionary["taiko drum"].midiSubharmonicOctaves);
-                                                }
-                                                if (isNoise)
-                                                    nextPitch *= 2;
-                                            }
-                                            nextPitch = Math.max(0, Math.min(127, nextPitch));
-                                            nextPitches[toneIndex] = nextPitch;
-                                            if (!noteStarting && prevPitches[toneIndex] != nextPitches[toneIndex]) {
-                                                writeEventTime(midiTickTime);
-                                                writer.writeUint8(128 | midiChannel);
-                                                writer.writeMidi7Bits(prevPitches[toneIndex]);
-                                                writer.writeMidi7Bits(velocity);
-                                            }
-                                        }
-                                        for (let toneIndex = 0; toneIndex < toneCount; toneIndex++) {
-                                            if (noteStarting || prevPitches[toneIndex] != nextPitches[toneIndex]) {
-                                                writeEventTime(midiTickTime);
-                                                writer.writeUint8(144 | midiChannel);
-                                                writer.writeMidi7Bits(nextPitches[toneIndex]);
-                                                writer.writeMidi7Bits(velocity);
-                                                prevPitches[toneIndex] = nextPitches[toneIndex];
-                                            }
-                                        }
-                                    }
-                                    pinTime = nextPinTime;
-                                    pinSize = nextPinSize;
-                                    pinInterval = nextPinInterval;
-                                }
-                                const noteEndTime = barStartTime + note.end * midiTicksPerPart;
-                                for (let toneIndex = 0; toneIndex < toneCount; toneIndex++) {
-                                    writeEventTime(noteEndTime);
-                                    writer.writeUint8(128 | midiChannel);
-                                    writer.writeMidi7Bits(prevPitches[toneIndex]);
-                                    writer.writeMidi7Bits(velocity);
-                                }
-                                shouldResetExpressionAndPitchBend = true;
-                            }
-                        }
-                        else {
-                            if (shouldResetExpressionAndPitchBend) {
-                                shouldResetExpressionAndPitchBend = false;
-                                if (prevExpression != defaultMidiExpression) {
-                                    prevExpression = defaultMidiExpression;
-                                    writeEventTime(barStartTime);
-                                    writeControlEvent(11, prevExpression);
-                                }
-                                if (prevPitchBend != defaultMidiPitchBend) {
-                                    prevPitchBend = defaultMidiPitchBend;
-                                    writeEventTime(barStartTime);
-                                    writer.writeUint8(224 | midiChannel);
-                                    writer.writeMidi7Bits(prevPitchBend & 0x7f);
-                                    writer.writeMidi7Bits((prevPitchBend >> 7) & 0x7f);
-                                }
-                            }
-                        }
-                        barStartTime += midiTicksPerBar;
-                    }
-                }
-                writeEventTime(barStartTime);
-                writer.writeUint8(255);
-                writer.writeMidi7Bits(47);
-                writer.writeMidiVariableLength(0x00);
-                writer.rewriteUint32(trackStartIndex, writer.getWriteIndex() - trackStartIndex - 4);
-            }
-            const blob = new Blob([writer.toCompactArrayBuffer()], { type: "audio/midi" });
-            save$1(blob, this._fileName.value.trim() + ".mid");
-            this._close();
-        }
-        _exportToJson() {
-            const jsonObject = this._doc.song.toJsonObject(this._enableIntro.checked, Number(this._loopDropDown.value), this._enableOutro.checked);
-            let whiteSpaceParam = this._removeWhitespace.checked ? undefined : '\t';
-            const jsonString = JSON.stringify(jsonObject, null, whiteSpaceParam);
-            const blob = new Blob([jsonString], { type: "application/json" });
-            save$1(blob, this._fileName.value.trim() + ".json");
-            this._close();
-        }
-        _exportToHtml() {
-            const fileContents = `\
-<!DOCTYPE html><meta charset="utf-8">
-
-You should be redirected to the song at:<br /><br />
-
-<a id="destination" href="${new URL("#" + this._doc.song.toBase64String(), location.href).href}"></a>
-
-<style>
-	:root {
-		color: white;
-		background: black;
-		font-family:
-		sans-serif;
-	}
-	a {
-		color: #98f;
-	}
-	a[href]::before {
-		content: attr(href);
-	}
-</style>
-
-<script>
-	location.assign(document.querySelector("a#destination").href);
-</script>
-`;
-            const blob = new Blob([fileContents], { type: "text/html" });
-            save$1(blob, this._fileName.value.trim() + ".html");
-            this._close();
-        }
-    }
-    ExportPrompt.midiChipInstruments = [
-        0x4A,
-        0x47,
-        0x50,
-        0x46,
-        0x44,
-        0x51,
-        0x51,
-        0x51,
-        0x51,
-    ];
-
     class Layout {
         static setLayout(layout) {
             this._styleElement.textContent = this._layoutMap[layout];
@@ -49643,6 +48805,52 @@ You should be redirected to the song at:<br /><br />
         }
     }
 
+    const defaultMidiExpression = 0x7F;
+    const defaultMidiPitchBend = 0x2000;
+    const analogousDrumMap = {
+        35: { frequency: 0, duration: 2, volume: 3 },
+        36: { frequency: 0, duration: 2, volume: 3 },
+        37: { frequency: 5, duration: 1, volume: 3 },
+        38: { frequency: 4, duration: 2, volume: 3 },
+        39: { frequency: 5, duration: 2, volume: 3 },
+        40: { frequency: 4, duration: 2, volume: 3 },
+        41: { frequency: 1, duration: 2, volume: 3 },
+        42: { frequency: 8, duration: 1, volume: 3 },
+        43: { frequency: 1, duration: 2, volume: 3 },
+        44: { frequency: 8, duration: 1, volume: 2 },
+        45: { frequency: 2, duration: 2, volume: 3 },
+        46: { frequency: 8, duration: 4, volume: 3 },
+        47: { frequency: 2, duration: 2, volume: 3 },
+        48: { frequency: 3, duration: 2, volume: 3 },
+        49: { frequency: 7, duration: 4, volume: 3 },
+        50: { frequency: 3, duration: 2, volume: 3 },
+        51: { frequency: 6, duration: 4, volume: 2 },
+        52: { frequency: 7, duration: 4, volume: 3 },
+        53: { frequency: 6, duration: 2, volume: 3 },
+        54: { frequency: 11, duration: 2, volume: 3 },
+        55: { frequency: 9, duration: 4, volume: 3 },
+        56: { frequency: 7, duration: 1, volume: 2 },
+        57: { frequency: 7, duration: 4, volume: 3 },
+        58: { frequency: 10, duration: 2, volume: 2 },
+        59: { frequency: 6, duration: 4, volume: 3 },
+        69: { frequency: 10, duration: 2, volume: 3 },
+        70: { frequency: 10, duration: 2, volume: 3 },
+        73: { frequency: 10, duration: 1, volume: 2 },
+        74: { frequency: 10, duration: 2, volume: 2 },
+    };
+    function midiVolumeToVolumeMult(volume) {
+        return Math.pow(volume / 127, 4.0) / 0.3844015376046128;
+    }
+    function volumeMultToMidiVolume(volumeMult) {
+        return Math.pow(volumeMult * 0.3844015376046128, 0.25) * 127;
+    }
+    function midiExpressionToVolumeMult(expression) {
+        return Math.pow(expression / 127, 4.0);
+    }
+    function volumeMultToMidiExpression(volumeMult) {
+        return Math.pow(volumeMult, 0.25) * 127;
+    }
+
     class ArrayBufferReader {
         constructor(data) {
             this._readIndex = 0;
@@ -49722,6 +48930,1090 @@ You should be redirected to the song at:<br /><br />
         }
     }
 
+    function transfer(source, length) {
+        const dest = new ArrayBuffer(length);
+        let nextOffset = 0;
+        let leftBytes = Math.min(source.byteLength, dest.byteLength);
+        const wordSizes = [8, 4, 2, 1];
+        for (const wordSize of wordSizes) {
+            if (leftBytes >= wordSize) {
+                const done = transferWith(wordSize, source, dest, nextOffset, leftBytes);
+                nextOffset = done.nextOffset;
+                leftBytes = done.leftBytes;
+            }
+        }
+        return dest;
+        function transferWith(wordSize, source, dest, nextOffset, leftBytes) {
+            let ViewClass = Uint8Array;
+            switch (wordSize) {
+                case 8:
+                    ViewClass = Float64Array;
+                    break;
+                case 4:
+                    ViewClass = Float32Array;
+                    break;
+                case 2:
+                    ViewClass = Uint16Array;
+                    break;
+                case 1:
+                    ViewClass = Uint8Array;
+                    break;
+                default:
+                    ViewClass = Uint8Array;
+                    break;
+            }
+            const view_source = new ViewClass(source, nextOffset, (leftBytes / wordSize) | 0);
+            const view_dest = new ViewClass(dest, nextOffset, (leftBytes / wordSize) | 0);
+            for (let i = 0; i < view_dest.length; i++) {
+                view_dest[i] = view_source[i];
+            }
+            return {
+                nextOffset: view_source.byteOffset + view_source.byteLength,
+                leftBytes: leftBytes - view_dest.length * wordSize,
+            };
+        }
+    }
+    class ArrayBufferWriter {
+        constructor(initialCapacity) {
+            this._writeIndex = 0;
+            this._fileSize = 0;
+            this._arrayBuffer = new ArrayBuffer(initialCapacity);
+            this._data = new DataView(this._arrayBuffer);
+        }
+        _addBytes(numBytes) {
+            this._fileSize += numBytes;
+            if (this._fileSize > this._arrayBuffer.byteLength) {
+                this._arrayBuffer = transfer(this._arrayBuffer, Math.max(this._arrayBuffer.byteLength * 2, this._fileSize));
+                this._data = new DataView(this._arrayBuffer);
+            }
+        }
+        getWriteIndex() {
+            return this._writeIndex;
+        }
+        rewriteUint32(index, value) {
+            this._data.setUint32(index, value >>> 0, false);
+        }
+        writeUint32(value) {
+            value = value >>> 0;
+            this._addBytes(4);
+            this._data.setUint32(this._writeIndex, value, false);
+            this._writeIndex = this._fileSize;
+        }
+        writeUint24(value) {
+            value = value >>> 0;
+            this._addBytes(3);
+            this._data.setUint8(this._writeIndex, (value >> 16) & 0xff);
+            this._data.setUint8(this._writeIndex + 1, (value >> 8) & 0xff);
+            this._data.setUint8(this._writeIndex + 2, (value) & 0xff);
+            this._writeIndex = this._fileSize;
+        }
+        writeUint16(value) {
+            value = value >>> 0;
+            this._addBytes(2);
+            this._data.setUint16(this._writeIndex, value, false);
+            this._writeIndex = this._fileSize;
+        }
+        writeUint8(value) {
+            value = value >>> 0;
+            this._addBytes(1);
+            this._data.setUint8(this._writeIndex, value);
+            this._writeIndex = this._fileSize;
+        }
+        writeInt8(value) {
+            value = value | 0;
+            this._addBytes(1);
+            this._data.setInt8(this._writeIndex, value);
+            this._writeIndex = this._fileSize;
+        }
+        writeMidi7Bits(value) {
+            value = value >>> 0;
+            if (value >= 0x80)
+                throw new Error("7 bit value contained 8th bit!");
+            this._addBytes(1);
+            this._data.setUint8(this._writeIndex, value);
+            this._writeIndex = this._fileSize;
+        }
+        writeMidiVariableLength(value) {
+            value = value >>> 0;
+            if (value > 0x0fffffff)
+                throw new Error("writeVariableLength value too big.");
+            let startWriting = false;
+            for (let i = 0; i < 4; i++) {
+                const shift = 21 - i * 7;
+                const bits = (value >>> shift) & 0x7f;
+                if (bits != 0 || i == 3)
+                    startWriting = true;
+                if (startWriting)
+                    this.writeUint8((i == 3 ? 0x00 : 0x80) | bits);
+            }
+        }
+        writeMidiAscii(string) {
+            this.writeMidiVariableLength(string.length);
+            for (let i = 0; i < string.length; i++) {
+                const charCode = string.charCodeAt(i);
+                if (charCode > 0x7f)
+                    throw new Error("Trying to write unicode character as ascii.");
+                this.writeUint8(charCode);
+            }
+        }
+        toCompactArrayBuffer() {
+            return transfer(this._arrayBuffer, this._fileSize);
+        }
+    }
+
+    const { button: button$l, div: div$l, h2: h2$k, input: input$d, select: select$d, option: option$d } = HTML;
+    function lerp(low, high, t) {
+        return low + t * (high - low);
+    }
+    function save$1(blob, name) {
+        if (navigator.msSaveOrOpenBlob) {
+            navigator.msSaveOrOpenBlob(blob, name);
+            return;
+        }
+        const anchor = document.createElement("a");
+        if (anchor.download != undefined) {
+            const url = URL.createObjectURL(blob);
+            setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
+            anchor.href = url;
+            anchor.download = name;
+            setTimeout(function () { anchor.dispatchEvent(new MouseEvent("click")); }, 0);
+        }
+        else {
+            const url = URL.createObjectURL(blob);
+            setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
+            if (!window.open(url, "_blank"))
+                window.location.href = url;
+        }
+    }
+    class ExportPrompt {
+        constructor(_doc) {
+            this._doc = _doc;
+            this.outputStarted = false;
+            this._fileName = input$d({ type: "text", style: "width: 10em;", value: "BeepBox-Song", maxlength: 250, "autofocus": "autofocus" });
+            this._computedSamplesLabel = div$l({ style: "width: 10em;" }, new Text("0:00"));
+            this._enableIntro = input$d({ type: "checkbox" });
+            this._loopDropDown = input$d({ style: "width: 3em;", type: "number", min: "1", max: "16", step: "1" });
+            this._enableOutro = input$d({ type: "checkbox" });
+            this._formatSelect = select$d({ style: "width: 100%;" }, option$d({ value: "wav" }, "Export to .wav file."), option$d({ value: "mp3" }, "Export to .mp3 file."), option$d({ value: "ogg" }, "Export to .ogg file."), option$d({ value: "opus" }, "Export to .opus file."), option$d({ value: "midi" }, "Export to .mid file."), option$d({ value: "json" }, "Export to .json file."), option$d({ value: "html" }, "Export to .html file."));
+            this._removeWhitespace = input$d({ type: "checkbox" });
+            this._removeWhitespaceDiv = div$l({ style: "vertical-align: middle; align-items: center; justify-content: space-between; margin-bottom: 14px;" }, "Remove Whitespace: ", this._removeWhitespace);
+            this._oggWarning = div$l({ style: "vertical-align: middle; align-items: center; justify-content: space-between; margin-bottom: 14px;" }, "Warning: .ogg files aren't supported on as many devices as mp3 or wav. So Playback might not be possible on specific devices.");
+            this._opusWarning = div$l({ style: "vertical-align: middle; align-items: center; justify-content: space-between; margin-bottom: 14px;" }, "Warning: .opus files aren't supported on as many devices as mp3 or wav. So Playback might not be possible on specific devices.");
+            this._cancelButton = button$l({ class: "cancelButton" });
+            this._exportButton = button$l({ class: "exportButton", style: "width:45%;" }, "Export");
+            this._outputProgressBar = div$l({ style: `width: 0%; background: ${ColorConfig.loopAccent}; height: 100%; position: absolute; z-index: 2;` });
+            this._outputProgressLabel = div$l({ style: `position: relative; top: -1px; z-index: 3;` }, "0%");
+            this._outputProgressContainer = div$l({ style: `height: 12px; background: ${ColorConfig.uiWidgetBackground}; display: block; position: relative; z-index: 1; margin-bottom: 14px;` }, this._outputProgressBar, this._outputProgressLabel);
+            this._exportPrompt = div$l({}, div$l({ class: "promptTitle", style: "margin-bottom: 14px;" }, h2$k({ class: "exportExt", style: "text-align: inherit;" }, ""), h2$k({ class: "exportTitle" }, "Export Options")), div$l({ style: "display: flex; flex-direction: row; align-items: center; justify-content: space-between; margin-bottom: 14px;" }, "File name:", this._fileName), div$l({ style: "display: flex; flex-direction: row; align-items: center; justify-content: space-between; margin-bottom: 14px;" }, "Length:", this._computedSamplesLabel), div$l({ style: "display: table; width: 100%; margin-bottom: 14px;" }, div$l({ style: "display: table-row;" }, div$l({ style: "display: table-cell;" }, "Intro:"), div$l({ style: "display: table-cell;" }, "Loop Count:"), div$l({ style: "display: table-cell;" }, "Outro:")), div$l({ style: "display: table-row; margin-bottom: 14px;" }, div$l({ style: "display: table-cell; vertical-align: middle;" }, this._enableIntro), div$l({ style: "display: table-cell; vertical-align: middle;" }, this._loopDropDown), div$l({ style: "display: table-cell; vertical-align: middle;" }, this._enableOutro))), this._removeWhitespaceDiv, this._oggWarning, div$l({ class: "selectContainer", style: "width: 100%; margin-bottom: 14px;" }, this._formatSelect), div$l({ style: "text-align: left; margin-bottom: 14px;" }, "Exporting can be slow. Reloading the page or clicking the X will cancel it. Please be patient."), this._outputProgressContainer, div$l({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between; margin-bottom: 14px;" }, this._exportButton), this._cancelButton);
+            this.container = div$l({ class: "prompt noSelection", style: "width: 200px;" }, this._exportPrompt);
+            this._close = () => {
+                if (this.synth != null)
+                    this.synth.renderingSong = false;
+                this.outputStarted = false;
+                this._doc.undo();
+            };
+            this.cleanUp = () => {
+                this._fileName.removeEventListener("input", ExportPrompt._validateFileName);
+                this._loopDropDown.removeEventListener("blur", ExportPrompt._validateNumber);
+                this._exportButton.removeEventListener("click", this._export);
+                this._cancelButton.removeEventListener("click", this._close);
+                this.container.removeEventListener("keydown", this._whenKeyPressed);
+            };
+            this._whenKeyPressed = (event) => {
+                if (event.target.tagName != "BUTTON" && event.keyCode == 13) {
+                    this._export();
+                }
+            };
+            this._export = () => {
+                if (this.outputStarted == true)
+                    return;
+                window.localStorage.setItem("exportFormat", this._formatSelect.value);
+                window.localStorage.setItem("exportWhitespace", this._removeWhitespace.value);
+                window.localStorage.setItem("exportFormat", this._formatSelect.value);
+                switch (this._formatSelect.value) {
+                    case "wav":
+                        this.outputStarted = true;
+                        this._exportTo("wav");
+                        break;
+                    case "mp3":
+                        this.outputStarted = true;
+                        this._exportTo("mp3");
+                        break;
+                    case "ogg":
+                        this.outputStarted = true;
+                        this._exportTo("ogg");
+                        break;
+                    case "opus":
+                        this.outputStarted = true;
+                        this._exportTo("opus");
+                        break;
+                    case "midi":
+                        this.outputStarted = true;
+                        this._exportToMidi();
+                        break;
+                    case "json":
+                        this.outputStarted = true;
+                        this._exportToJson();
+                        break;
+                    case "html":
+                        this._exportToHtml();
+                        break;
+                    default:
+                        throw new Error("Unhandled file export type.");
+                }
+            };
+            this._loopDropDown.value = "1";
+            if (this._doc.song.loopStart == 0) {
+                this._enableIntro.checked = false;
+                this._enableIntro.disabled = true;
+            }
+            else {
+                this._enableIntro.checked = true;
+                this._enableIntro.disabled = false;
+            }
+            if (this._doc.song.loopStart + this._doc.song.loopLength == this._doc.song.barCount) {
+                this._enableOutro.checked = false;
+                this._enableOutro.disabled = true;
+            }
+            else {
+                this._enableOutro.checked = true;
+                this._enableOutro.disabled = false;
+            }
+            const lastExportFormat = window.localStorage.getItem("exportFormat");
+            if (lastExportFormat != null) {
+                this._formatSelect.value = lastExportFormat;
+            }
+            const lastExportWhitespace = window.localStorage.getItem("exportWhitespace") == "true";
+            if (lastExportWhitespace != null) {
+                this._removeWhitespace.checked = lastExportWhitespace;
+            }
+            if (this._formatSelect.value == "json") {
+                this._removeWhitespaceDiv.style.display = "block";
+            }
+            else {
+                this._removeWhitespaceDiv.style.display = "none";
+            }
+            if (this._formatSelect.value == "ogg") {
+                this._oggWarning.style.display = "block";
+            }
+            else {
+                this._oggWarning.style.display = "none";
+            }
+            if (this._formatSelect.value == "opus") {
+                this._oggWarning.style.display = "block";
+            }
+            else {
+                this._oggWarning.style.display = "none";
+            }
+            this._fileName.select();
+            setTimeout(() => this._fileName.focus());
+            this._fileName.addEventListener("input", ExportPrompt._validateFileName);
+            this._loopDropDown.addEventListener("blur", ExportPrompt._validateNumber);
+            this._exportButton.addEventListener("click", this._export);
+            this._cancelButton.addEventListener("click", this._close);
+            this._enableOutro.addEventListener("click", () => { this._computedSamplesLabel.firstChild.textContent = this._doc.samplesToTime(this._doc.synth.getTotalSamples(this._enableIntro.checked, this._enableOutro.checked, +this._loopDropDown.value - 1)); });
+            this._enableIntro.addEventListener("click", () => { this._computedSamplesLabel.firstChild.textContent = this._doc.samplesToTime(this._doc.synth.getTotalSamples(this._enableIntro.checked, this._enableOutro.checked, +this._loopDropDown.value - 1)); });
+            this._loopDropDown.addEventListener("change", () => { this._computedSamplesLabel.firstChild.textContent = this._doc.samplesToTime(this._doc.synth.getTotalSamples(this._enableIntro.checked, this._enableOutro.checked, +this._loopDropDown.value - 1)); });
+            this._formatSelect.addEventListener("change", () => { if (this._formatSelect.value == "json") {
+                this._removeWhitespaceDiv.style.display = "block";
+            }
+            else {
+                this._removeWhitespaceDiv.style.display = "none";
+            } });
+            this._formatSelect.addEventListener("change", () => {
+                if (this._formatSelect.value == "ogg") {
+                    this._oggWarning.style.display = "block";
+                }
+                else {
+                    this._oggWarning.style.display = "none";
+                }
+                if (this._formatSelect.value == "opus") {
+                    this._opusWarning.style.display = "block";
+                }
+                else {
+                    this._opusWarning.style.display = "none";
+                }
+            });
+            this.container.addEventListener("keydown", this._whenKeyPressed);
+            this._fileName.value = _doc.song.title;
+            ExportPrompt._validateFileName(null, this._fileName);
+            this._computedSamplesLabel.firstChild.textContent = this._doc.samplesToTime(this._doc.synth.getTotalSamples(this._enableIntro.checked, this._enableOutro.checked, +this._loopDropDown.value - 1));
+        }
+        changeFileName(newValue) {
+            this._fileName.value = newValue;
+        }
+        static _validateFileName(event, use) {
+            let input;
+            if (event != null) {
+                input = event.target;
+            }
+            else if (use != undefined) {
+                input = use;
+            }
+            else {
+                return;
+            }
+            const deleteChars = /[\+\*\$\?\|\{\}\\\/<>#%!`&'"=:@]/gi;
+            if (deleteChars.test(input.value)) {
+                let cursorPos = input.selectionStart;
+                input.value = input.value.replace(deleteChars, "");
+                cursorPos--;
+                input.setSelectionRange(cursorPos, cursorPos);
+            }
+        }
+        static _validateNumber(event) {
+            const input = event.target;
+            input.value = Math.floor(Math.max(Number(input.min), Math.min(Number(input.max), Number(input.value)))) + "";
+        }
+        _synthesize() {
+            if (this.outputStarted == false) {
+                return;
+            }
+            const currentFrame = this.currentChunk * this.samplesPerChunk;
+            const samplesInChunk = Math.min(this.samplesPerChunk, this.sampleFrames - currentFrame);
+            const tempSamplesL = new Float32Array(samplesInChunk);
+            const tempSamplesR = new Float32Array(samplesInChunk);
+            this.synth.renderingSong = true;
+            this.synth.synthesize(tempSamplesL, tempSamplesR, samplesInChunk);
+            this.recordedSamplesL.set(tempSamplesL, currentFrame);
+            this.recordedSamplesR.set(tempSamplesR, currentFrame);
+            this._outputProgressBar.style.setProperty("width", Math.round((this.currentChunk + 1) / this.totalChunks * 100.0) + "%");
+            this._outputProgressLabel.innerText = Math.round((this.currentChunk + 1) / this.totalChunks * 100.0) + "%";
+            this.currentChunk++;
+            if (this.currentChunk >= this.totalChunks) {
+                this.synth.renderingSong = false;
+                this._outputProgressLabel.innerText = "Encoding...";
+                if (this.thenExportTo == "wav") {
+                    this._exportToWavFinish();
+                }
+                else if (this.thenExportTo == "mp3") {
+                    this._exportToMp3Finish();
+                }
+                else if (this.thenExportTo == "ogg") {
+                    this._exportToOggFinish();
+                }
+                else if (this.thenExportTo == "opus") {
+                    this._exportToOpusFinish();
+                }
+                else {
+                    throw new Error("Unrecognized file export type chosen!");
+                }
+            }
+            else {
+                setTimeout(() => { this._synthesize(); });
+            }
+        }
+        _exportTo(type) {
+            this.thenExportTo = type;
+            this.currentChunk = 0;
+            this.synth = new Synth(this._doc.song);
+            if (type == "wav") {
+                this.synth.samplesPerSecond = 48000;
+            }
+            else if (type == "mp3") {
+                this.synth.samplesPerSecond = 44100;
+            }
+            else if (type == "ogg") {
+                this.synth.samplesPerSecond = 48000;
+            }
+            else if (type == "opus") {
+                this.synth.samplesPerSecond = 48000;
+            }
+            else {
+                throw new Error("Unrecognized file export type chosen!");
+            }
+            this._outputProgressBar.style.setProperty("width", "0%");
+            this._outputProgressLabel.innerText = "0%";
+            this.synth.loopRepeatCount = Number(this._loopDropDown.value) - 1;
+            if (!this._enableIntro.checked) {
+                for (let introIter = 0; introIter < this._doc.song.loopStart; introIter++) {
+                    this.synth.goToNextBar();
+                }
+            }
+            this.synth.initModFilters(this._doc.song);
+            this.synth.computeLatestModValues();
+            this.synth.warmUpSynthesizer(this._doc.song);
+            this.sampleFrames = this.synth.getTotalSamples(this._enableIntro.checked, this._enableOutro.checked, this.synth.loopRepeatCount);
+            this.samplesPerChunk = this.synth.samplesPerSecond * 5;
+            this.totalChunks = Math.ceil(this.sampleFrames / this.samplesPerChunk);
+            this.recordedSamplesL = new Float32Array(this.sampleFrames);
+            this.recordedSamplesR = new Float32Array(this.sampleFrames);
+            setTimeout(() => { this._synthesize(); });
+        }
+        _exportToWavFinish() {
+            const sampleFrames = this.recordedSamplesL.length;
+            const sampleRate = this.synth.samplesPerSecond;
+            const wavChannelCount = 2;
+            const bytesPerSample = 2;
+            const bitsPerSample = 8 * bytesPerSample;
+            const sampleCount = wavChannelCount * sampleFrames;
+            const totalFileSize = 44 + sampleCount * bytesPerSample;
+            let index = 0;
+            const arrayBuffer = new ArrayBuffer(totalFileSize);
+            const data = new DataView(arrayBuffer);
+            data.setUint32(index, 0x52494646, false);
+            index += 4;
+            data.setUint32(index, 36 + sampleCount * bytesPerSample, true);
+            index += 4;
+            data.setUint32(index, 0x57415645, false);
+            index += 4;
+            data.setUint32(index, 0x666D7420, false);
+            index += 4;
+            data.setUint32(index, 0x00000010, true);
+            index += 4;
+            data.setUint16(index, 0x0001, true);
+            index += 2;
+            data.setUint16(index, wavChannelCount, true);
+            index += 2;
+            data.setUint32(index, sampleRate, true);
+            index += 4;
+            data.setUint32(index, sampleRate * bytesPerSample * wavChannelCount, true);
+            index += 4;
+            data.setUint16(index, bytesPerSample * wavChannelCount, true);
+            index += 2;
+            data.setUint16(index, bitsPerSample, true);
+            index += 2;
+            data.setUint32(index, 0x64617461, false);
+            index += 4;
+            data.setUint32(index, sampleCount * bytesPerSample, true);
+            index += 4;
+            {
+                const range = (1 << (bitsPerSample - 1)) - 1;
+                for (let i = 0; i < sampleFrames; i++) {
+                    let valL = Math.floor(Math.max(-1, Math.min(1, this.recordedSamplesL[i])) * range);
+                    let valR = Math.floor(Math.max(-1, Math.min(1, this.recordedSamplesR[i])) * range);
+                    {
+                        data.setInt16(index, valL, true);
+                        index += 2;
+                        data.setInt16(index, valR, true);
+                        index += 2;
+                    }
+                }
+            }
+            const blob = new Blob([arrayBuffer], { type: "audio/wav" });
+            save$1(blob, this._fileName.value.trim() + ".wav");
+            this._close();
+        }
+        _exportToMp3Finish() {
+            const whenEncoderIsAvailable = () => {
+                const lamejs = window["lamejs"];
+                const channelCount = 2;
+                const kbps = 192;
+                const sampleBlockSize = 1152;
+                const mp3encoder = new lamejs.Mp3Encoder(channelCount, this.synth.samplesPerSecond, kbps);
+                const mp3Data = [];
+                const left = new Int16Array(this.recordedSamplesL.length);
+                const right = new Int16Array(this.recordedSamplesR.length);
+                const range = (1 << 15) - 1;
+                for (let i = 0; i < this.recordedSamplesL.length; i++) {
+                    left[i] = Math.floor(Math.max(-1, Math.min(1, this.recordedSamplesL[i])) * range);
+                    right[i] = Math.floor(Math.max(-1, Math.min(1, this.recordedSamplesR[i])) * range);
+                }
+                for (let i = 0; i < left.length; i += sampleBlockSize) {
+                    const leftChunk = left.subarray(i, i + sampleBlockSize);
+                    const rightChunk = right.subarray(i, i + sampleBlockSize);
+                    const mp3buf = mp3encoder.encodeBuffer(leftChunk, rightChunk);
+                    if (mp3buf.length > 0)
+                        mp3Data.push(mp3buf);
+                }
+                const mp3buf = mp3encoder.flush();
+                if (mp3buf.length > 0)
+                    mp3Data.push(mp3buf);
+                const blob = new Blob(mp3Data, { type: "audio/mp3" });
+                save$1(blob, this._fileName.value.trim() + ".mp3");
+                this._close();
+            };
+            if ("lamejs" in window) {
+                whenEncoderIsAvailable();
+            }
+            else {
+                var script = document.createElement("script");
+                script.src = "https://cdn.jsdelivr.net/npm/lamejs@1.2.0/lame.min.js";
+                script.onload = whenEncoderIsAvailable;
+                document.head.appendChild(script);
+            }
+        }
+        _exportToOggFinish() {
+            const scripts = [
+                "https://unpkg.com/wasm-media-encoders/dist/umd/WasmMediaEncoder.min.js",
+            ];
+            let scriptsLoaded = 0;
+            const scriptsToLoad = scripts.length;
+            const whenEncoderIsAvailable = () => {
+                scriptsLoaded++;
+                if (scriptsLoaded < scriptsToLoad)
+                    return;
+                const WasmMediaEncoder = window["WasmMediaEncoder"];
+                const channelCount = 2;
+                const quality = 10;
+                const sampleBlockSize = 4096;
+                WasmMediaEncoder.createOggEncoder().then((oggEncoder) => {
+                    oggEncoder.configure({
+                        channels: channelCount,
+                        sampleRate: this.synth.samplesPerSecond,
+                        vbrQuality: quality,
+                    });
+                    const left = this.recordedSamplesL;
+                    const right = this.recordedSamplesR;
+                    const parts = [];
+                    let sampleIndex = 0;
+                    for (; sampleIndex < left.length; sampleIndex += sampleBlockSize) {
+                        const leftChunk = left.subarray(sampleIndex, sampleIndex + sampleBlockSize);
+                        const rightChunk = right.subarray(sampleIndex, sampleIndex + sampleBlockSize);
+                        const frame = ([leftChunk, rightChunk]) ;
+                        parts.push(oggEncoder.encode(frame).slice());
+                    }
+                    parts.push(oggEncoder.finalize().slice());
+                    const blob = new Blob(parts, { type: "audio/ogg" });
+                    save$1(blob, this._fileName.value.trim() + ".ogg");
+                    this._close();
+                });
+            };
+            if ("WasmMediaEncoder" in window) {
+                scriptsLoaded = scripts.length;
+                whenEncoderIsAvailable();
+            }
+            else {
+                scriptsLoaded = 0;
+                for (const src of scripts) {
+                    const script = document.createElement("script");
+                    script.src = src;
+                    script.onload = whenEncoderIsAvailable;
+                    document.head.appendChild(script);
+                }
+            }
+        }
+        _exportToOpusFinish() {
+            const scripts = [
+                "https://cdn.jsdelivr.net/gh/mmig/opus-encdec@e33ca40b92ddff8c168c7f5aca34b626c9acc08a/dist/libopus-encoder.js",
+                "https://cdn.jsdelivr.net/gh/mmig/opus-encdec@e33ca40b92ddff8c168c7f5aca34b626c9acc08a/src/oggOpusEncoder.js"
+            ];
+            let scriptsLoaded = 0;
+            const scriptsToLoad = scripts.length;
+            const whenEncoderIsAvailable = () => {
+                scriptsLoaded++;
+                if (scriptsLoaded < scriptsToLoad)
+                    return;
+                const OggOpusEncoder = window["OggOpusEncoder"];
+                const OpusEncoderLib = window["OpusEncoderLib"];
+                OggOpusEncoder.prototype.getOpusControl = function (control) {
+                    let result = null;
+                    const doNotMangle = Math.random() > 2 ? "" : "";
+                    const location = this["_" + doNotMangle + "malloc"](4);
+                    const outputLocation = this["_" + doNotMangle + "malloc"](4);
+                    this.HEAP32[location >> 2] = outputLocation;
+                    const returnCode = this["_" + doNotMangle + "opus_encoder_ctl"](this.encoder, control, location);
+                    if (returnCode === 0) {
+                        result = this.HEAP32[outputLocation >> 2];
+                    }
+                    this["_" + doNotMangle + "free"](outputLocation);
+                    this["_" + doNotMangle + "free"](location);
+                    return result;
+                };
+                OggOpusEncoder.prototype.getLookahead = function () {
+                    var _a;
+                    return (_a = this.getOpusControl(4027)) !== null && _a !== void 0 ? _a : 0;
+                };
+                OggOpusEncoder.prototype.setBitrate = function (value) {
+                    this.setOpusControl(4002, value);
+                };
+                OggOpusEncoder.prototype.generateIdPage2 = function (lookahead) {
+                    const segmentDataView = new DataView(this.segmentData.buffer);
+                    segmentDataView.setUint32(0, 1937076303, true);
+                    segmentDataView.setUint32(4, 1684104520, true);
+                    segmentDataView.setUint8(8, 1);
+                    segmentDataView.setUint8(9, this.config.numberOfChannels);
+                    segmentDataView.setUint16(10, lookahead, true);
+                    segmentDataView.setUint32(12, this.config.originalSampleRateOverride || this.config.originalSampleRate, true);
+                    segmentDataView.setUint16(16, 0, true);
+                    segmentDataView.setUint8(18, 0);
+                    this.segmentTableIndex = 1;
+                    this.segmentDataIndex = this.segmentTable[0] = 19;
+                    this.headerType = 2;
+                    return this.generatePage();
+                };
+                const channelCount = 2;
+                const frameSizeInMilliseconds = 20;
+                const frameSizeInSeconds = frameSizeInMilliseconds / 1000;
+                const sampleBlockSize = Math.floor(this.synth.samplesPerSecond * frameSizeInSeconds);
+                const oggEncoder = new OggOpusEncoder({
+                    numberOfChannels: channelCount,
+                    originalSampleRate: this.synth.samplesPerSecond,
+                    encoderSampleRate: this.synth.samplesPerSecond,
+                    bufferLength: sampleBlockSize,
+                    encoderApplication: 2049,
+                    encoderComplexity: 10,
+                    resampleQuality: 3,
+                }, OpusEncoderLib);
+                const parts = [];
+                const left = this.recordedSamplesL;
+                const right = this.recordedSamplesR;
+                oggEncoder.setBitrate(256000);
+                parts.push(oggEncoder.generateIdPage2(oggEncoder.getLookahead()).page);
+                parts.push(oggEncoder.generateCommentPage().page);
+                let sampleIndex = 0;
+                for (; sampleIndex < left.length; sampleIndex += sampleBlockSize) {
+                    const leftChunk = left.subarray(sampleIndex, sampleIndex + sampleBlockSize);
+                    const rightChunk = right.subarray(sampleIndex, sampleIndex + sampleBlockSize);
+                    const frame = ([leftChunk, rightChunk]) ;
+                    oggEncoder.encode(frame).forEach((page) => parts.push(page.page));
+                }
+                {
+                    const paddingSize = sampleIndex - left.length;
+                    const leftChunk = new Float32Array(paddingSize);
+                    const rightChunk = new Float32Array(paddingSize);
+                    const frame = ([leftChunk, rightChunk]) ;
+                    oggEncoder.encode(frame).forEach((page) => parts.push(page.page));
+                }
+                oggEncoder.encodeFinalFrame().forEach((page) => parts.push(page.page));
+                oggEncoder.destroy();
+                const blob = new Blob(parts, { type: "audio/opus" });
+                save$1(blob, this._fileName.value.trim() + ".opus");
+                this._close();
+            };
+            if (("OggOpusEncoder" in window) && ("OpusEncoderLib" in window)) {
+                scriptsLoaded = scripts.length;
+                whenEncoderIsAvailable();
+            }
+            else {
+                scriptsLoaded = 0;
+                for (const src of scripts) {
+                    const script = document.createElement("script");
+                    script.src = src;
+                    script.onload = whenEncoderIsAvailable;
+                    document.head.appendChild(script);
+                }
+            }
+        }
+        _exportToMidi() {
+            const song = this._doc.song;
+            const midiTicksPerBeepBoxTick = 2;
+            const midiTicksPerBeat = midiTicksPerBeepBoxTick * Config.ticksPerPart * Config.partsPerBeat;
+            const midiTicksPerPart = midiTicksPerBeepBoxTick * Config.ticksPerPart;
+            const secondsPerMinute = 60;
+            const microsecondsPerMinute = secondsPerMinute * 1000000;
+            const beatsPerMinute = song.getBeatsPerMinute();
+            const microsecondsPerBeat = Math.round(microsecondsPerMinute / beatsPerMinute);
+            const midiTicksPerBar = midiTicksPerBeat * song.beatsPerBar;
+            const pitchBendRange = 24;
+            const defaultNoteVelocity = 90;
+            const unrolledBars = [];
+            if (this._enableIntro.checked) {
+                for (let bar = 0; bar < song.loopStart; bar++) {
+                    unrolledBars.push(bar);
+                }
+            }
+            for (let loopIndex = 0; loopIndex < Number(this._loopDropDown.value); loopIndex++) {
+                for (let bar = song.loopStart; bar < song.loopStart + song.loopLength; bar++) {
+                    unrolledBars.push(bar);
+                }
+            }
+            if (this._enableOutro.checked) {
+                for (let bar = song.loopStart + song.loopLength; bar < song.barCount; bar++) {
+                    unrolledBars.push(bar);
+                }
+            }
+            const tracks = [{ isMeta: true, channel: -1, midiChannel: -1, isNoise: false, isDrumset: false }];
+            let midiChannelCounter = 0;
+            let foundADrumset = false;
+            for (let channel = 0; channel < this._doc.song.pitchChannelCount + this._doc.song.noiseChannelCount; channel++) {
+                if (!foundADrumset && this._doc.song.channels[channel].instruments[0].type == 4) {
+                    tracks.push({ isMeta: false, channel: channel, midiChannel: 9, isNoise: true, isDrumset: true });
+                    foundADrumset = true;
+                }
+                else {
+                    if (midiChannelCounter >= 16)
+                        continue;
+                    tracks.push({ isMeta: false, channel: channel, midiChannel: midiChannelCounter++, isNoise: this._doc.song.getChannelIsNoise(channel), isDrumset: false });
+                    if (midiChannelCounter == 9)
+                        midiChannelCounter++;
+                }
+            }
+            const writer = new ArrayBufferWriter(1024);
+            writer.writeUint32(1297377380);
+            writer.writeUint32(6);
+            writer.writeUint16(1);
+            writer.writeUint16(tracks.length);
+            writer.writeUint16(midiTicksPerBeat);
+            for (const track of tracks) {
+                writer.writeUint32(1297379947);
+                const { isMeta, channel, midiChannel, isNoise, isDrumset } = track;
+                const trackStartIndex = writer.getWriteIndex();
+                writer.writeUint32(0);
+                let prevTime = 0;
+                let barStartTime = 0;
+                const writeEventTime = function (time) {
+                    if (time < prevTime)
+                        throw new Error("Midi event time cannot go backwards.");
+                    writer.writeMidiVariableLength(time - prevTime);
+                    prevTime = time;
+                };
+                const writeControlEvent = function (message, value) {
+                    if (!(value >= 0 && value <= 0x7F))
+                        throw new Error("Midi control event value out of range: " + value);
+                    writer.writeUint8(176 | midiChannel);
+                    writer.writeMidi7Bits(message);
+                    writer.writeMidi7Bits(value | 0);
+                };
+                if (isMeta) {
+                    writeEventTime(0);
+                    writer.writeUint8(255);
+                    writer.writeMidi7Bits(1);
+                    writer.writeMidiAscii("Composed with jummbus.bitbucket.io");
+                    writeEventTime(0);
+                    writer.writeUint8(255);
+                    writer.writeMidi7Bits(81);
+                    writer.writeMidiVariableLength(3);
+                    writer.writeUint24(microsecondsPerBeat);
+                    writeEventTime(0);
+                    writer.writeUint8(255);
+                    writer.writeMidi7Bits(88);
+                    writer.writeMidiVariableLength(4);
+                    writer.writeUint8(song.beatsPerBar);
+                    writer.writeUint8(2);
+                    writer.writeUint8(24);
+                    writer.writeUint8(8);
+                    let tempScale = song.scale == Config.scales.dictionary["Custom"].index ? song.scaleCustom : Config.scales[song.scale].flags;
+                    const isMinor = tempScale[3] && !tempScale[4];
+                    const key = song.key;
+                    let numSharps = key;
+                    if ((key & 1) == 1)
+                        numSharps += 6;
+                    if (isMinor)
+                        numSharps += 9;
+                    while (numSharps > 6)
+                        numSharps -= 12;
+                    writeEventTime(0);
+                    writer.writeUint8(255);
+                    writer.writeMidi7Bits(89);
+                    writer.writeMidiVariableLength(2);
+                    writer.writeInt8(numSharps);
+                    writer.writeUint8(isMinor ? 1 : 0);
+                    if (this._enableIntro.checked)
+                        barStartTime += midiTicksPerBar * song.loopStart;
+                    writeEventTime(barStartTime);
+                    writer.writeUint8(255);
+                    writer.writeMidi7Bits(6);
+                    writer.writeMidiAscii("Loop Start");
+                    for (let loopIndex = 0; loopIndex < parseInt(this._loopDropDown.value); loopIndex++) {
+                        barStartTime += midiTicksPerBar * song.loopLength;
+                        writeEventTime(barStartTime);
+                        writer.writeUint8(255);
+                        writer.writeMidi7Bits(6);
+                        writer.writeMidiAscii(loopIndex < Number(this._loopDropDown.value) - 1 ? "Loop Repeat" : "Loop End");
+                    }
+                    if (this._enableOutro.checked)
+                        barStartTime += midiTicksPerBar * (song.barCount - song.loopStart - song.loopLength);
+                    if (barStartTime != midiTicksPerBar * unrolledBars.length)
+                        throw new Error("Miscalculated number of bars.");
+                }
+                else {
+                    let channelName = isNoise
+                        ? "noise channel " + channel
+                        : "pitch channel " + channel;
+                    writeEventTime(0);
+                    writer.writeUint8(255);
+                    writer.writeMidi7Bits(3);
+                    writer.writeMidiAscii(channelName);
+                    writeEventTime(0);
+                    writeControlEvent(101, 0);
+                    writeEventTime(0);
+                    writeControlEvent(100, 0);
+                    writeEventTime(0);
+                    writeControlEvent(6, pitchBendRange);
+                    writeEventTime(0);
+                    writeControlEvent(38, 0);
+                    writeEventTime(0);
+                    writeControlEvent(101, 127);
+                    writeEventTime(0);
+                    writeControlEvent(100, 127);
+                    let prevInstrumentIndex = -1;
+                    function writeInstrumentSettings(instrumentIndex) {
+                        const instrument = song.channels[channel].instruments[instrumentIndex];
+                        const preset = EditorConfig.valueToPreset(instrument.preset);
+                        if (prevInstrumentIndex != instrumentIndex) {
+                            prevInstrumentIndex = instrumentIndex;
+                            writeEventTime(barStartTime);
+                            writer.writeUint8(255);
+                            writer.writeMidi7Bits(4);
+                            writer.writeMidiAscii("Instrument " + (instrumentIndex + 1));
+                            if (!isDrumset) {
+                                let instrumentProgram = 81;
+                                if (preset != null && preset.midiProgram != undefined) {
+                                    instrumentProgram = preset.midiProgram;
+                                }
+                                else if (instrument.type == 4) {
+                                    instrumentProgram = 116;
+                                }
+                                else {
+                                    if (instrument.type == 2 || instrument.type == 3) {
+                                        if (isNoise) {
+                                            instrumentProgram = 116;
+                                        }
+                                        else {
+                                            instrumentProgram = 75;
+                                        }
+                                    }
+                                    else if (instrument.type == 0) {
+                                        if (ExportPrompt.midiChipInstruments.length > instrument.chipWave) {
+                                            instrumentProgram = ExportPrompt.midiChipInstruments[instrument.chipWave];
+                                        }
+                                    }
+                                    else if (instrument.type == 6 || instrument.type == 1 || instrument.type == 11 || instrument.type == 5 || instrument.type == 8) {
+                                        instrumentProgram = 81;
+                                    }
+                                    else if (instrument.type == 7) {
+                                        instrumentProgram = 0x19;
+                                    }
+                                    else if (instrument.type == 9) {
+                                        instrumentProgram = 81;
+                                    }
+                                    else {
+                                        throw new Error("Unrecognized instrument type.");
+                                    }
+                                }
+                                writeEventTime(barStartTime);
+                                writer.writeUint8(192 | midiChannel);
+                                writer.writeMidi7Bits(instrumentProgram);
+                            }
+                            writeEventTime(barStartTime);
+                            let instrumentVolume = volumeMultToMidiVolume(Synth.instrumentVolumeToVolumeMult(instrument.volume));
+                            writeControlEvent(7, Math.min(0x7f, Math.round(instrumentVolume)));
+                            writeEventTime(barStartTime);
+                            let instrumentPan = (instrument.pan / Config.panCenter - 1) * 0x3f + 0x40;
+                            writeControlEvent(10, Math.min(0x7f, Math.round(instrumentPan)));
+                        }
+                    }
+                    if (song.getPattern(channel, 0) == null) {
+                        writeInstrumentSettings(0);
+                    }
+                    let prevPitchBend = defaultMidiPitchBend;
+                    let prevExpression = defaultMidiExpression;
+                    let shouldResetExpressionAndPitchBend = false;
+                    const channelRoot = isNoise ? Config.spectrumBasePitch : Config.keys[song.key].basePitch;
+                    const intervalScale = isNoise ? Config.noiseInterval : 1;
+                    for (const bar of unrolledBars) {
+                        const pattern = song.getPattern(channel, bar);
+                        if (pattern != null) {
+                            const instrumentIndex = pattern.instruments[0];
+                            const instrument = song.channels[channel].instruments[instrumentIndex];
+                            const preset = EditorConfig.valueToPreset(instrument.preset);
+                            writeInstrumentSettings(instrumentIndex);
+                            let usesArpeggio = instrument.getChord().arpeggiates;
+                            let polyphony = usesArpeggio ? 1 : Config.maxChordSize;
+                            if (instrument.getChord().customInterval) {
+                                if (instrument.type == 0 || instrument.type == 5) {
+                                    polyphony = 2;
+                                    usesArpeggio = true;
+                                }
+                                else if (instrument.type == 1) {
+                                    polyphony = Config.operatorCount;
+                                }
+                                else {
+                                    console.error("Unrecognized instrument type for harmonizing arpeggio: " + instrument.type);
+                                }
+                            }
+                            for (let noteIndex = 0; noteIndex < pattern.notes.length; noteIndex++) {
+                                const note = pattern.notes[noteIndex];
+                                const noteStartTime = barStartTime + note.start * midiTicksPerPart;
+                                let pinTime = noteStartTime;
+                                let pinSize = note.pins[0].size;
+                                let pinInterval = note.pins[0].interval;
+                                const prevPitches = [-1, -1, -1, -1];
+                                const nextPitches = [-1, -1, -1, -1];
+                                const toneCount = Math.min(polyphony, note.pitches.length);
+                                const velocity = isDrumset ? Math.max(1, Math.round(defaultNoteVelocity * note.pins[0].size / Config.noteSizeMax)) : defaultNoteVelocity;
+                                let mainInterval = note.pickMainInterval();
+                                let pitchOffset = mainInterval * intervalScale;
+                                if (!isDrumset) {
+                                    let maxPitchOffset = pitchBendRange;
+                                    let minPitchOffset = -pitchBendRange;
+                                    for (let pinIndex = 1; pinIndex < note.pins.length; pinIndex++) {
+                                        const interval = note.pins[pinIndex].interval * intervalScale;
+                                        maxPitchOffset = Math.min(maxPitchOffset, interval + pitchBendRange);
+                                        minPitchOffset = Math.max(minPitchOffset, interval - pitchBendRange);
+                                    }
+                                    pitchOffset = Math.min(maxPitchOffset, Math.max(minPitchOffset, pitchOffset));
+                                }
+                                for (let pinIndex = 1; pinIndex < note.pins.length; pinIndex++) {
+                                    const nextPinTime = noteStartTime + note.pins[pinIndex].time * midiTicksPerPart;
+                                    const nextPinSize = note.pins[pinIndex].size;
+                                    const nextPinInterval = note.pins[pinIndex].interval;
+                                    const length = nextPinTime - pinTime;
+                                    for (let midiTick = 0; midiTick < length; midiTick++) {
+                                        const midiTickTime = pinTime + midiTick;
+                                        const linearSize = lerp(pinSize, nextPinSize, midiTick / length);
+                                        const linearInterval = lerp(pinInterval, nextPinInterval, midiTick / length);
+                                        const interval = linearInterval * intervalScale - pitchOffset;
+                                        const pitchBend = Math.max(0, Math.min(0x3fff, Math.round(0x2000 * (1.0 + interval / pitchBendRange))));
+                                        const expression = Math.min(0x7f, Math.round(volumeMultToMidiExpression(Synth.noteSizeToVolumeMult(linearSize))));
+                                        if (pitchBend != prevPitchBend) {
+                                            writeEventTime(midiTickTime);
+                                            writer.writeUint8(224 | midiChannel);
+                                            writer.writeMidi7Bits(pitchBend & 0x7f);
+                                            writer.writeMidi7Bits((pitchBend >> 7) & 0x7f);
+                                            prevPitchBend = pitchBend;
+                                        }
+                                        if (expression != prevExpression && !isDrumset) {
+                                            writeEventTime(midiTickTime);
+                                            writeControlEvent(11, expression);
+                                            prevExpression = expression;
+                                        }
+                                        const noteStarting = midiTickTime == noteStartTime;
+                                        for (let toneIndex = 0; toneIndex < toneCount; toneIndex++) {
+                                            let nextPitch = note.pitches[toneIndex];
+                                            if (isDrumset) {
+                                                nextPitch += mainInterval;
+                                                const drumsetMap = [
+                                                    36,
+                                                    41,
+                                                    45,
+                                                    48,
+                                                    40,
+                                                    39,
+                                                    59,
+                                                    49,
+                                                    46,
+                                                    55,
+                                                    69,
+                                                    54,
+                                                ];
+                                                if (nextPitch < 0 || nextPitch >= drumsetMap.length)
+                                                    throw new Error("Could not find corresponding drumset pitch. " + nextPitch);
+                                                nextPitch = drumsetMap[nextPitch];
+                                            }
+                                            else {
+                                                if (usesArpeggio && note.pitches.length > toneIndex + 1 && toneIndex == toneCount - 1) {
+                                                    const midiTicksSinceBeat = (midiTickTime - barStartTime) % midiTicksPerBeat;
+                                                    const midiTicksPerArpeggio = Config.ticksPerArpeggio * midiTicksPerPart / Config.ticksPerPart;
+                                                    const arpeggio = Math.floor(midiTicksSinceBeat / midiTicksPerArpeggio);
+                                                    nextPitch = note.pitches[toneIndex + getArpeggioPitchIndex(note.pitches.length - toneIndex, instrument.fastTwoNoteArp, arpeggio)];
+                                                }
+                                                nextPitch = channelRoot + nextPitch * intervalScale + pitchOffset;
+                                                if (preset != null && preset.midiSubharmonicOctaves != undefined) {
+                                                    nextPitch += 12 * preset.midiSubharmonicOctaves;
+                                                }
+                                                else if (isNoise) {
+                                                    nextPitch += 12 * (+EditorConfig.presetCategories.dictionary["Drum Presets"].presets.dictionary["taiko drum"].midiSubharmonicOctaves);
+                                                }
+                                                if (isNoise)
+                                                    nextPitch *= 2;
+                                            }
+                                            nextPitch = Math.max(0, Math.min(127, nextPitch));
+                                            nextPitches[toneIndex] = nextPitch;
+                                            if (!noteStarting && prevPitches[toneIndex] != nextPitches[toneIndex]) {
+                                                writeEventTime(midiTickTime);
+                                                writer.writeUint8(128 | midiChannel);
+                                                writer.writeMidi7Bits(prevPitches[toneIndex]);
+                                                writer.writeMidi7Bits(velocity);
+                                            }
+                                        }
+                                        for (let toneIndex = 0; toneIndex < toneCount; toneIndex++) {
+                                            if (noteStarting || prevPitches[toneIndex] != nextPitches[toneIndex]) {
+                                                writeEventTime(midiTickTime);
+                                                writer.writeUint8(144 | midiChannel);
+                                                writer.writeMidi7Bits(nextPitches[toneIndex]);
+                                                writer.writeMidi7Bits(velocity);
+                                                prevPitches[toneIndex] = nextPitches[toneIndex];
+                                            }
+                                        }
+                                    }
+                                    pinTime = nextPinTime;
+                                    pinSize = nextPinSize;
+                                    pinInterval = nextPinInterval;
+                                }
+                                const noteEndTime = barStartTime + note.end * midiTicksPerPart;
+                                for (let toneIndex = 0; toneIndex < toneCount; toneIndex++) {
+                                    writeEventTime(noteEndTime);
+                                    writer.writeUint8(128 | midiChannel);
+                                    writer.writeMidi7Bits(prevPitches[toneIndex]);
+                                    writer.writeMidi7Bits(velocity);
+                                }
+                                shouldResetExpressionAndPitchBend = true;
+                            }
+                        }
+                        else {
+                            if (shouldResetExpressionAndPitchBend) {
+                                shouldResetExpressionAndPitchBend = false;
+                                if (prevExpression != defaultMidiExpression) {
+                                    prevExpression = defaultMidiExpression;
+                                    writeEventTime(barStartTime);
+                                    writeControlEvent(11, prevExpression);
+                                }
+                                if (prevPitchBend != defaultMidiPitchBend) {
+                                    prevPitchBend = defaultMidiPitchBend;
+                                    writeEventTime(barStartTime);
+                                    writer.writeUint8(224 | midiChannel);
+                                    writer.writeMidi7Bits(prevPitchBend & 0x7f);
+                                    writer.writeMidi7Bits((prevPitchBend >> 7) & 0x7f);
+                                }
+                            }
+                        }
+                        barStartTime += midiTicksPerBar;
+                    }
+                }
+                writeEventTime(barStartTime);
+                writer.writeUint8(255);
+                writer.writeMidi7Bits(47);
+                writer.writeMidiVariableLength(0x00);
+                writer.rewriteUint32(trackStartIndex, writer.getWriteIndex() - trackStartIndex - 4);
+            }
+            const blob = new Blob([writer.toCompactArrayBuffer()], { type: "audio/midi" });
+            save$1(blob, this._fileName.value.trim() + ".mid");
+            this._close();
+        }
+        _exportToJson() {
+            const jsonObject = this._doc.song.toJsonObject(this._enableIntro.checked, Number(this._loopDropDown.value), this._enableOutro.checked);
+            let whiteSpaceParam = this._removeWhitespace.checked ? undefined : '\t';
+            const jsonString = JSON.stringify(jsonObject, null, whiteSpaceParam);
+            const blob = new Blob([jsonString], { type: "application/json" });
+            save$1(blob, this._fileName.value.trim() + ".json");
+            this._close();
+        }
+        _exportToHtml() {
+            const fileContents = `\
+<!DOCTYPE html><meta charset="utf-8">
+
+You should be redirected to the song at:<br /><br />
+
+<a id="destination" href="${new URL("#" + this._doc.song.toBase64String(), location.href).href}"></a>
+
+<style>
+	:root {
+		color: white;
+		background: black;
+		font-family:
+		sans-serif;
+	}
+	a {
+		color: #98f;
+	}
+	a[href]::before {
+		content: attr(href);
+	}
+</style>
+
+<script>
+	location.assign(document.querySelector("a#destination").href);
+</script>
+`;
+            const blob = new Blob([fileContents], { type: "text/html" });
+            save$1(blob, this._fileName.value.trim() + ".html");
+            this._close();
+        }
+    }
+    ExportPrompt.midiChipInstruments = [
+        0x4A,
+        0x47,
+        0x50,
+        0x46,
+        0x44,
+        0x51,
+        0x51,
+        0x51,
+        0x51,
+    ];
+
     const { button: button$k, p: p$9, div: div$k, h2: h2$j, input: input$c, select: select$c, option: option$c } = HTML;
     class ImportPrompt {
         constructor(_doc) {
@@ -49799,6 +50091,9 @@ You should be redirected to the song at:<br /><br />
             this._cancelButton.addEventListener("click", this._close);
             this._importButton.addEventListener("click", this._importCategoryButton);
             this._exportButton.addEventListener("click", this._exportCategoryButton);
+            if (this._doc.prompt == "export") {
+                this._exportCategoryButton();
+            }
         }
         _parseMidiFile(buffer) {
             const reader = new ArrayBufferReader(new DataView(buffer));
@@ -51572,7 +51867,7 @@ You should be redirected to the song at:<br /><br />
                 }
                 this._doc.setProspectiveChange(this._change);
             }
-            else if (this._cursor.mode == this._bothMode) {
+            else {
                 this._updateCursorStatus();
                 this._updatePreview();
             }
@@ -51590,7 +51885,7 @@ You should be redirected to the song at:<br /><br />
                 else if (this._cursor.mode == this._endMode) {
                     highlightStart = (this._doc.song.loopStart + this._doc.song.loopLength) * this._barWidth - radius * 2;
                 }
-                else {
+                else if (this._cursor.mode == this._bothMode) {
                     const endPoints = this._findEndPoints(this._cursor.startBar);
                     highlightStart = (endPoints.start) * this._barWidth;
                     highlightStop = (endPoints.start + endPoints.length) * this._barWidth;
@@ -56432,7 +56727,7 @@ You should be redirected to the song at:<br /><br />
     class ThemePrompt {
         constructor(_doc) {
             this._doc = _doc;
-            this._themeSelect = select$6({ style: "width: 100%;", id: "themeSelect" }, optgroup$1({ label: "AbyssBox Themes" }, option$6({ value: "AbyssBox Classic" }, "AbyssBox Classic"), option$6({ value: "AbyssBox Competitive" }, "AbyssBox Competitive"), option$6({ value: "AbyssBox Light" }, "AbyssBox Light"), option$6({ value: "AbyssBox 0.8" }, "AbyssBox 0.8"), option$6({ value: "AbyssBox Piano" }, "AbyssBox Piano [!]"), option$6({ value: "Half-Life" }, "Half-Life"), option$6({ value: "Half-Life: Source" }, "Half-Life: Source"), option$6({ value: "Doom 1993" }, "Doom 1993"), option$6({ value: "Undertale" }, "Undertale"), option$6({ value: "Yume Nikki" }, "Yume Nikki [!]"), option$6({ value: "Scratch" }, "Scratch"), option$6({ value: "Scratch Addons" }, "Scratch Addons"), option$6({ value: "Windows Xp" }, "Windows Xp"), option$6({ value: "Frutiger Aero" }, "Frutiger Aero"), option$6({ value: "Skeuomorphic" }, "Skeuomorphic/Early 2000's (LeoV)"), option$6({ value: "Glyde" }, "Glyde"), option$6({ value: "starry studio" }, "Starry Studio"), option$6({ value: "Terminal 2.0 (AB)" }, "Terminal 2.0 (AB)"), option$6({ value: "Slushie" }, "Slushie"), option$6({ value: "Slushie Pixel" }, "Slushie 2"), option$6({ value: "BeepBox Pixel" }, "BeepBox Pixel"), option$6({ value: "forest 2" }, "Forest 2"), option$6({ value: "canyon 2" }, "Canyon 2"), option$6({ value: "Nebula 2" }, "Nebula 2"), option$6({ value: "Ghost House" }, "Ghost House"), option$6({ value: "Ghost House 2" }, "Ghost House 2")), optgroup$1({ label: "BeepBox Themes" }, option$6({ value: "dark classic" }, "BeepBox Dark"), option$6({ value: "light classic" }, "BeepBox Light"), option$6({ value: "dark competition" }, "BeepBox Competition Dark")), optgroup$1({ label: "JummBox Themes" }, option$6({ value: "jummbox classic" }, "JummBox Dark"), option$6({ value: "jummbox light" }, "JummBox Light"), option$6({ value: "forest" }, "Forest"), option$6({ value: "canyon" }, "Canyon"), option$6({ value: "midnight" }, "Midnight"), option$6({ value: "beachcombing" }, "Beachcombing"), option$6({ value: "violet verdant" }, "Violet Verdant"), option$6({ value: "sunset" }, "Sunset"), option$6({ value: "autumn" }, "Autumn"), option$6({ value: "fruit" }, "Shadowfruit"), option$6({ value: "toxic" }, "Toxic"), option$6({ value: "roe" }, "Roe"), option$6({ value: "moonlight" }, "Moonlight"), option$6({ value: "portal" }, "Portal"), option$6({ value: "fusion" }, "Fusion"), option$6({ value: "inverse" }, "Inverse"), option$6({ value: "nebula" }, "Nebula"), option$6({ value: "roe light" }, "Roe Light"), option$6({ value: "amoled dark" }, "High Contrast Dark"), option$6({ value: "energized" }, "Energized"), option$6({ value: "neapolitan" }, "Neapolitan"), option$6({ value: "mono" }, "Poly"), option$6({ value: "blutonium" }, "Blutonium")), optgroup$1({ label: "ModBox Themes" }, option$6({ value: "modbox classic" }, "Modbox"), option$6({ value: "modbox 2" }, "Modbox 2.0"), option$6({ value: "modbox artic" }, "Artic"), option$6({ value: "modbox cinnamon" }, "Cinnamon Roll [!]"), option$6({ value: "modbox ocean" }, "Ocean"), option$6({ value: "modbox rainbow" }, "Rainbow [!]"), option$6({ value: "modbox float" }, "Float [!]"), option$6({ value: "modbox windows" }, "Windows"), option$6({ value: "modbox grassland" }, "Grassland"), option$6({ value: "modbox dessert" }, "Dessert"), option$6({ value: "modbox kahoot" }, "Kahootiest"), option$6({ value: "modbox bitbeam" }, "Beam to the Bit [!]"), option$6({ value: "modbox egg" }, "Pretty Egg"), option$6({ value: "modbox pony" }, "Poniryoshka"), option$6({ value: "modbox gameboy" }, "Gameboy [!]"), option$6({ value: "modbox woodkid" }, "Woodkid [!]"), option$6({ value: "modbox midnight" }, "Midnight [!]"), option$6({ value: "modbox snedbox" }, "Snedbox"), option$6({ value: "modbox unnamed" }, "unnamed [!]"), option$6({ value: "modbox piano" }, "Piano [!]"), option$6({ value: "modbox halloween" }, "Halloween [!]"), option$6({ value: "modbox frozen" }, "FrozenOver❄️ [!]")), optgroup$1({ label: "ShitBox Themes" }, option$6({ value: "shitbox 1.0" }, "Shitbox 1.0"), option$6({ value: "shitbox 2.0" }, "Shitbox 2.0"), option$6({ value: "shitbox 3.0" }, "Shitbox 3.0/shitbox4"), option$6({ value: "shitbox ModBox 2.0" }, "Shitbox ModBox 2.0"), option$6({ value: "shitbox Realm" }, "Shitbox Realm [!]")), optgroup$1({ label: "Nepbox Themes" }, option$6({ value: "nepbox" }, "Nepbox"), option$6({ value: "nepbox laffey" }, "Laffey"), option$6({ value: "nepbox snedbox" }, "Snedbox (Nb) [!]"), option$6({ value: "nepbox piano" }, "Piano (Nb) [!]")), optgroup$1({ label: "Mod Default Themes" }, option$6({ value: "sandbox classic" }, "Sandbox"), option$6({ value: "harrybox" }, "Haileybox"), option$6({ value: "brucebox" }, "Brucebox"), option$6({ value: "nerdbox" }, "NerdBox"), option$6({ value: "zefbox" }, "Zefbox"), option$6({ value: "cardboardbox classic" }, "Cardboardbox"), option$6({ value: "blubox classic" }, "Blubox"), option$6({ value: "dogebox classic" }, "Dogebox"), option$6({ value: "dogebox dark" }, "Way too Dark (DB)/TOO DARK(BluB)"), option$6({ value: "wackybox" }, "Wackybox"), option$6({ value: "todbox dark mode" }, "Todbox Dark Mode"), option$6({ value: "mainbox 1.0" }, "Mainbox"), option$6({ value: "microbox" }, "MicroBox"), option$6({ value: "paandorasbox" }, "PaandorasBox"), option$6({ value: "foxbox" }, "FoxBox"), option$6({ value: "midbox" }, "Midbox"), option$6({ value: "gold light" }, "Gold Light"), option$6({ value: "dogebox2" }, "Dogebox2"), option$6({ value: "WeebBox" }, "WeebBox"), option$6({ value: "BoxBeep Dark" }, "BoxBeep Dark"), option$6({ value: "BoxBeep light" }, "BoxBeep Light"), option$6({ value: "birdbox dark" }, "BirdBox Dark"), option$6({ value: "birdbox light" }, "BirdBox Light")), optgroup$1({ label: "Miscellaneous Themes" }, option$6({ value: "azur lane" }, "Azur Lane"), option$6({ value: "AWeebyssBox" }, "AWeebyssBox"), option$6({ value: "Deuteranopia" }, "Deuteranopia"), option$6({ value: "Protanopia" }, "Protanopia"), option$6({ value: "Tritanopia" }, "Tritanopia"), option$6({ value: "2012 Video Tutorial" }, "2012 Video Tutorial"), option$6({ value: "I am on fire" }, "I am on fire"), option$6({ value: "custom" }, "Custom")));
+            this._themeSelect = select$6({ style: "width: 100%;", id: "themeSelect" }, optgroup$1({ label: "AbyssBox Themes" }, option$6({ value: "AbyssBox Classic" }, "AbyssBox Classic"), option$6({ value: "AbyssBox Competitive" }, "AbyssBox Competitive"), option$6({ value: "AbyssBox Light" }, "AbyssBox Light"), option$6({ value: "AbyssBox 0.8" }, "AbyssBox 0.8"), option$6({ value: "AbyssBox Piano" }, "AbyssBox Piano [!]"), option$6({ value: "Half-Life" }, "Half-Life"), option$6({ value: "Half-Life: Source" }, "Half-Life: Source"), option$6({ value: "Doom 1993" }, "Doom 1993"), option$6({ value: "Undertale" }, "Undertale"), option$6({ value: "Yume Nikki" }, "Yume Nikki [!]"), option$6({ value: "Scratch" }, "Scratch"), option$6({ value: "Scratch Addons" }, "Scratch Addons"), option$6({ value: "Windows Xp" }, "Windows Xp"), option$6({ value: "Frutiger Aero" }, "Frutiger Aero"), option$6({ value: "Skeuomorphic" }, "Skeuomorphic/Early 2000's (LeoV)"), option$6({ value: "corporate dark" }, "Corporate Dark"), option$6({ value: "corporate light" }, "Corporate Light"), option$6({ value: "Glyde" }, "Glyde"), option$6({ value: "starry studio" }, "Starry Studio"), option$6({ value: "Terminal 2.0 (AB)" }, "Terminal 2.0 (AB)"), option$6({ value: "Slushie" }, "Slushie"), option$6({ value: "Slushie Pixel" }, "Slushie 2"), option$6({ value: "BeepBox Pixel" }, "BeepBox Pixel"), option$6({ value: "forest 2" }, "Forest 2"), option$6({ value: "canyon 2" }, "Canyon 2"), option$6({ value: "Nebula 2" }, "Nebula 2"), option$6({ value: "Ghost House" }, "Ghost House"), option$6({ value: "Ghost House 2" }, "Ghost House 2")), optgroup$1({ label: "BeepBox Themes" }, option$6({ value: "dark classic" }, "BeepBox Dark"), option$6({ value: "light classic" }, "BeepBox Light"), option$6({ value: "dark competition" }, "BeepBox Competition Dark")), optgroup$1({ label: "JummBox Themes" }, option$6({ value: "jummbox classic" }, "JummBox Dark"), option$6({ value: "jummbox light" }, "JummBox Light"), option$6({ value: "forest" }, "Forest"), option$6({ value: "canyon" }, "Canyon"), option$6({ value: "midnight" }, "Midnight"), option$6({ value: "beachcombing" }, "Beachcombing"), option$6({ value: "violet verdant" }, "Violet Verdant"), option$6({ value: "sunset" }, "Sunset"), option$6({ value: "autumn" }, "Autumn"), option$6({ value: "fruit" }, "Shadowfruit"), option$6({ value: "toxic" }, "Toxic"), option$6({ value: "roe" }, "Roe"), option$6({ value: "moonlight" }, "Moonlight"), option$6({ value: "portal" }, "Portal"), option$6({ value: "fusion" }, "Fusion"), option$6({ value: "inverse" }, "Inverse"), option$6({ value: "nebula" }, "Nebula"), option$6({ value: "roe light" }, "Roe Light"), option$6({ value: "amoled dark" }, "High Contrast Dark"), option$6({ value: "energized" }, "Energized"), option$6({ value: "neapolitan" }, "Neapolitan"), option$6({ value: "mono" }, "Poly"), option$6({ value: "blutonium" }, "Blutonium")), optgroup$1({ label: "ModBox Themes" }, option$6({ value: "modbox classic" }, "Modbox"), option$6({ value: "modbox 2" }, "Modbox 2.0"), option$6({ value: "modbox artic" }, "Artic"), option$6({ value: "modbox cinnamon" }, "Cinnamon Roll [!]"), option$6({ value: "modbox ocean" }, "Ocean"), option$6({ value: "modbox rainbow" }, "Rainbow [!]"), option$6({ value: "modbox float" }, "Float [!]"), option$6({ value: "modbox windows" }, "Windows"), option$6({ value: "modbox grassland" }, "Grassland"), option$6({ value: "modbox dessert" }, "Dessert"), option$6({ value: "modbox kahoot" }, "Kahootiest"), option$6({ value: "modbox bitbeam" }, "Beam to the Bit [!]"), option$6({ value: "modbox egg" }, "Pretty Egg"), option$6({ value: "modbox pony" }, "Poniryoshka"), option$6({ value: "modbox gameboy" }, "Gameboy [!]"), option$6({ value: "modbox woodkid" }, "Woodkid [!]"), option$6({ value: "modbox midnight" }, "Midnight [!]"), option$6({ value: "modbox snedbox" }, "Snedbox"), option$6({ value: "modbox unnamed" }, "unnamed [!]"), option$6({ value: "modbox piano" }, "Piano [!]"), option$6({ value: "modbox halloween" }, "Halloween [!]"), option$6({ value: "modbox frozen" }, "FrozenOver❄️ [!]")), optgroup$1({ label: "ShitBox Themes" }, option$6({ value: "shitbox 1.0" }, "Shitbox 1.0"), option$6({ value: "shitbox 2.0" }, "Shitbox 2.0"), option$6({ value: "shitbox 3.0" }, "Shitbox 3.0/shitbox4"), option$6({ value: "shitbox ModBox 2.0" }, "Shitbox ModBox 2.0"), option$6({ value: "shitbox Realm" }, "Shitbox Realm [!]")), optgroup$1({ label: "Nepbox Themes" }, option$6({ value: "nepbox" }, "Nepbox"), option$6({ value: "nepbox laffey" }, "Laffey"), option$6({ value: "nepbox snedbox" }, "Snedbox (Nb) [!]"), option$6({ value: "nepbox piano" }, "Piano (Nb) [!]")), optgroup$1({ label: "Mod Default Themes" }, option$6({ value: "sandbox classic" }, "Sandbox"), option$6({ value: "harrybox" }, "Haileybox"), option$6({ value: "brucebox" }, "Brucebox"), option$6({ value: "nerdbox" }, "NerdBox"), option$6({ value: "zefbox" }, "Zefbox"), option$6({ value: "cardboardbox classic" }, "Cardboardbox"), option$6({ value: "blubox classic" }, "Blubox"), option$6({ value: "dogebox classic" }, "Dogebox"), option$6({ value: "dogebox dark" }, "Way too Dark (DB)/TOO DARK(BluB)"), option$6({ value: "wackybox" }, "Wackybox"), option$6({ value: "todbox dark mode" }, "Todbox Dark Mode"), option$6({ value: "mainbox 1.0" }, "Mainbox"), option$6({ value: "microbox" }, "MicroBox"), option$6({ value: "paandorasbox" }, "PaandorasBox"), option$6({ value: "foxbox" }, "FoxBox"), option$6({ value: "midbox" }, "Midbox"), option$6({ value: "gold light" }, "Gold Light"), option$6({ value: "dogebox2" }, "Dogebox2"), option$6({ value: "WeebBox" }, "WeebBox"), option$6({ value: "BoxBeep Dark" }, "BoxBeep Dark"), option$6({ value: "BoxBeep light" }, "BoxBeep Light"), option$6({ value: "birdbox dark" }, "BirdBox Dark"), option$6({ value: "birdbox light" }, "BirdBox Light")), optgroup$1({ label: "Miscellaneous Themes" }, option$6({ value: "azur lane" }, "Azur Lane"), option$6({ value: "AWeebyssBox" }, "AWeebyssBox"), option$6({ value: "Deuteranopia" }, "Deuteranopia"), option$6({ value: "Protanopia" }, "Protanopia"), option$6({ value: "Tritanopia" }, "Tritanopia"), option$6({ value: "2012 Video Tutorial" }, "2012 Video Tutorial"), option$6({ value: "I am on fire" }, "I am on fire"), option$6({ value: "custom" }, "Custom")));
             this._cancelButton = button$b({ class: "cancelButton" });
             this._okayButton = button$b({ class: "okayButton", style: "width:45%;" }, "Okay");
             this.lastTheme = window.localStorage.getItem("colorTheme");
@@ -56654,8 +56949,8 @@ You should be redirected to the song at:<br /><br />
             this._basicCatagoryButton = button$a({ style: "border-image-source: none !important; height: auto; min-height: var(--button-size); margin: 0.5em; width: 34%; border-bottom: solid; border-bottom-color: var(--link-accent);" }, "Templates");
             this._editorCatagoryButton = button$a({ style: "border-image-source: none !important; height: auto; min-height: var(--button-size); margin: 0.5em; width:34%; color: var(--secondary-text);" }, "Editor");
             this._cssCatagoryButton = button$a({ style: "border-image-source: none !important; height: auto; min-height: var(--button-size); margin: 0.5em; width:34%; color: var(--secondary-text);" }, "Import/Export");
-            this._fullThemeSelect = select$5({ style: "width: 100%;", id: "themeSelect" }, option$5({ selected: true, disabled: true, hidden: false }, "Pick a Base Theme"), option$5({ value: "AbyssBox Classic" }, "AbyssBox Classic"), option$5({ value: "AbyssBox Competitive" }, "AbyssBox Competitive"), option$5({ value: "AbyssBox Light" }, "AbyssBox Light"), option$5({ value: "AbyssBox 0.8" }, "AbyssBox 0.8"), option$5({ value: "AbyssBox Piano" }, "AbyssBox Piano"), option$5({ value: "Half-Life" }, "Half-Life"), option$5({ value: "Half-Life: Source" }, "Half-Life: Source"), option$5({ value: "Doom 1993" }, "Doom 1993"), option$5({ value: "Undertale" }, "Undertale"), option$5({ value: "Yume Nikki" }, "Yume Nikki [!]"), option$5({ value: "Scratch" }, "Scratch"), option$5({ value: "Scratch Addons" }, "Scratch Addons"), option$5({ value: "Windows Xp" }, "Windows Xp"), option$5({ value: "Frutiger Aero" }, "Frutiger Aero"), option$5({ value: "Skeuomorphic" }, "Skeuomorphic/Early 2000's (LeoV)"), option$5({ value: "Glyde" }, "Glyde"), option$5({ value: "starry studio" }, "Starry Studio"), option$5({ value: "Terminal 2.0 (AB)" }, "Terminal 2.0 (AB)"), option$5({ value: "Slushie" }, "Slushie"), option$5({ value: "Slushie Pixel" }, "Slushie 2"), option$5({ value: "dark classic" }, "BeepBox Dark"), option$5({ value: "light classic" }, "BeepBox Light"), option$5({ value: "dark competition" }, "BeepBox Competition Dark"), option$5({ value: "BeepBox Pixel" }, "BeepBox Pixel"), option$5({ value: "jummbox classic" }, "JummBox Dark"), option$5({ value: "jummbox light" }, "JummBox Light"), option$5({ value: "gold light" }, "Gold Light"), option$5({ value: "forest" }, "Forest"), option$5({ value: "forest 2" }, "Forest 2"), option$5({ value: "canyon" }, "Canyon"), option$5({ value: "canyon 2" }, "Canyon 2"), option$5({ value: "midnight" }, "Midnight"), option$5({ value: "beachcombing" }, "Beachcombing"), option$5({ value: "violet verdant" }, "Violet Verdant"), option$5({ value: "sunset" }, "Sunset"), option$5({ value: "autumn" }, "Autumn"), option$5({ value: "fruit" }, "Shadowfruit"), option$5({ value: "toxic" }, "Toxic"), option$5({ value: "roe" }, "Roe"), option$5({ value: "moonlight" }, "Moonlight"), option$5({ value: "portal" }, "Portal"), option$5({ value: "fusion" }, "Fusion"), option$5({ value: "inverse" }, "Inverse"), option$5({ value: "nebula" }, "Nebula"), option$5({ value: "Nebula 2" }, "Nebula 2"), option$5({ value: "roe light" }, "Roe Light"), option$5({ value: "amoled dark" }, "High Contrast Dark"), option$5({ value: "energized" }, "Energized"), option$5({ value: "neapolitan" }, "Neapolitan"), option$5({ value: "mono" }, "Poly"), option$5({ value: "blutonium" }, "Blutonium"), option$5({ value: "modbox classic" }, "Modbox"), option$5({ value: "modbox 2" }, "Modbox 2.0"), option$5({ value: "modbox artic" }, "Artic"), option$5({ value: "modbox cinnamon" }, "Cinnamon Roll [!]"), option$5({ value: "modbox ocean" }, "Ocean"), option$5({ value: "modbox rainbow" }, "Rainbow [!]"), option$5({ value: "modbox float" }, "Float [!]"), option$5({ value: "modbox windows" }, "Windows"), option$5({ value: "modbox grassland" }, "Grassland"), option$5({ value: "modbox dessert" }, "Dessert"), option$5({ value: "modbox kahoot" }, "Kahootiest"), option$5({ value: "modbox bitbeam" }, "Beam to the Bit [!]"), option$5({ value: "modbox egg" }, "Pretty Egg"), option$5({ value: "modbox pony" }, "Poniryoshka"), option$5({ value: "modbox gameboy" }, "Gameboy [!]"), option$5({ value: "modbox woodkid" }, "Woodkid [!]"), option$5({ value: "modbox midnight" }, "Midnight [!]"), option$5({ value: "modbox snedbox" }, "Snedbox"), option$5({ value: "modbox unnamed" }, "unnamed [!]"), option$5({ value: "modbox piano" }, "Piano [!]"), option$5({ value: "modbox halloween" }, "Halloween [!]"), option$5({ value: "modbox frozen" }, "FrozenOver❄️ [!]"), option$5({ value: "Ghost House" }, "Ghost House"), option$5({ value: "Ghost House 2" }, "Ghost House 2"), option$5({ value: "azur lane" }, "Azur Lane"), option$5({ value: "sandbox classic" }, "Sandbox"), option$5({ value: "harrybox" }, "Haileybox"), option$5({ value: "brucebox" }, "Brucebox"), option$5({ value: "shitbox 1.0" }, "Shitbox 1.0"), option$5({ value: "shitbox 2.0" }, "Shitbox 2.0"), option$5({ value: "shitbox 3.0" }, "Shitbox 3.0/shitbox4"), option$5({ value: "shitbox ModBox 2.0" }, "Shitbox ModBox 2.0"), option$5({ value: "shitbox Realm" }, "Shitbox Realm [!]"), option$5({ value: "nerdbox" }, "NerdBox"), option$5({ value: "zefbox" }, "Zefbox"), option$5({ value: "cardboardbox classic" }, "Cardboardbox"), option$5({ value: "blubox classic" }, "Blubox"), option$5({ value: "dogebox classic" }, "Dogebox"), option$5({ value: "wackybox" }, "Wackybox"), option$5({ value: "todbox dark mode" }, "Todbox Dark Mode"), option$5({ value: "mainbox 1.0" }, "Mainbox"), option$5({ value: "microbox" }, "MicroBox"), option$5({ value: "paandorasbox" }, "PaandorasBox"), option$5({ value: "foxbox" }, "FoxBox"), option$5({ value: "midbox" }, "Midbox"), option$5({ value: "dogebox2" }, "Dogebox2"), option$5({ value: "nepbox" }, "Nepbox"), option$5({ value: "nepbox laffey" }, "Laffey"), option$5({ value: "nepbox snedbox" }, "Snedbox (Nb) [!]"), option$5({ value: "nepbox piano" }, "Piano (Nb) [!]"), option$5({ value: "WeebBox" }, "WeebBox"), option$5({ value: "BoxBeep Dark" }, "BoxBeep Dark"), option$5({ value: "BoxBeep light" }, "BoxBeep Light"), option$5({ value: "AWeebyssBox" }, "AWeebyssBox"), option$5({ value: "Deuteranopia" }, "Deuteranopia"), option$5({ value: "Protanopia" }, "Protanopia"), option$5({ value: "Tritanopia" }, "Tritanopia"), option$5({ value: "2012 Video Tutorial" }, "2012 Video Tutorial"), option$5({ value: "I am on fire" }, "I am on fire"), option$5({ value: "custom" }, "Custom"));
-            this._baseColorSelect = select$5({ style: "width: 100%; display:none; margin: 0.5em 0;", id: "baseColorSelect" }, option$5({ selected: true, disabled: true, hidden: false }, "Pick a Base Color Palette"), option$5({ value: "AbyssBox Classic" }, "AbyssBox Classic"), option$5({ value: "AbyssBox Competitive" }, "AbyssBox Competitive"), option$5({ value: "AbyssBox Light" }, "AbyssBox Light"), option$5({ value: "Half-Life" }, "Half-Life"), option$5({ value: "Doom 1993" }, "Doom 1993"), option$5({ value: "Undertale" }, "Undertale"), option$5({ value: "Yume Nikki" }, "Yume Nikki [!]"), option$5({ value: "Scratch" }, "Scratch"), option$5({ value: "Scratch Addons" }, "Scratch Addons"), option$5({ value: "Windows Xp" }, "Windows Xp"), option$5({ value: "Frutiger Aero" }, "Frutiger Aero"), option$5({ value: "Skeuomorphic" }, "Skeuomorphic/Early 2000's (LeoV)"), option$5({ value: "Glyde" }, "Glyde"), option$5({ value: "starry studio" }, "Starry Studio"), option$5({ value: "Terminal 2.0 (AB)" }, "Terminal 2.0 (AB)"), option$5({ value: "Slushie" }, "Slushie"), option$5({ value: "dark classic" }, "BeepBox Dark"), option$5({ value: "light classic" }, "BeepBox Light"), option$5({ value: "dark competition" }, "BeepBox Competition Dark"), option$5({ value: "jummbox classic" }, "JummBox Dark"), option$5({ value: "jummbox light" }, "JummBox Light"), option$5({ value: "gold light" }, "Gold Light"), option$5({ value: "forest" }, "Forest"), option$5({ value: "forest 2" }, "Forest 2"), option$5({ value: "canyon" }, "Canyon"), option$5({ value: "canyon 2" }, "Canyon 2"), option$5({ value: "midnight" }, "Midnight"), option$5({ value: "beachcombing" }, "Beachcombing"), option$5({ value: "violet verdant" }, "Violet Verdant"), option$5({ value: "sunset" }, "Sunset"), option$5({ value: "autumn" }, "Autumn"), option$5({ value: "fruit" }, "Shadowfruit"), option$5({ value: "toxic" }, "Toxic"), option$5({ value: "roe" }, "Roe"), option$5({ value: "moonlight" }, "Moonlight"), option$5({ value: "portal" }, "Portal"), option$5({ value: "fusion" }, "Fusion"), option$5({ value: "inverse" }, "Inverse"), option$5({ value: "nebula" }, "Nebula"), option$5({ value: "Nebula 2" }, "Nebula 2"), option$5({ value: "roe light" }, "Roe Light"), option$5({ value: "amoled dark" }, "High Contrast Dark"), option$5({ value: "energized" }, "Energized"), option$5({ value: "neapolitan" }, "Neapolitan"), option$5({ value: "mono" }, "Poly"), option$5({ value: "blutonium" }, "Blutonium"), option$5({ value: "modbox classic" }, "Modbox"), option$5({ value: "modbox 2" }, "Modbox 2.0"), option$5({ value: "modbox artic" }, "Artic"), option$5({ value: "modbox cinnamon" }, "Cinnamon Roll [!]"), option$5({ value: "modbox ocean" }, "Ocean"), option$5({ value: "modbox rainbow" }, "Rainbow [!]"), option$5({ value: "modbox float" }, "Float [!]"), option$5({ value: "modbox windows" }, "Windows"), option$5({ value: "modbox grassland" }, "Grassland"), option$5({ value: "modbox dessert" }, "Dessert"), option$5({ value: "modbox kahoot" }, "Kahootiest"), option$5({ value: "modbox bitbeam" }, "Beam to the Bit [!]"), option$5({ value: "modbox egg" }, "Pretty Egg"), option$5({ value: "modbox pony" }, "Poniryoshka"), option$5({ value: "modbox gameboy" }, "Gameboy [!]"), option$5({ value: "modbox woodkid" }, "Woodkid [!]"), option$5({ value: "modbox midnight" }, "Midnight [!]"), option$5({ value: "modbox snedbox" }, "Snedbox"), option$5({ value: "modbox unnamed" }, "unnamed [!]"), option$5({ value: "modbox piano" }, "Piano [!]"), option$5({ value: "modbox halloween" }, "Halloween [!]"), option$5({ value: "modbox frozen" }, "FrozenOver❄️ [!]"), option$5({ value: "Ghost House" }, "Ghost House"), option$5({ value: "azur lane" }, "Azur Lane"), option$5({ value: "modbox classic" }, "Modbox"), option$5({ value: "sandbox classic" }, "Sandbox"), option$5({ value: "harrybox" }, "Haileybox"), option$5({ value: "brucebox" }, "Brucebox"), option$5({ value: "shitbox 3.0" }, "Shitbox 1.0/3.0"), option$5({ value: "shitbox 2.0" }, "Shitbox 2.0"), option$5({ value: "nerdbox" }, "NerdBox"), option$5({ value: "zefbox" }, "Zefbox"), option$5({ value: "cardboardbox classic" }, "Cardboardbox"), option$5({ value: "blubox classic" }, "Blubox"), option$5({ value: "dogebox classic" }, "Dogebox"), option$5({ value: "wackybox" }, "Wackybox"), option$5({ value: "todbox dark mode" }, "Todbox Dark Mode"), option$5({ value: "mainbox 1.0" }, "Mainbox"), option$5({ value: "microbox" }, "MicroBox"), option$5({ value: "paandorasbox" }, "PaandorasBox"), option$5({ value: "foxbox" }, "FoxBox"), option$5({ value: "midbox" }, "Midbox"), option$5({ value: "dogebox2" }, "Dogebox2"), option$5({ value: "nepbox" }, "Nepbox"), option$5({ value: "BoxBeep Dark" }, "BoxBeep Dark"), option$5({ value: "BoxBeep light" }, "BoxBeep Light"), option$5({ value: "Deuteranopia" }, "Deuteranopia"), option$5({ value: "Protanopia" }, "Protanopia"), option$5({ value: "Tritanopia" }, "Tritanopia"), option$5({ value: "custom" }, "Custom"));
+            this._fullThemeSelect = select$5({ style: "width: 100%;", id: "themeSelect" }, option$5({ selected: true, disabled: true, hidden: false }, "Pick a Base Theme"), option$5({ value: "AbyssBox Classic" }, "AbyssBox Classic"), option$5({ value: "AbyssBox Competitive" }, "AbyssBox Competitive"), option$5({ value: "AbyssBox Light" }, "AbyssBox Light"), option$5({ value: "AbyssBox 0.8" }, "AbyssBox 0.8"), option$5({ value: "AbyssBox Piano" }, "AbyssBox Piano"), option$5({ value: "Half-Life" }, "Half-Life"), option$5({ value: "Half-Life: Source" }, "Half-Life: Source"), option$5({ value: "Doom 1993" }, "Doom 1993"), option$5({ value: "Undertale" }, "Undertale"), option$5({ value: "Yume Nikki" }, "Yume Nikki [!]"), option$5({ value: "Scratch" }, "Scratch"), option$5({ value: "Scratch Addons" }, "Scratch Addons"), option$5({ value: "Windows Xp" }, "Windows Xp"), option$5({ value: "Frutiger Aero" }, "Frutiger Aero"), option$5({ value: "Skeuomorphic" }, "Skeuomorphic/Early 2000's (LeoV)"), option$5({ value: "corporate dark" }, "Corporate Dark"), option$5({ value: "corporate light" }, "Corporate Light"), option$5({ value: "Glyde" }, "Glyde"), option$5({ value: "starry studio" }, "Starry Studio"), option$5({ value: "Terminal 2.0 (AB)" }, "Terminal 2.0 (AB)"), option$5({ value: "Slushie" }, "Slushie"), option$5({ value: "Slushie Pixel" }, "Slushie 2"), option$5({ value: "dark classic" }, "BeepBox Dark"), option$5({ value: "light classic" }, "BeepBox Light"), option$5({ value: "dark competition" }, "BeepBox Competition Dark"), option$5({ value: "BeepBox Pixel" }, "BeepBox Pixel"), option$5({ value: "jummbox classic" }, "JummBox Dark"), option$5({ value: "jummbox light" }, "JummBox Light"), option$5({ value: "gold light" }, "Gold Light"), option$5({ value: "forest" }, "Forest"), option$5({ value: "forest 2" }, "Forest 2"), option$5({ value: "canyon" }, "Canyon"), option$5({ value: "canyon 2" }, "Canyon 2"), option$5({ value: "midnight" }, "Midnight"), option$5({ value: "beachcombing" }, "Beachcombing"), option$5({ value: "violet verdant" }, "Violet Verdant"), option$5({ value: "sunset" }, "Sunset"), option$5({ value: "autumn" }, "Autumn"), option$5({ value: "fruit" }, "Shadowfruit"), option$5({ value: "toxic" }, "Toxic"), option$5({ value: "roe" }, "Roe"), option$5({ value: "moonlight" }, "Moonlight"), option$5({ value: "portal" }, "Portal"), option$5({ value: "fusion" }, "Fusion"), option$5({ value: "inverse" }, "Inverse"), option$5({ value: "nebula" }, "Nebula"), option$5({ value: "Nebula 2" }, "Nebula 2"), option$5({ value: "roe light" }, "Roe Light"), option$5({ value: "amoled dark" }, "High Contrast Dark"), option$5({ value: "energized" }, "Energized"), option$5({ value: "neapolitan" }, "Neapolitan"), option$5({ value: "mono" }, "Poly"), option$5({ value: "blutonium" }, "Blutonium"), option$5({ value: "modbox classic" }, "Modbox"), option$5({ value: "modbox 2" }, "Modbox 2.0"), option$5({ value: "modbox artic" }, "Artic"), option$5({ value: "modbox cinnamon" }, "Cinnamon Roll [!]"), option$5({ value: "modbox ocean" }, "Ocean"), option$5({ value: "modbox rainbow" }, "Rainbow [!]"), option$5({ value: "modbox float" }, "Float [!]"), option$5({ value: "modbox windows" }, "Windows"), option$5({ value: "modbox grassland" }, "Grassland"), option$5({ value: "modbox dessert" }, "Dessert"), option$5({ value: "modbox kahoot" }, "Kahootiest"), option$5({ value: "modbox bitbeam" }, "Beam to the Bit [!]"), option$5({ value: "modbox egg" }, "Pretty Egg"), option$5({ value: "modbox pony" }, "Poniryoshka"), option$5({ value: "modbox gameboy" }, "Gameboy [!]"), option$5({ value: "modbox woodkid" }, "Woodkid [!]"), option$5({ value: "modbox midnight" }, "Midnight [!]"), option$5({ value: "modbox snedbox" }, "Snedbox"), option$5({ value: "modbox unnamed" }, "unnamed [!]"), option$5({ value: "modbox piano" }, "Piano [!]"), option$5({ value: "modbox halloween" }, "Halloween [!]"), option$5({ value: "modbox frozen" }, "FrozenOver❄️ [!]"), option$5({ value: "Ghost House" }, "Ghost House"), option$5({ value: "Ghost House 2" }, "Ghost House 2"), option$5({ value: "azur lane" }, "Azur Lane"), option$5({ value: "sandbox classic" }, "Sandbox"), option$5({ value: "harrybox" }, "Haileybox"), option$5({ value: "brucebox" }, "Brucebox"), option$5({ value: "shitbox 1.0" }, "Shitbox 1.0"), option$5({ value: "shitbox 2.0" }, "Shitbox 2.0"), option$5({ value: "shitbox 3.0" }, "Shitbox 3.0/shitbox4"), option$5({ value: "shitbox ModBox 2.0" }, "Shitbox ModBox 2.0"), option$5({ value: "shitbox Realm" }, "Shitbox Realm [!]"), option$5({ value: "nerdbox" }, "NerdBox"), option$5({ value: "zefbox" }, "Zefbox"), option$5({ value: "cardboardbox classic" }, "Cardboardbox"), option$5({ value: "blubox classic" }, "Blubox"), option$5({ value: "dogebox classic" }, "Dogebox"), option$5({ value: "wackybox" }, "Wackybox"), option$5({ value: "todbox dark mode" }, "Todbox Dark Mode"), option$5({ value: "mainbox 1.0" }, "Mainbox"), option$5({ value: "microbox" }, "MicroBox"), option$5({ value: "paandorasbox" }, "PaandorasBox"), option$5({ value: "foxbox" }, "FoxBox"), option$5({ value: "midbox" }, "Midbox"), option$5({ value: "dogebox2" }, "Dogebox2"), option$5({ value: "nepbox" }, "Nepbox"), option$5({ value: "nepbox laffey" }, "Laffey"), option$5({ value: "nepbox snedbox" }, "Snedbox (Nb) [!]"), option$5({ value: "nepbox piano" }, "Piano (Nb) [!]"), option$5({ value: "WeebBox" }, "WeebBox"), option$5({ value: "BoxBeep Dark" }, "BoxBeep Dark"), option$5({ value: "BoxBeep light" }, "BoxBeep Light"), option$5({ value: "AWeebyssBox" }, "AWeebyssBox"), option$5({ value: "Deuteranopia" }, "Deuteranopia"), option$5({ value: "Protanopia" }, "Protanopia"), option$5({ value: "Tritanopia" }, "Tritanopia"), option$5({ value: "2012 Video Tutorial" }, "2012 Video Tutorial"), option$5({ value: "I am on fire" }, "I am on fire"), option$5({ value: "custom" }, "Custom"));
+            this._baseColorSelect = select$5({ style: "width: 100%; display:none; margin: 0.5em 0;", id: "baseColorSelect" }, option$5({ selected: true, disabled: true, hidden: false }, "Pick a Base Color Palette"), option$5({ value: "AbyssBox Classic" }, "AbyssBox Classic"), option$5({ value: "AbyssBox Competitive" }, "AbyssBox Competitive"), option$5({ value: "AbyssBox Light" }, "AbyssBox Light"), option$5({ value: "Half-Life" }, "Half-Life"), option$5({ value: "Doom 1993" }, "Doom 1993"), option$5({ value: "Undertale" }, "Undertale"), option$5({ value: "Yume Nikki" }, "Yume Nikki [!]"), option$5({ value: "Scratch" }, "Scratch"), option$5({ value: "Scratch Addons" }, "Scratch Addons"), option$5({ value: "Windows Xp" }, "Windows Xp"), option$5({ value: "Frutiger Aero" }, "Frutiger Aero"), option$5({ value: "Skeuomorphic" }, "Skeuomorphic/Early 2000's (LeoV)"), option$5({ value: "corporate dark" }, "Corporate Dark"), option$5({ value: "corporate light" }, "Corporate Light"), option$5({ value: "Glyde" }, "Glyde"), option$5({ value: "starry studio" }, "Starry Studio"), option$5({ value: "Terminal 2.0 (AB)" }, "Terminal 2.0 (AB)"), option$5({ value: "Slushie" }, "Slushie"), option$5({ value: "dark classic" }, "BeepBox Dark"), option$5({ value: "light classic" }, "BeepBox Light"), option$5({ value: "dark competition" }, "BeepBox Competition Dark"), option$5({ value: "jummbox classic" }, "JummBox Dark"), option$5({ value: "jummbox light" }, "JummBox Light"), option$5({ value: "gold light" }, "Gold Light"), option$5({ value: "forest" }, "Forest"), option$5({ value: "forest 2" }, "Forest 2"), option$5({ value: "canyon" }, "Canyon"), option$5({ value: "canyon 2" }, "Canyon 2"), option$5({ value: "midnight" }, "Midnight"), option$5({ value: "beachcombing" }, "Beachcombing"), option$5({ value: "violet verdant" }, "Violet Verdant"), option$5({ value: "sunset" }, "Sunset"), option$5({ value: "autumn" }, "Autumn"), option$5({ value: "fruit" }, "Shadowfruit"), option$5({ value: "toxic" }, "Toxic"), option$5({ value: "roe" }, "Roe"), option$5({ value: "moonlight" }, "Moonlight"), option$5({ value: "portal" }, "Portal"), option$5({ value: "fusion" }, "Fusion"), option$5({ value: "inverse" }, "Inverse"), option$5({ value: "nebula" }, "Nebula"), option$5({ value: "Nebula 2" }, "Nebula 2"), option$5({ value: "roe light" }, "Roe Light"), option$5({ value: "amoled dark" }, "High Contrast Dark"), option$5({ value: "energized" }, "Energized"), option$5({ value: "neapolitan" }, "Neapolitan"), option$5({ value: "mono" }, "Poly"), option$5({ value: "blutonium" }, "Blutonium"), option$5({ value: "modbox classic" }, "Modbox"), option$5({ value: "modbox 2" }, "Modbox 2.0"), option$5({ value: "modbox artic" }, "Artic"), option$5({ value: "modbox cinnamon" }, "Cinnamon Roll [!]"), option$5({ value: "modbox ocean" }, "Ocean"), option$5({ value: "modbox rainbow" }, "Rainbow [!]"), option$5({ value: "modbox float" }, "Float [!]"), option$5({ value: "modbox windows" }, "Windows"), option$5({ value: "modbox grassland" }, "Grassland"), option$5({ value: "modbox dessert" }, "Dessert"), option$5({ value: "modbox kahoot" }, "Kahootiest"), option$5({ value: "modbox bitbeam" }, "Beam to the Bit [!]"), option$5({ value: "modbox egg" }, "Pretty Egg"), option$5({ value: "modbox pony" }, "Poniryoshka"), option$5({ value: "modbox gameboy" }, "Gameboy [!]"), option$5({ value: "modbox woodkid" }, "Woodkid [!]"), option$5({ value: "modbox midnight" }, "Midnight [!]"), option$5({ value: "modbox snedbox" }, "Snedbox"), option$5({ value: "modbox unnamed" }, "unnamed [!]"), option$5({ value: "modbox piano" }, "Piano [!]"), option$5({ value: "modbox halloween" }, "Halloween [!]"), option$5({ value: "modbox frozen" }, "FrozenOver❄️ [!]"), option$5({ value: "Ghost House" }, "Ghost House"), option$5({ value: "azur lane" }, "Azur Lane"), option$5({ value: "modbox classic" }, "Modbox"), option$5({ value: "sandbox classic" }, "Sandbox"), option$5({ value: "harrybox" }, "Haileybox"), option$5({ value: "brucebox" }, "Brucebox"), option$5({ value: "shitbox 3.0" }, "Shitbox 1.0/3.0"), option$5({ value: "shitbox 2.0" }, "Shitbox 2.0"), option$5({ value: "nerdbox" }, "NerdBox"), option$5({ value: "zefbox" }, "Zefbox"), option$5({ value: "cardboardbox classic" }, "Cardboardbox"), option$5({ value: "blubox classic" }, "Blubox"), option$5({ value: "dogebox classic" }, "Dogebox"), option$5({ value: "wackybox" }, "Wackybox"), option$5({ value: "todbox dark mode" }, "Todbox Dark Mode"), option$5({ value: "mainbox 1.0" }, "Mainbox"), option$5({ value: "microbox" }, "MicroBox"), option$5({ value: "paandorasbox" }, "PaandorasBox"), option$5({ value: "foxbox" }, "FoxBox"), option$5({ value: "midbox" }, "Midbox"), option$5({ value: "dogebox2" }, "Dogebox2"), option$5({ value: "nepbox" }, "Nepbox"), option$5({ value: "BoxBeep Dark" }, "BoxBeep Dark"), option$5({ value: "BoxBeep light" }, "BoxBeep Light"), option$5({ value: "Deuteranopia" }, "Deuteranopia"), option$5({ value: "Protanopia" }, "Protanopia"), option$5({ value: "Tritanopia" }, "Tritanopia"), option$5({ value: "custom" }, "Custom"));
             this._backgroundSelect = select$5({ style: "width: 100%; display:none; margin: 0.5em 0;", id: "backgroundSelect" }, option$5({ selected: true, disabled: true, hidden: false }, "Pick a Background"), option$5({ value: "none" }, "None"), option$5({ value: "AbyssBox Classic" }, "AbyssBox Classic"), option$5({ value: "AbyssBox Light" }, "AbyssBox Light"), option$5({ value: "Undertale" }, "Undertale"), option$5({ value: "Windows Xp" }, "Windows Xp"), option$5({ value: "Frutiger Aero" }, "Frutiger Aero"), option$5({ value: "Skeuomorphic" }, "Skeuomorphic/Early 2000's (LeoV)"), option$5({ value: "Glyde" }, "Glyde"), option$5({ value: "starry studio" }, "Starry Studio"), option$5({ value: "Slushie 2" }, "Slushie 2"), option$5({ value: "BeepBox Pixel" }, "BeepBox Pixel"), option$5({ value: "Forest 2" }, "Forest 2"), option$5({ value: "Canyon 2" }, "Canyon 2"), option$5({ value: "Nebula 2" }, "Nebula 2"), option$5({ value: "Ghost House 2" }, "Ghost House 2"), option$5({ value: "azur lane" }, "Azur Lane"));
             this._borderSelect = select$5({ style: "width: 100%; display:none; margin: 0.5em 0;", id: "borderSelect" }, option$5({ selected: true, disabled: true, hidden: false }, "Pick a Border"), option$5({ value: "none" }, "None"), option$5({ value: "AbyssBox Classic" }, "AbyssBox Classic"), option$5({ value: "AbyssBox Competitive" }, "AbyssBox Competitive"), option$5({ value: "AbyssBox Light" }, "AbyssBox Light"), option$5({ value: "Scratch" }, "Scratch"), option$5({ value: "Scratch Addons" }, "Scratch Addons"), option$5({ value: "Undertale" }, "Undertale"), option$5({ value: "Windows Xp" }, "Windows Xp"), option$5({ value: "Frutiger Aero" }, "Frutiger Aero"), option$5({ value: "Skeuomorphic" }, "Skeuomorphic/Early 2000's (LeoV)"), option$5({ value: "Glyde" }, "Glyde"), option$5({ value: "Slushie 2" }, "Slushie 2"), option$5({ value: "BeepBox Pixel" }, "BeepBox Pixel"), option$5({ value: "Forest 2" }, "Forest 2"), option$5({ value: "Canyon 2" }, "Canyon 2"), option$5({ value: "Nebula 2" }, "Nebula 2"), option$5({ value: "Ghost House 2" }, "Ghost House 2"));
             this._overlaySelect = select$5({ style: "width: 100%; display:none; margin: 0.5em 0;", id: "overlaySelect" }, option$5({ selected: true, disabled: true, hidden: false }, "Pick an Overlay"), option$5({ value: "none" }, "None"), option$5({ value: "scanlines" }, "Scanlines"), option$5({ value: "bandicam" }, "Bandicam"), option$5({ value: "fire" }, "Fire"), option$5({ value: "invert" }, "Screen Color Inversion"), option$5({ value: "480p" }, '"Low Quality" Blur (Mimics 480p)'), option$5({ value: "contrast" }, 'High Contrast'), option$5({ value: "Sepia" }, 'Sepia'), option$5({ value: "grayscale" }, 'Grayscale/Black and White'));
@@ -57449,32 +57744,32 @@ You should be redirected to the song at:<br /><br />
                     break;
                 case "ringMod":
                     {
-                        message = div$8(h2$7("Ring Modulation"), p$2(`This setting multiplies a sine wave's frequency with an instrument frequency, this is useful for "bell-like" instruments.`));
+                        message = div$8(h2$7("Ring Modulation"), p$2(`This setting multiplies a selected wave's frequency with an instrument frequency, this is useful for "bell-like" instruments.`));
                     }
                     break;
                 case "RingModHz":
                     {
-                        message = div$8(h2$7("Ring Modulation (Hertz)"), p$2(`This setting changes the Hertz of the 2nd multiplied frequency with the first frequency.`));
+                        message = div$8(h2$7("Ring Modulation (Hertz)"), p$2(`This setting changes the Hertz of the multiplied frequency.`), p$2(`The offset allows you to increment the Hertz by 1.`));
                     }
                     break;
                 case "phaserMix":
                     {
-                        message = div$8(h2$7("Phaser Mix"), p$2(``));
+                        message = div$8(h2$7("Phaser Mix"), p$2(`This setting adds holes (aka notches) or peaks in the frequency spectrum to the waveform its given. The placement of these peaks and notches in the waveform can be changed by using envelopes and/or modulators.`));
                     }
                     break;
                 case "phaserFreq":
                     {
-                        message = div$8(h2$7("Phaser Frequency"), p$2(``));
+                        message = div$8(h2$7("Phaser Frequency"), p$2(`This setting controls the frequency of the the peaks and notches of the phaser.`));
                     }
                     break;
                 case "phaserFeedback":
                     {
-                        message = div$8(h2$7("Phaser Feedback"), p$2(``));
+                        message = div$8(h2$7("Phaser Feedback"), p$2(`This setting effects how pronounced the Feedback of the Phaser is, this is done by adding the Feedback of the Phaser back into itself.`));
                     }
                     break;
                 case "phaserStages":
                     {
-                        message = div$8(h2$7("Phaser Stages"), p$2(`This slider changes how many all-passes there are in the phaser.`));
+                        message = div$8(h2$7("Phaser Stages"), p$2(`This slider changes how many all-passes there are in the phaser. An all-pass is created by splitting an audio signal into paths, every path after the first one that is created is called an all-pass.`), p$2(`The minimum value of this slider is 1, the reason being that 1 all-pass is the exact same as having no phaser at all, if there were 0 all-passes then the audio would cease to exist.`));
                     }
                     break;
                 case "slideSpeedSlider":
@@ -59479,11 +59774,11 @@ You should be redirected to the song at:<br /><br />
         constructor(_doc) {
             this._doc = _doc;
             this.okayButton = button$2({ class: "okayButton", style: "width:45%;" }, "Okay");
-            this.startingContainer = div$2({ id: "tutorialPrompt" }, div$2({ class: "promptTitle" }, h2$1({ class: "tutorialExt", style: "text-align: inherit;" }, ""), h2$1({ class: "tutorialTitle", style: "margin-bottom: 0.5em;" }, "Here comes AbyssBox 1.4.5!")), p({ style: "margin-bottom: 0.5em; text-align: center; font-size: 15px;" }, "AbyssBox 1.4.5 is here! And here are a couple of the changes!"), p({ style: "margin-bottom: 0.5em; text-align: left; font-size: 15px;" }, "- Added a preference that ports Mobile AbyssBox's instrument Settings."), p({ style: "margin-bottom: 0.5em; text-align: left; font-size: 15px;" }, "- Combined the Import and Export prompts into one."), p({ style: "margin-bottom: 0.5em; text-align: left; font-size: 15px;" }, "- Added a feature that allows you to set a theme per song."), p({ style: "margin-bottom: 0.5em; text-align: center; font-size: 15px;" }, "And more!"), p({ style: "margin-bottom: 0.5em; text-align: center; font-size: 15px;" }, "For the full feature list, I suggest", a({ href: "./patch-notes", target: "_blank", }, " Checking out the Patch Notes!")));
+            this.startingContainer = div$2({ id: "tutorialPrompt" }, div$2({ class: "promptTitle" }, h2$1({ class: "tutorialExt", style: "text-align: inherit;" }, ""), h2$1({ class: "tutorialTitle", style: "margin-bottom: 0.5em;" }, "AbyssBox 1.5 is OUT NOW!")), p({ style: "margin-bottom: 0.5em; text-align: center; font-size: 15px;" }, "AbyssBox 1.5 is here! Here's a few of the many changes in this update!"), p({ style: "margin-bottom: 0.5em; text-align: left; font-size: 15px;" }, "- Two new effects! Phaser and Ring Modulation!"), p({ style: "margin-bottom: 0.5em; text-align: left; font-size: 15px;" }, "- New songwide modulation options!"), p({ style: "margin-bottom: 0.5em; text-align: left; font-size: 15px;" }, "- You can export as .ogg and .opus!"), p({ style: "margin-bottom: 0.5em; text-align: center; font-size: 15px;" }, "And much more!"), p({ style: "margin-bottom: 0.5em; text-align: center; font-size: 15px;" }, "For the full update list, I suggest", a({ href: "./patch-notes", target: "_blank", }, " Checking out the Patch Notes!")));
             this.container = div$2({ class: "prompt noSelection", id: "updateContainerPrompt", style: "width: 350px;" }, this.startingContainer, div$2({ style: "display:flex; flex-direction:row-reverse;" }, this.okayButton));
             this._close = () => {
                 window.localStorage.setItem("updateSeen", "true");
-                window.localStorage.setItem("curVer", "1.4.5");
+                window.localStorage.setItem("curVer", "1.5");
                 this._doc.prompt = null;
                 this._doc.undo();
             };
@@ -60136,12 +60431,15 @@ You should be redirected to the song at:<br /><br />
             this._ringModSlider = new Slider(input({ style: "margin: 0;", type: "range", min: "0", max: Config.ringModRange - 1, value: "0", step: "1" }), this._doc, (oldValue, newValue) => new ChangeRingMod(this._doc, oldValue, newValue), false);
             this._ringModRow = div({ class: "selectRow" }, span({ class: "tip", onclick: () => this._openPrompt("ringMod") }, "Ring Mod:"), this._ringModSlider.container);
             this._ringModHzSlider = new Slider(input({ style: "margin: 0;", type: "range", min: "0", max: Config.ringModHzRange - 1, value: (Config.ringModHzRange - (Config.ringModHzRange / 2)), step: "1" }), this._doc, (oldValue, newValue) => new ChangeRingModHz(this._doc, oldValue, newValue), true);
+            this._rmHzOffsetSlider = new Slider(input({ style: "margin: 0;", type: "range", min: Config.rmHzOffsetMin - Config.rmHzOffsetCenter, max: Config.rmHzOffsetMax - Config.rmHzOffsetCenter, value: 0, step: "4" }), this._doc, (oldValue, newValue) => new ChangeRmHzOffset(this._doc, oldValue, newValue), true);
+            this._rmHzOffsetSliderInputBox = input({ style: "width: 4em; font-size: 80%; ", id: "rmHzOffsetSliderInputBox", type: "number", step: "1", min: Config.rmHzOffsetMin - Config.rmHzOffsetCenter, max: Config.rmHzOffsetMax - Config.rmHzOffsetCenter, value: 0 });
             this._ringModHzNum = div({ style: "font-size: 80%; ", id: "ringModHzNum" });
             this._ringModHzSliderRow = div({ class: "selectRow", style: "width:100%;" }, div({ style: "display:flex; flex-direction:column; align-items:center;" }, span({ class: "tip", style: "font-size: smaller;", onclick: () => this._openPrompt("RingModHz") }, "Hertz: "), div({ style: `color: ${ColorConfig.secondaryText}; ` }, this._ringModHzNum)), this._ringModHzSlider.container);
+            this._rmOffsetHzSliderRow = div({ class: "selectRow", style: "width:100%;" }, div({ style: "display:flex; flex-direction:column; align-items:center;" }, span({ class: "tip", style: "font-size: smaller;", onclick: () => this._openPrompt("RingModHz") }, "Hz Offset: "), div({ style: `color: ${ColorConfig.secondaryText}; ` }, this._rmHzOffsetSliderInputBox)), this._rmHzOffsetSlider.container);
             this._ringModPulsewidthSlider = new Slider(input({ style: "margin-left: 10px; width: 85%;", type: "range", min: "0", max: Config.pwmOperatorWaves.length - 1, value: "0", step: "1", title: "Pulse Width" }), this._doc, (oldValue, newValue) => new ChangeRingModPulseWidth(this._doc, oldValue, newValue), true);
             this._ringModWaveText = span({ class: "tip", onclick: () => this._openPrompt("chipWave") }, "Wave: ");
             this._ringModWaveSelectRow = div({ class: "selectRow", style: "width: 100%;" }, this._ringModWaveText, this._ringModPulsewidthSlider.container, div({ class: "selectContainer", style: "width:40%;" }, this._ringModWaveSelect));
-            this._ringModContainerRow = div({ class: "selectRow", style: "display:flex; flex-direction:column; height: 96px;" }, this._ringModRow, this._ringModHzSliderRow, this._ringModWaveSelectRow);
+            this._ringModContainerRow = div({ class: "selectRow", style: "display:flex; flex-direction:column; height: 128px;" }, this._ringModRow, this._ringModHzSliderRow, this._rmOffsetHzSliderRow, this._ringModWaveSelectRow);
             this._reverbSlider = new Slider(input({ style: "margin: 0; position: sticky,", type: "range", min: "0", max: Config.reverbRange - 1, value: "0", step: "1" }), this._doc, (oldValue, newValue) => new ChangeReverb(this._doc, oldValue, newValue), false);
             this._reverbRow = div({ class: "selectRow" }, span({ class: "tip", onclick: () => this._openPrompt("reverb") }, "Reverb:"), this._reverbSlider.container);
             this._echoSustainSlider = new Slider(input({ style: "margin: 0;", type: "range", min: "0", max: Config.echoSustainRange - 1, value: "0", step: "1" }), this._doc, (oldValue, newValue) => new ChangeEchoSustain(this._doc, oldValue, newValue), false);
@@ -60351,7 +60649,7 @@ You should be redirected to the song at:<br /><br />
             this._feedbackAmplitudeSlider = new Slider(input({ type: "range", min: "0", max: Config.operatorAmplitudeMax, value: "0", step: "1", title: "Feedback Amplitude" }), this._doc, (oldValue, newValue) => new ChangeFeedbackAmplitude(this._doc, oldValue, newValue), false);
             this._feedbackRow2 = div({ class: "selectRow" }, span({ class: "tip", onclick: () => this._openPrompt("feedbackVolume") }, "Fdback Vol:"), this._feedbackAmplitudeSlider.container);
             this._addEnvelopeButton = button({ type: "button", class: "add-envelope" });
-            this._customInstrumentSettingsGroup = div({ class: "editor-controls" }, div({ id: "InstrumentDiv" }, this._panSliderRow, this._panDropdownGroup, this._chipWaveSelectRow, this._chipNoiseSelectRow, this._useChipWaveAdvancedLoopControlsRow, this._chipWaveLoopModeSelectRow, this._chipWaveLoopStartRow, this._chipWaveLoopEndRow, this._chipWaveStartOffsetRow, this._chipWavePlayBackwardsRow, this._customWaveDraw, this._eqFilterTypeRow, this._eqFilterRow, this._eqFilterSimpleCutRow, this._eqFilterSimplePeakRow, this._fadeInOutRow, this._algorithmSelectRow, this._algorithm6OpSelectRow, this._phaseModGroup, this._feedbackRow1, this._feedback6OpRow1, this._feedbackRow2, this._spectrumRow, this._harmonicsRow, this._drumsetGroup, this._supersawDynamismRow, this._supersawSpreadRow, this._supersawShapeRow, this._pulseWidthRow, this._pulseWidthDropdownGroup, this._stringSustainRow, div({ style: "margin-top:1em;margin-bottom:0.5em;" }, this._unisonSelectRow), this._unisonDropdownGroup), div({ id: "effectsDiv" }, div({ class: "effectsNameDiv", style: `padding: 2px 0; margin-left: 2em; display: flex; align-items: center;` }, span({ style: `flex-grow: 1; text-align: center;` }, span({ class: "tip", onclick: () => this._openPrompt("effects") }, "Effects")), div({ class: "effects-menu" }, this._effectsSelect)), div({ class: "effectsOpDiv" }, this._transitionRow, this._transitionDropdownGroup, this._chordSelectRow, this._chordDropdownGroup, this._pitchShiftRow, this._detuneSliderRow, this._vibratoSelectRow, this._vibratoDropdownGroup, this._noteFilterTypeRow, this._noteFilterRow, this._noteFilterSimpleCutRow, this._noteFilterSimplePeakRow, this._distortionRow, this._aliasingRow, this._bitcrusherQuantizationRow, this._bitcrusherFreqRow, this._chorusRow, this._echoSustainRow, this._echoDelayRow, this._reverbRow, this._upperNoteLimitRow, this._lowerNoteLimitRow, this._ringModContainerRow, this._phaserMixRow, this._phaserFreqRow, this._phaserFeedbackRow, this._phaserStagesRow)), div({ id: "envelopesDiv" }, div({ class: "envelopesNameDiv", style: `padding: 2px 0; margin-left: 2em; display: flex; align-items: center;` }, span({ style: `flex-grow: 1; text-align: center;` }, span({ class: "tip", onclick: () => this._openPrompt("envelopes") }, "Envelopes")), this._envelopeDropdown, this._addEnvelopeButton), div({ class: "envelopesOpDiv" }, this._envelopeDropdownGroup, this._envelopeEditor.container)));
+            this._customInstrumentSettingsGroup = div({ class: "editor-controls" }, div({ id: "InstrumentDiv" }, this._panSliderRow, this._panDropdownGroup, this._chipWaveSelectRow, this._chipNoiseSelectRow, this._useChipWaveAdvancedLoopControlsRow, this._chipWaveLoopModeSelectRow, this._chipWaveLoopStartRow, this._chipWaveLoopEndRow, this._chipWaveStartOffsetRow, this._chipWavePlayBackwardsRow, this._customWaveDraw, this._eqFilterTypeRow, this._eqFilterRow, this._eqFilterSimpleCutRow, this._eqFilterSimplePeakRow, this._fadeInOutRow, this._algorithmSelectRow, this._algorithm6OpSelectRow, this._phaseModGroup, this._feedbackRow1, this._feedback6OpRow1, this._feedbackRow2, this._spectrumRow, this._harmonicsRow, this._drumsetGroup, this._supersawDynamismRow, this._supersawSpreadRow, this._supersawShapeRow, this._pulseWidthRow, this._pulseWidthDropdownGroup, this._stringSustainRow, div({ style: "" }, this._unisonSelectRow), this._unisonDropdownGroup), div({ id: "effectsDiv" }, div({ class: "effectsNameDiv", style: `padding: 2px 0; margin-left: 2em; display: flex; align-items: center;` }, span({ style: `flex-grow: 1; text-align: center;` }, span({ class: "tip", onclick: () => this._openPrompt("effects") }, "Effects")), div({ class: "effects-menu" }, this._effectsSelect)), div({ class: "effectsOpDiv" }, this._transitionRow, this._transitionDropdownGroup, this._chordSelectRow, this._chordDropdownGroup, this._pitchShiftRow, this._detuneSliderRow, this._vibratoSelectRow, this._vibratoDropdownGroup, this._noteFilterTypeRow, this._noteFilterRow, this._noteFilterSimpleCutRow, this._noteFilterSimplePeakRow, this._distortionRow, this._aliasingRow, this._bitcrusherQuantizationRow, this._bitcrusherFreqRow, this._chorusRow, this._echoSustainRow, this._echoDelayRow, this._reverbRow, this._upperNoteLimitRow, this._lowerNoteLimitRow, this._ringModContainerRow, this._phaserMixRow, this._phaserFreqRow, this._phaserFeedbackRow, this._phaserStagesRow)), div({ id: "envelopesDiv" }, div({ class: "envelopesNameDiv", style: `padding: 2px 0; margin-left: 2em; display: flex; align-items: center;` }, span({ style: `flex-grow: 1; text-align: center;` }, span({ class: "tip", onclick: () => this._openPrompt("envelopes") }, "Envelopes")), this._envelopeDropdown, this._addEnvelopeButton), div({ class: "envelopesOpDiv" }, this._envelopeDropdownGroup, this._envelopeEditor.container)));
             this._instrumentCopyGroup = div({ class: "editor-controls" }, div({ class: "selectRow" }, this._instrumentCopyButton, this._instrumentPasteButton));
             this._instrumentExportGroup = div({ class: "editor-controls" }, div({ class: "selectRow" }, this._instrumentExportButton, this._instrumentImportButton));
             this._instrumentSettingsTextRow = div({ id: "instrumentSettingsText", style: `padding: 3px 0; max-width: 15em; text-align: center; color: ${ColorConfig.secondaryText};` }, "Instrument Settings");
@@ -60595,7 +60893,7 @@ You should be redirected to the song at:<br /><br />
                 if (!isMobile) {
                     this._playPauseAreaMobile.style.display = "none";
                     if (window.localStorage.getItem("tutorialComplete") != "true") ;
-                    if (window.localStorage.getItem("curVer") != "1.4.5") {
+                    if (window.localStorage.getItem("curVer") != "1.5") {
                         window.localStorage.setItem("updateSeen", "false");
                     }
                     if (window.localStorage.getItem("updateSeen") != "true") {
@@ -61541,6 +61839,7 @@ You should be redirected to the song at:<br /><br />
                         this._ringModContainerRow.style.display = "";
                         this._ringModSlider.updateValue(instrument.ringModulation);
                         this._ringModHzSlider.updateValue(instrument.ringModulationHz);
+                        this._rmHzOffsetSlider.updateValue(instrument.rmHzOffset - Config.rmHzOffsetCenter);
                         setSelectedValue(this._ringModWaveSelect, instrument.rmWaveformIndex);
                         this._ringModPulsewidthSlider.updateValue(instrument.rmPulseWidth);
                     }
@@ -61612,7 +61911,8 @@ You should be redirected to the song at:<br /><br />
                     this._panSliderInputBox.value = instrument.pan + "";
                     this._pwmSliderInputBox.value = instrument.pulseWidth + "";
                     this._detuneSliderInputBox.value = (instrument.detune - Config.detuneCenter) + "";
-                    this._ringModHzNum.innerHTML = (Math.floor(20 * Math.pow(4400 / 20, Math.min(1.0, instrument.ringModulationHz / (Config.ringModHzRange - 1))))) + "";
+                    this._rmHzOffsetSliderInputBox.value = (instrument.rmHzOffset - Config.rmHzOffsetCenter) + "";
+                    this._ringModHzNum.innerHTML = (clamp(1, 4600, Math.floor(20 * Math.pow(4400 / 20, Math.min(1.0, instrument.ringModulationHz / (Config.ringModHzRange - 1)))) + (instrument.rmHzOffset - Config.rmHzOffsetCenter))) + " (" + (Math.floor(20 * Math.pow(4400 / 20, Math.min(1.0, instrument.ringModulationHz / (Config.ringModHzRange - 1))))) + ")";
                     this._instrumentVolumeSlider.updateValue(instrument.volume);
                     this._instrumentVolumeSliderInputBox.value = "" + (instrument.volume);
                     this._vibratoDepthSlider.updateValue(Math.round(instrument.vibratoDepth * 25));
@@ -62317,7 +62617,8 @@ You should be redirected to the song at:<br /><br />
                     || document.activeElement == this._unisonSpreadInputBox
                     || document.activeElement == this._unisonOffsetInputBox
                     || document.activeElement == this._unisonExpressionInputBox
-                    || document.activeElement == this._unisonSignInputBox) {
+                    || document.activeElement == this._unisonSignInputBox
+                    || document.activeElement == this._rmHzOffsetSliderInputBox) {
                     if (event.keyCode == 13 || event.keyCode == 27) {
                         this.mainLayer.focus();
                     }
@@ -62761,7 +63062,7 @@ You should be redirected to the song at:<br /><br />
                         if (canPlayNotes)
                             break;
                         if (event.ctrlKey || event.metaKey) {
-                            this._openPrompt("import");
+                            this._openPrompt("export");
                             event.preventDefault();
                         }
                         else {
@@ -62779,6 +63080,10 @@ You should be redirected to the song at:<br /><br />
                     case 79:
                         if (canPlayNotes)
                             break;
+                        if (event.ctrlKey || event.metaKey) {
+                            this._openPrompt("import");
+                            event.preventDefault();
+                        }
                         break;
                     case 86:
                         if (canPlayNotes)
@@ -64091,6 +64396,7 @@ You should be redirected to the song at:<br /><br />
             this._panSliderInputBox.addEventListener("input", () => { this._doc.record(new ChangePan(this._doc, this._doc.song.channels[this._doc.channel].instruments[this._doc.getCurrentInstrument()].pan, Math.min(100.0, Math.max(0.0, Math.round(+this._panSliderInputBox.value))))); });
             this._pwmSliderInputBox.addEventListener("input", () => { this._doc.record(new ChangePulseWidth(this._doc, this._doc.song.channels[this._doc.channel].instruments[this._doc.getCurrentInstrument()].pulseWidth, Math.min(Config.pulseWidthRange, Math.max(1.0, Math.round(+this._pwmSliderInputBox.value))))); });
             this._detuneSliderInputBox.addEventListener("input", () => { this._doc.record(new ChangeDetune(this._doc, this._doc.song.channels[this._doc.channel].instruments[this._doc.getCurrentInstrument()].detune, Math.min(Config.detuneMax - Config.detuneCenter, Math.max(Config.detuneMin - Config.detuneCenter, Math.round(+this._detuneSliderInputBox.value))))); });
+            this._rmHzOffsetSliderInputBox.addEventListener("input", () => { this._doc.record(new ChangeRmHzOffset(this._doc, this._doc.song.channels[this._doc.channel].instruments[this._doc.getCurrentInstrument()].rmHzOffset, Math.min(Config.rmHzOffsetMax - Config.rmHzOffsetCenter, Math.max(Config.rmHzOffsetMin - Config.rmHzOffsetCenter, Math.round(+this._rmHzOffsetSliderInputBox.value))))); });
             this._unisonVoicesInputBox.addEventListener("input", () => { this._doc.record(new ChangeUnisonVoices(this._doc, this._doc.song.channels[this._doc.channel].instruments[this._doc.getCurrentInstrument()].unisonVoices, Math.min(Config.unisonVoicesMax, Math.max(Config.unisonVoicesMin, Math.round(+this._unisonVoicesInputBox.value))))); });
             this._unisonSpreadInputBox.addEventListener("input", () => { this._doc.record(new ChangeUnisonSpread(this._doc, this._doc.song.channels[this._doc.channel].instruments[this._doc.getCurrentInstrument()].unisonSpread, Math.min(Config.unisonSpreadMax, Math.max(Config.unisonSpreadMin, +this._unisonSpreadInputBox.value)))); });
             this._unisonOffsetInputBox.addEventListener("input", () => { this._doc.record(new ChangeUnisonOffset(this._doc, this._doc.song.channels[this._doc.channel].instruments[this._doc.getCurrentInstrument()].unisonOffset, Math.min(Config.unisonOffsetMax, Math.max(Config.unisonOffsetMin, +this._unisonOffsetInputBox.value)))); });
@@ -64423,7 +64729,7 @@ You should be redirected to the song at:<br /><br />
             if (promptName) {
                 switch (promptName) {
                     case "export":
-                        this.prompt = new ExportPrompt(this._doc);
+                        this.prompt = new ImportPrompt(this._doc);
                         break;
                     case "import":
                         this.prompt = new ImportPrompt(this._doc);
@@ -66432,20 +66738,22 @@ You should be redirected to the song at:<br /><br />
                 if (document.visibilityState === 'visible') {
                     if (this.song.setSongTheme == "none") {
                         if (window.localStorage.getItem("colorTheme") != null) {
-                            ColorConfig.setTheme(String(window.localStorage.getItem("colorTheme")));
-                            if (window.localStorage.getItem("colorTheme") == "custom") {
-                                CustomThemeBases.setFont(String(window.localStorage.getItem("customFontName")));
-                                CustomThemeBases.setBackground(String(window.localStorage.getItem("customBackground")));
-                                CustomThemeBases.setIcons(String(window.localStorage.getItem("customIconsName")));
-                                CustomThemeBases.setBorder(String(window.localStorage.getItem("customBorderName")));
-                                CustomThemeBases.setCursor(String(window.localStorage.getItem("customCursorName")));
-                            }
-                            else {
-                                CustomThemeBases.setFont("none");
-                                CustomThemeBases.setBackground("none");
-                                CustomThemeBases.setIcons("none");
-                                CustomThemeBases.setBorder("none");
-                                CustomThemeBases.setCursor("none");
+                            if (window.localStorage.getItem("colorTheme") != ColorConfig.currentSetTheme) {
+                                ColorConfig.setTheme(String(window.localStorage.getItem("colorTheme")));
+                                if (window.localStorage.getItem("colorTheme") == "custom") {
+                                    CustomThemeBases.setFont(String(window.localStorage.getItem("customFontName")));
+                                    CustomThemeBases.setBackground(String(window.localStorage.getItem("customBackground")));
+                                    CustomThemeBases.setIcons(String(window.localStorage.getItem("customIconsName")));
+                                    CustomThemeBases.setBorder(String(window.localStorage.getItem("customBorderName")));
+                                    CustomThemeBases.setCursor(String(window.localStorage.getItem("customCursorName")));
+                                }
+                                else {
+                                    CustomThemeBases.setFont("none");
+                                    CustomThemeBases.setBackground("none");
+                                    CustomThemeBases.setIcons("none");
+                                    CustomThemeBases.setBorder("none");
+                                    CustomThemeBases.setCursor("none");
+                                }
                             }
                         }
                     }
