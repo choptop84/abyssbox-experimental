@@ -23414,7 +23414,7 @@ var beepbox = (function (exports) {
         x |= base64CharCodeToInt[compressed.charCodeAt(charIndex++)] << (6 * 0);
         return x;
     }
-    function encodeUnisonSettings(buffer, v, s, o, e, i) {
+    function encodeUnisonSettings(buffer, v, s, o, e, i, b) {
         buffer.push(base64IntToCharCode[v]);
         buffer.push(base64IntToCharCode[Number((s > 0))]);
         let cleanS = Math.round(Math.abs(s) * 1000);
@@ -23430,6 +23430,7 @@ var beepbox = (function (exports) {
         buffer.push(base64IntToCharCode[Number((i > 0))]);
         let cleanI = Math.round(Math.abs(i) * 1000);
         buffer.push(base64IntToCharCode[cleanI % 63], base64IntToCharCode[Math.floor(cleanI / 63)]);
+        buffer.push(base64IntToCharCode[+b]);
     }
     function convertLegacyKeyToKeyAndOctave(rawKeyIndex) {
         let key = clamp(0, Config.keys.length, rawKeyIndex);
@@ -24416,6 +24417,7 @@ var beepbox = (function (exports) {
             this.unisonOffset = 0.0;
             this.unisonExpression = 1.4;
             this.unisonSign = 1.0;
+            this.unisonBuzzes = false;
             this.effects = 0;
             this.chord = 1;
             this.strumParts = 1;
@@ -24883,8 +24885,7 @@ var beepbox = (function (exports) {
                     instrumentObject["harmonics"][i] = Math.round(100 * this.harmonicsWave.harmonics[i] / Config.harmonicsMax);
                 }
             }
-            if (this.type == 2) {
-                instrumentObject["wave"] = Config.chipNoises[this.chipNoise].name;
+            if (this.type == 0 || this.type == 6 || this.type == 9 || this.type == 2 || this.type == 5 || this.type == 7 || this.type == 3) {
                 instrumentObject["unison"] = this.unison == Config.unisons.length ? "custom" : Config.unisons[this.unison].name;
                 if (this.unison == Config.unisons.length) {
                     instrumentObject["unisonVoices"] = this.unisonVoices;
@@ -24892,20 +24893,16 @@ var beepbox = (function (exports) {
                     instrumentObject["unisonOffset"] = this.unisonOffset;
                     instrumentObject["unisonExpression"] = this.unisonExpression;
                     instrumentObject["unisonSign"] = this.unisonSign;
+                    instrumentObject["unisonBuzzes"] = this.unisonBuzzes;
                 }
+            }
+            if (this.type == 2) {
+                instrumentObject["wave"] = Config.chipNoises[this.chipNoise].name;
             }
             else if (this.type == 3) {
                 instrumentObject["spectrum"] = [];
                 for (let i = 0; i < Config.spectrumControlPoints; i++) {
                     instrumentObject["spectrum"][i] = Math.round(100 * this.spectrumWave.spectrum[i] / Config.spectrumMax);
-                }
-                instrumentObject["unison"] = this.unison == Config.unisons.length ? "custom" : Config.unisons[this.unison].name;
-                if (this.unison == Config.unisons.length) {
-                    instrumentObject["unisonVoices"] = this.unisonVoices;
-                    instrumentObject["unisonSpread"] = this.unisonSpread;
-                    instrumentObject["unisonOffset"] = this.unisonOffset;
-                    instrumentObject["unisonExpression"] = this.unisonExpression;
-                    instrumentObject["unisonSign"] = this.unisonSign;
                 }
             }
             else if (this.type == 4) {
@@ -24923,14 +24920,6 @@ var beepbox = (function (exports) {
             }
             else if (this.type == 0) {
                 instrumentObject["wave"] = Config.chipWaves[this.chipWave].name;
-                instrumentObject["unison"] = this.unison == Config.unisons.length ? "custom" : Config.unisons[this.unison].name;
-                if (this.unison == Config.unisons.length) {
-                    instrumentObject["unisonVoices"] = this.unisonVoices;
-                    instrumentObject["unisonSpread"] = this.unisonSpread;
-                    instrumentObject["unisonOffset"] = this.unisonOffset;
-                    instrumentObject["unisonExpression"] = this.unisonExpression;
-                    instrumentObject["unisonSign"] = this.unisonSign;
-                }
                 instrumentObject["isUsingAdvancedLoopControls"] = this.isUsingAdvancedLoopControls;
                 instrumentObject["chipWaveLoopStart"] = this.chipWaveLoopStart;
                 instrumentObject["chipWaveLoopEnd"] = this.chipWaveLoopEnd;
@@ -24941,14 +24930,6 @@ var beepbox = (function (exports) {
             else if (this.type == 6) {
                 instrumentObject["pulseWidth"] = this.pulseWidth;
                 instrumentObject["decimalOffset"] = this.decimalOffset;
-                instrumentObject["unison"] = this.unison == Config.unisons.length ? "custom" : Config.unisons[this.unison].name;
-                if (this.unison == Config.unisons.length) {
-                    instrumentObject["unisonVoices"] = this.unisonVoices;
-                    instrumentObject["unisonSpread"] = this.unisonSpread;
-                    instrumentObject["unisonOffset"] = this.unisonOffset;
-                    instrumentObject["unisonExpression"] = this.unisonExpression;
-                    instrumentObject["unisonSign"] = this.unisonSign;
-                }
             }
             else if (this.type == 8) {
                 instrumentObject["pulseWidth"] = this.pulseWidth;
@@ -24958,27 +24939,9 @@ var beepbox = (function (exports) {
                 instrumentObject["shape"] = Math.round(100 * this.supersawShape / Config.supersawShapeMax);
             }
             else if (this.type == 7) {
-                instrumentObject["unison"] = this.unison == Config.unisons.length ? "custom" : Config.unisons[this.unison].name;
-                if (this.unison == Config.unisons.length) {
-                    instrumentObject["unisonVoices"] = this.unisonVoices;
-                    instrumentObject["unisonSpread"] = this.unisonSpread;
-                    instrumentObject["unisonOffset"] = this.unisonOffset;
-                    instrumentObject["unisonExpression"] = this.unisonExpression;
-                    instrumentObject["unisonSign"] = this.unisonSign;
-                }
                 instrumentObject["stringSustain"] = Math.round(100 * this.stringSustain / (Config.stringSustainRange - 1));
                 if (Config.enableAcousticSustain) {
                     instrumentObject["stringSustainType"] = Config.sustainTypeNames[this.stringSustainType];
-                }
-            }
-            else if (this.type == 5) {
-                instrumentObject["unison"] = this.unison == Config.unisons.length ? "custom" : Config.unisons[this.unison].name;
-                if (this.unison == Config.unisons.length) {
-                    instrumentObject["unisonVoices"] = this.unisonVoices;
-                    instrumentObject["unisonSpread"] = this.unisonSpread;
-                    instrumentObject["unisonOffset"] = this.unisonOffset;
-                    instrumentObject["unisonExpression"] = this.unisonExpression;
-                    instrumentObject["unisonSign"] = this.unisonSign;
                 }
             }
             else if (this.type == 1 || this.type == 11) {
@@ -25017,14 +24980,6 @@ var beepbox = (function (exports) {
             }
             else if (this.type == 9) {
                 instrumentObject["wave"] = Config.chipWaves[this.chipWave].name;
-                instrumentObject["unison"] = this.unison == Config.unisons.length ? "custom" : Config.unisons[this.unison].name;
-                if (this.unison == Config.unisons.length) {
-                    instrumentObject["unisonVoices"] = this.unisonVoices;
-                    instrumentObject["unisonSpread"] = this.unisonSpread;
-                    instrumentObject["unisonOffset"] = this.unisonOffset;
-                    instrumentObject["unisonExpression"] = this.unisonExpression;
-                    instrumentObject["unisonSign"] = this.unisonSign;
-                }
                 instrumentObject["customChipWave"] = new Float64Array(64);
                 instrumentObject["customChipWaveIntegral"] = new Float64Array(65);
                 for (let i = 0; i < this.customChipWave.length; i++) {
@@ -25185,6 +25140,7 @@ var beepbox = (function (exports) {
             this.unisonOffset = (instrumentObject["unisonOffset"] == undefined) ? Config.unisons[this.unison].offset : instrumentObject["unisonOffset"];
             this.unisonExpression = (instrumentObject["unisonExpression"] == undefined) ? Config.unisons[this.unison].expression : instrumentObject["unisonExpression"];
             this.unisonSign = (instrumentObject["unisonSign"] == undefined) ? Config.unisons[this.unison].sign : instrumentObject["unisonSign"];
+            this.unisonBuzzes = (instrumentObject["unisonBuzzes"] == undefined) ? false : instrumentObject["unisonBuzzes"];
             if (instrumentObject["chorus"] == "custom harmony") {
                 this.unison = Config.unisons.dictionary["hum"].index;
                 this.chord = Config.chords.dictionary["custom interval"].index;
@@ -26223,7 +26179,7 @@ var beepbox = (function (exports) {
                         buffer.push(119, base64IntToCharCode[instrument.chipWave % 63], base64IntToCharCode[Math.floor(instrument.chipWave / 63)]);
                         buffer.push(104, base64IntToCharCode[instrument.unison]);
                         if (instrument.unison == Config.unisons.length)
-                            encodeUnisonSettings(buffer, instrument.unisonVoices, instrument.unisonSpread, instrument.unisonOffset, instrument.unisonExpression, instrument.unisonSign);
+                            encodeUnisonSettings(buffer, instrument.unisonVoices, instrument.unisonSpread, instrument.unisonOffset, instrument.unisonExpression, instrument.unisonSign, instrument.unisonBuzzes);
                         buffer.push(121);
                         const encodedLoopMode = ((clamp(0, 31 + 1, instrument.chipWaveLoopMode) << 1)
                             | (instrument.isUsingAdvancedLoopControls ? 1 : 0));
@@ -26286,7 +26242,7 @@ var beepbox = (function (exports) {
                         buffer.push(119, base64IntToCharCode[instrument.chipWave % 63], base64IntToCharCode[Math.floor(instrument.chipWave / 63)]);
                         buffer.push(104, base64IntToCharCode[instrument.unison]);
                         if (instrument.unison == Config.unisons.length)
-                            encodeUnisonSettings(buffer, instrument.unisonVoices, instrument.unisonSpread, instrument.unisonOffset, instrument.unisonExpression, instrument.unisonSign);
+                            encodeUnisonSettings(buffer, instrument.unisonVoices, instrument.unisonSpread, instrument.unisonOffset, instrument.unisonExpression, instrument.unisonSign, instrument.unisonBuzzes);
                         buffer.push(77);
                         for (let j = 0; j < 64; j++) {
                             buffer.push(base64IntToCharCode[(instrument.customChipWave[j] + 24)]);
@@ -26296,7 +26252,7 @@ var beepbox = (function (exports) {
                         buffer.push(119, base64IntToCharCode[instrument.chipNoise]);
                         buffer.push(104, base64IntToCharCode[instrument.unison]);
                         if (instrument.unison == Config.unisons.length)
-                            encodeUnisonSettings(buffer, instrument.unisonVoices, instrument.unisonSpread, instrument.unisonOffset, instrument.unisonExpression, instrument.unisonSign);
+                            encodeUnisonSettings(buffer, instrument.unisonVoices, instrument.unisonSpread, instrument.unisonOffset, instrument.unisonExpression, instrument.unisonSign, instrument.unisonBuzzes);
                     }
                     else if (instrument.type == 3) {
                         buffer.push(83);
@@ -26307,7 +26263,7 @@ var beepbox = (function (exports) {
                         spectrumBits.encodeBase64(buffer);
                         buffer.push(104, base64IntToCharCode[instrument.unison]);
                         if (instrument.unison == Config.unisons.length)
-                            encodeUnisonSettings(buffer, instrument.unisonVoices, instrument.unisonSpread, instrument.unisonOffset, instrument.unisonExpression, instrument.unisonSign);
+                            encodeUnisonSettings(buffer, instrument.unisonVoices, instrument.unisonSpread, instrument.unisonOffset, instrument.unisonExpression, instrument.unisonSign, instrument.unisonBuzzes);
                     }
                     else if (instrument.type == 4) {
                         buffer.push(122);
@@ -26326,14 +26282,14 @@ var beepbox = (function (exports) {
                     else if (instrument.type == 5) {
                         buffer.push(104, base64IntToCharCode[instrument.unison]);
                         if (instrument.unison == Config.unisons.length)
-                            encodeUnisonSettings(buffer, instrument.unisonVoices, instrument.unisonSpread, instrument.unisonOffset, instrument.unisonExpression, instrument.unisonSign);
+                            encodeUnisonSettings(buffer, instrument.unisonVoices, instrument.unisonSpread, instrument.unisonOffset, instrument.unisonExpression, instrument.unisonSign, instrument.unisonBuzzes);
                     }
                     else if (instrument.type == 6) {
                         buffer.push(87, base64IntToCharCode[instrument.pulseWidth]);
                         buffer.push(base64IntToCharCode[instrument.decimalOffset >> 6], base64IntToCharCode[instrument.decimalOffset & 0x3f]);
                         buffer.push(104, base64IntToCharCode[instrument.unison]);
                         if (instrument.unison == Config.unisons.length)
-                            encodeUnisonSettings(buffer, instrument.unisonVoices, instrument.unisonSpread, instrument.unisonOffset, instrument.unisonExpression, instrument.unisonSign);
+                            encodeUnisonSettings(buffer, instrument.unisonVoices, instrument.unisonSpread, instrument.unisonOffset, instrument.unisonExpression, instrument.unisonSign, instrument.unisonBuzzes);
                     }
                     else if (instrument.type == 8) {
                         buffer.push(120, base64IntToCharCode[instrument.supersawDynamism], base64IntToCharCode[instrument.supersawSpread], base64IntToCharCode[instrument.supersawShape]);
@@ -26346,7 +26302,7 @@ var beepbox = (function (exports) {
                         }
                         buffer.push(104, base64IntToCharCode[instrument.unison]);
                         if (instrument.unison == Config.unisons.length)
-                            encodeUnisonSettings(buffer, instrument.unisonVoices, instrument.unisonSpread, instrument.unisonOffset, instrument.unisonExpression, instrument.unisonSign);
+                            encodeUnisonSettings(buffer, instrument.unisonVoices, instrument.unisonSpread, instrument.unisonOffset, instrument.unisonExpression, instrument.unisonSign, instrument.unisonBuzzes);
                         buffer.push(73, base64IntToCharCode[instrument.stringSustain | (instrument.stringSustainType << 5)]);
                     }
                     else if (instrument.type == 10) ;
@@ -27617,6 +27573,7 @@ var beepbox = (function (exports) {
                                 instrument.unisonSign = unisonSign / 1000;
                                 if (unisonSignNegative == 0)
                                     instrument.unisonSign *= -1;
+                                instrument.unisonBuzzes = base64CharCodeToInt[compressed.charCodeAt(charIndex++)] ? true : false;
                             }
                             else {
                                 instrument.unisonVoices = Config.unisons[instrument.unison].voices;
@@ -27624,6 +27581,7 @@ var beepbox = (function (exports) {
                                 instrument.unisonOffset = Config.unisons[instrument.unison].offset;
                                 instrument.unisonExpression = Config.unisons[instrument.unison].expression;
                                 instrument.unisonSign = Config.unisons[instrument.unison].sign;
+                                instrument.unisonBuzzes = false;
                             }
                         }
                         break;
@@ -30139,6 +30097,7 @@ var beepbox = (function (exports) {
             this.unisonOffset = 0.0;
             this.unisonExpression = 1.4;
             this.unisonSign = 1.0;
+            this.unisonBuzzes = false;
             this.chord = null;
             this.effects = 0;
             this.volumeScale = 0;
@@ -30377,6 +30336,7 @@ var beepbox = (function (exports) {
             this.type = instrument.type;
             this.synthesizer = Synth.getInstrumentSynthFunction(instrument);
             this.unison = Config.unisons[instrument.unison];
+            this.unisonBuzzes = instrument.unisonBuzzes;
             this.chord = instrument.getChord();
             this.noisePitchFilterMult = Config.chipNoises[instrument.chipNoise].pitchFilterMult;
             this.effects = instrument.effects;
@@ -30831,6 +30791,14 @@ var beepbox = (function (exports) {
         }
         updateWaves(instrument, samplesPerSecond) {
             this.volumeScale = 1.0;
+            if (instrument.type == 0 || instrument.type == 6 || instrument.type == 9 || instrument.type == 2 || instrument.type == 5 || instrument.type == 7 || instrument.type == 3) {
+                this.unisonVoices = instrument.unisonVoices;
+                this.unisonSpread = instrument.unisonSpread;
+                this.unisonOffset = instrument.unisonOffset;
+                this.unisonExpression = instrument.unisonExpression;
+                this.unisonSign = instrument.unisonSign;
+                this.unisonBuzzes = instrument.unisonBuzzes;
+            }
             if (instrument.type == 0) {
                 this.wave = (this.aliases) ? Config.rawChipWaves[instrument.chipWave].samples : Config.chipWaves[instrument.chipWave].samples;
                 this.isUsingAdvancedLoopControls = instrument.isUsingAdvancedLoopControls;
@@ -30839,59 +30807,18 @@ var beepbox = (function (exports) {
                 this.chipWaveLoopMode = instrument.chipWaveLoopMode;
                 this.chipWavePlayBackwards = instrument.chipWavePlayBackwards;
                 this.chipWaveStartOffset = instrument.chipWaveStartOffset;
-                this.unisonVoices = instrument.unisonVoices;
-                this.unisonSpread = instrument.unisonSpread;
-                this.unisonOffset = instrument.unisonOffset;
-                this.unisonExpression = instrument.unisonExpression;
-                this.unisonSign = instrument.unisonSign;
-            }
-            else if (instrument.type == 6) {
-                this.unisonVoices = instrument.unisonVoices;
-                this.unisonSpread = instrument.unisonSpread;
-                this.unisonOffset = instrument.unisonOffset;
-                this.unisonExpression = instrument.unisonExpression;
-                this.unisonSign = instrument.unisonSign;
-            }
-            else if (instrument.type == 9) {
-                this.wave = (this.aliases) ? instrument.customChipWave : instrument.customChipWaveIntegral;
-                this.volumeScale = 0.05;
-                this.unisonVoices = instrument.unisonVoices;
-                this.unisonSpread = instrument.unisonSpread;
-                this.unisonOffset = instrument.unisonOffset;
-                this.unisonExpression = instrument.unisonExpression;
-                this.unisonSign = instrument.unisonSign;
             }
             else if (instrument.type == 2) {
                 this.wave = getDrumWave(instrument.chipNoise, inverseRealFourierTransform, scaleElementsByFactor);
-                this.unisonVoices = instrument.unisonVoices;
-                this.unisonSpread = instrument.unisonSpread;
-                this.unisonOffset = instrument.unisonOffset;
-                this.unisonExpression = instrument.unisonExpression;
-                this.unisonSign = instrument.unisonSign;
             }
             else if (instrument.type == 5) {
                 this.wave = this.harmonicsWave.getCustomWave(instrument.harmonicsWave, instrument.type);
-                this.unisonVoices = instrument.unisonVoices;
-                this.unisonSpread = instrument.unisonSpread;
-                this.unisonOffset = instrument.unisonOffset;
-                this.unisonExpression = instrument.unisonExpression;
-                this.unisonSign = instrument.unisonSign;
             }
             else if (instrument.type == 7) {
                 this.wave = this.harmonicsWave.getCustomWave(instrument.harmonicsWave, instrument.type);
-                this.unisonVoices = instrument.unisonVoices;
-                this.unisonSpread = instrument.unisonSpread;
-                this.unisonOffset = instrument.unisonOffset;
-                this.unisonExpression = instrument.unisonExpression;
-                this.unisonSign = instrument.unisonSign;
             }
             else if (instrument.type == 3) {
                 this.wave = this.spectrumWave.getCustomWave(instrument.spectrumWave, 8);
-                this.unisonVoices = instrument.unisonVoices;
-                this.unisonSpread = instrument.unisonSpread;
-                this.unisonOffset = instrument.unisonOffset;
-                this.unisonExpression = instrument.unisonExpression;
-                this.unisonSign = instrument.unisonSign;
             }
             else if (instrument.type == 4) {
                 for (let i = 0; i < Config.drumCount; i++) {
@@ -33718,7 +33645,7 @@ var beepbox = (function (exports) {
             const chipWaveLoopMode = instrumentState.chipWaveLoopMode;
             const chipWavePlayBackwards = instrumentState.chipWavePlayBackwards;
             const unisonSign = tone.specialIntervalExpressionMult * instrumentState.unisonSign;
-            if (instrumentState.unisonVoices == 1 && instrumentState.unisonSpread == 0 && !instrumentState.chord.customInterval)
+            if (instrumentState.unisonVoices == 1 && (instrumentState.unisonSpread == 0 || instrumentState.unisonBuzzes) && !instrumentState.chord.customInterval)
                 tone.phases[1] = tone.phases[0];
             let phaseDeltaA = tone.phaseDeltas[0] * waveLength;
             let phaseDeltaB = tone.phaseDeltas[1] * waveLength;
@@ -34024,7 +33951,7 @@ var beepbox = (function (exports) {
             const volumeScale = instrumentState.volumeScale;
             const waveLength = (aliases && instrumentState.type == 8) ? wave.length : wave.length - 1;
             const unisonSign = tone.specialIntervalExpressionMult * instrumentState.unisonSign;
-            if (instrumentState.unisonVoices == 1 && instrumentState.unisonSpread == 0 && !instrumentState.chord.customInterval)
+            if (instrumentState.unisonVoices == 1 && (instrumentState.unisonSpread == 0 || instrumentState.unisonBuzzes) && !instrumentState.chord.customInterval)
                 tone.phases[1] = tone.phases[0];
             let phaseDeltaA = tone.phaseDeltas[0] * waveLength;
             let phaseDeltaB = tone.phaseDeltas[1] * waveLength;
@@ -34105,7 +34032,7 @@ var beepbox = (function (exports) {
             const wave = instrumentState.wave;
             const waveLength = wave.length - 1;
             const unisonSign = tone.specialIntervalExpressionMult * instrumentState.unisonSign;
-            if (instrumentState.unisonVoices == 1 && instrumentState.unisonSpread == 0 && !instrumentState.chord.customInterval)
+            if (instrumentState.unisonVoices == 1 && (instrumentState.unisonSpread == 0 || instrumentState.unisonBuzzes) && !instrumentState.chord.customInterval)
                 tone.phases[1] = tone.phases[0];
             let phaseDeltaA = tone.phaseDeltas[0] * waveLength;
             let phaseDeltaB = tone.phaseDeltas[1] * waveLength;
@@ -34950,7 +34877,7 @@ var beepbox = (function (exports) {
         static pulseWidthSynth(synth, bufferIndex, roundedSamplesPerTick, tone, instrumentState) {
             const data = synth.tempMonoInstrumentSampleBuffer;
             const unisonSign = tone.specialIntervalExpressionMult * instrumentState.unisonSign;
-            if (instrumentState.unisonVoices == 1 && instrumentState.unisonSpread == 0 && !instrumentState.chord.customInterval)
+            if (instrumentState.unisonVoices == 1 && (instrumentState.unisonSpread == 0 || instrumentState.unisonBuzzes) && !instrumentState.chord.customInterval)
                 tone.phases[1] = tone.phases[0];
             let phaseDeltaA = tone.phaseDeltas[0];
             let phaseDeltaB = tone.phaseDeltas[1];
@@ -35122,7 +35049,7 @@ var beepbox = (function (exports) {
             const data = synth.tempMonoInstrumentSampleBuffer;
             const wave = instrumentState.wave;
             const unisonSign = tone.specialIntervalExpressionMult * instrumentState.unisonSign;
-            if (instrumentState.unisonVoices == 1 && instrumentState.unisonSpread == 0 && !instrumentState.chord.customInterval)
+            if (instrumentState.unisonVoices == 1 && (instrumentState.unisonSpread == 0 || instrumentState.unisonBuzzes) && !instrumentState.chord.customInterval)
                 tone.phases[1] = tone.phases[0];
             let phaseDeltaA = tone.phaseDeltas[0];
             let phaseDeltaB = tone.phaseDeltas[1];
@@ -35134,10 +35061,10 @@ var beepbox = (function (exports) {
             let phaseB = (tone.phases[1] % 1) * Config.chipNoiseLength;
             if (tone.phases[0] == 0.0) {
                 phaseA = Math.random() * Config.chipNoiseLength;
-                if (instrumentState.unisonVoices == 1 && instrumentState.unisonSpread == 0 && !instrumentState.chord.customInterval)
+                if (instrumentState.unisonVoices == 1 && (instrumentState.unisonSpread == 0 || instrumentState.unisonBuzzes) && !instrumentState.chord.customInterval)
                     phaseB = phaseA;
             }
-            if (tone.phases[1] == 0.0 && !(instrumentState.unisonVoices == 1 && instrumentState.unisonSpread == 0 && !instrumentState.chord.customInterval)) {
+            if (tone.phases[1] == 0.0 && !(instrumentState.unisonVoices == 1 && (instrumentState.unisonSpread == 0 || instrumentState.unisonBuzzes) && !instrumentState.chord.customInterval)) {
                 phaseB = Math.random() * Config.chipNoiseLength;
             }
             const phaseMask = Config.chipNoiseLength - 1;
@@ -35184,7 +35111,7 @@ var beepbox = (function (exports) {
             const wave = instrumentState.wave;
             const samplesInPeriod = (1 << 7);
             const unisonSign = tone.specialIntervalExpressionMult * instrumentState.unisonSign;
-            if (instrumentState.unisonVoices == 1 && instrumentState.unisonSpread == 0 && !instrumentState.chord.customInterval)
+            if (instrumentState.unisonVoices == 1 && (instrumentState.unisonSpread == 0 || instrumentState.unisonBuzzes) && !instrumentState.chord.customInterval)
                 tone.phases[1] = tone.phases[0];
             let phaseDeltaA = tone.phaseDeltas[0] * samplesInPeriod;
             let phaseDeltaB = tone.phaseDeltas[1] * samplesInPeriod;
@@ -35203,10 +35130,10 @@ var beepbox = (function (exports) {
             let phaseB = (tone.phases[1] % 1) * Config.spectrumNoiseLength;
             if (tone.phases[0] == 0.0) {
                 phaseA = Synth.findRandomZeroCrossing(wave, Config.spectrumNoiseLength) + phaseDeltaA;
-                if (instrumentState.unisonVoices == 1 && instrumentState.unisonSpread == 0 && !instrumentState.chord.customInterval)
+                if (instrumentState.unisonVoices == 1 && (instrumentState.unisonSpread == 0 || instrumentState.unisonBuzzes) && !instrumentState.chord.customInterval)
                     phaseB = phaseA;
             }
-            if (tone.phases[1] == 0.0 && !(instrumentState.unisonVoices == 1 && instrumentState.unisonSpread == 0 && !instrumentState.chord.customInterval)) {
+            if (tone.phases[1] == 0.0 && !(instrumentState.unisonVoices == 1 && (instrumentState.unisonSpread == 0 || instrumentState.unisonBuzzes) && !instrumentState.chord.customInterval)) {
                 phaseB = Synth.findRandomZeroCrossing(wave, Config.spectrumNoiseLength) + phaseDeltaB;
             }
             const phaseMask = Config.spectrumNoiseLength - 1;
