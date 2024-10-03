@@ -1719,7 +1719,7 @@ var beepbox = (function (exports) {
             return (_a = EditorConfig.presetCategories[0].presets.dictionary) === null || _a === void 0 ? void 0 : _a[TypePresets === null || TypePresets === void 0 ? void 0 : TypePresets[instrument]];
         }
     }
-    EditorConfig.version = "1.5";
+    EditorConfig.version = "1.5.1";
     EditorConfig.versionDisplayName = "AbyssBox " + EditorConfig.version;
     EditorConfig.releaseNotesURL = "./patch_notes.html";
     EditorConfig.isOnMac = /^Mac/i.test(navigator.platform) || /Mac OS X/i.test(navigator.userAgent) || /^(iPhone|iPad|iPod)/i.test(navigator.platform) || /(iPhone|iPad|iPod)/i.test(navigator.userAgent);
@@ -5951,7 +5951,7 @@ var beepbox = (function (exports) {
 		}
 		.instructions-column > section:first-of-type > p:first-of-type:after {
 		display: block;
-		content: url("wide-gordon.png");
+		content: url("./image_assets/wide-gordon.png");
 		width: inherit;
 		height: contain;
 		text-align: center;
@@ -6119,7 +6119,7 @@ var beepbox = (function (exports) {
 		}
 		.instructions-column > section:first-of-type > p:first-of-type:after {
 		display: block;
-		content: url("wide-gordon.png");
+		content: url("./image_assets/wide-gordon.png");
 		width: inherit;
 		height: contain;
 		text-align: center;
@@ -6932,12 +6932,12 @@ var beepbox = (function (exports) {
 		}
 		#text-content > section > h1 {
 		margin: auto;
-		content: url("AbyssBox_DOOM.png");
+		content: url("./image_assets/AbyssBox_DOOM.png");
 		}
 				
 				/* sets background image */
 		body {
-		background-image: url("doomsky.png") !important;
+		background-image: url("./image_assets/doomsky.png") !important;
 		background-size: cover;
 		background-position: center;
 		background-repeat: no-repeat;
@@ -21681,18 +21681,18 @@ var beepbox = (function (exports) {
 		}
 		.instructions-column > section:first-of-type > p:first-of-type:after {
 		display: block;
-		content: url("UltraboxAzurLaneThemeStarterSquad.png");
+		content: url("./image_assets/UltraboxAzurLaneThemeStarterSquad.png");
 		width: 100%;
 		text-align: center;
 		margin-top: 25px;
 		}
 		/* sets cursor */
 		* {
-		cursor: url("UltraBoxAzurLaneThemeMouse.png"), auto !important;
+		cursor: url("./image_assets/UltraBoxAzurLaneThemeMouse.png"), auto !important;
 		}
 		/* sets background image */
 		body {
-		background-image: url("UltraBoxAzurLaneThemeMemoryTaskBackground.png") !important;
+		background-image: url("./image_assets/UltraBoxAzurLaneThemeMemoryTaskBackground.png") !important;
 		background-size: cover;
 		background-position: center;
 		background-repeat: no-repeat;
@@ -21706,7 +21706,7 @@ var beepbox = (function (exports) {
 		}
 		#text-content > section > h1 {
 		margin: auto;
-		content: url("UltraBoxALThemeLogo.png");
+		content: url("./image_assets/UltraBoxALThemeLogo.png");
 		}
 	}`,
         "WeebBox": `
@@ -59720,11 +59720,12 @@ You should be redirected to the song at:<br /><br />
         constructor(_doc) {
             this._doc = _doc;
             this.okayButton = button$2({ class: "okayButton", style: "width:45%;" }, "Okay");
-            this.startingContainer = div$2({ id: "tutorialPrompt" }, div$2({ class: "promptTitle" }, h2$1({ class: "tutorialExt", style: "text-align: inherit;" }, ""), h2$1({ class: "tutorialTitle", style: "margin-bottom: 0.5em;" }, "AbyssBox 1.5 is OUT NOW!")), p({ style: "margin-bottom: 0.5em; text-align: center; font-size: 15px;" }, "AbyssBox 1.5 is here! Here's a few of the many changes in this update!"), p({ style: "margin-bottom: 0.5em; text-align: left; font-size: 15px;" }, "- Two new effects! Phaser and Ring Modulation!"), p({ style: "margin-bottom: 0.5em; text-align: left; font-size: 15px;" }, "- New songwide modulation options!"), p({ style: "margin-bottom: 0.5em; text-align: left; font-size: 15px;" }, "- You can export as .ogg and .opus!"), p({ style: "margin-bottom: 0.5em; text-align: center; font-size: 15px;" }, "And much more!"), p({ style: "margin-bottom: 0.5em; text-align: center; font-size: 15px;" }, "For the full update list, I suggest", a({ href: "./patch-notes", target: "_blank", }, " Checking out the Patch Notes!")));
+            this.linkThing = a({ href: "./patch-notes", target: "_blank", }, " Checking out the Patch Notes!");
+            this.startingContainer = div$2({ id: "tutorialPrompt" }, div$2({ class: "promptTitle" }, h2$1({ class: "tutorialExt", style: "text-align: inherit;" }, ""), h2$1({ class: "tutorialTitle", style: "margin-bottom: 0.5em;" }, "AbyssBox 1.5.1 is OUT NOW!")), p({ style: "margin-bottom: 0.5em; text-align: center; font-size: 15px;" }, "AbyssBox 1.5.1 is here! A rather small but meaningful update this time around!"), p({ style: "margin-bottom: 0.5em; text-align: left; font-size: 15px;" }, "- Updated the Frutiger Aero theme to be a little less laggy."), p({ style: "margin-bottom: 0.5em; text-align: left; font-size: 15px;" }, "- Added tips to the new effects, as they were missing before."));
             this.container = div$2({ class: "prompt noSelection", id: "updateContainerPrompt", style: "width: 350px;" }, this.startingContainer, div$2({ style: "display:flex; flex-direction:row-reverse;" }, this.okayButton));
             this._close = () => {
                 window.localStorage.setItem("updateSeen", "true");
-                window.localStorage.setItem("curVer", "1.5");
+                window.localStorage.setItem("curVer", "1.5.1");
                 this._doc.prompt = null;
                 this._doc.undo();
             };
@@ -60841,7 +60842,7 @@ You should be redirected to the song at:<br /><br />
                 if (!isMobile) {
                     this._playPauseAreaMobile.style.display = "none";
                     if (window.localStorage.getItem("tutorialComplete") != "true") ;
-                    if (window.localStorage.getItem("curVer") != "1.5") {
+                    if (window.localStorage.getItem("curVer") != "1.5.1") {
                         window.localStorage.setItem("updateSeen", "false");
                     }
                     if (window.localStorage.getItem("updateSeen") != "true") {
