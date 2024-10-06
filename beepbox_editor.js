@@ -42379,8 +42379,8 @@ li.select2-results__option[role=group] > strong:hover {
     class ChangeSongDescription extends Change {
         constructor(doc, oldValue, newValue) {
             super();
-            if (newValue.length > 120) {
-                newValue = newValue.substring(0, 120);
+            if (newValue.length > 1200) {
+                newValue = newValue.substring(0, 1200);
             }
             doc.song.description = newValue;
             doc.notifier.changed();
@@ -59744,7 +59744,7 @@ You should be redirected to the song at:<br /><br />
             this._okayButton = button$1({ class: "okayButton", style: "width:45%;" }, "Okay");
             this._songTitle = input$1({ type: "text", style: "width: 100%;", value: this._doc.song.title, maxlength: 30, "autofocus": "autofocus" });
             this._songAuthor = input$1({ type: "text", style: "width: 100%;", value: this._doc.song.author, maxlength: 30 });
-            this._songDescription = textarea({ style: "width: 100%; resize: none; background: var(--editor-background); color: white; height: 64px; border: 0.5px solid var(--input-box-outline); font-size: 14px;", maxlength: 120 }, this._doc.song.description);
+            this._songDescription = textarea({ style: "width: 100%; resize: none; background: var(--editor-background); color: white; height: 64px; border: 0.5px solid var(--input-box-outline); font-size: 14px;", maxlength: 1200 }, this._doc.song.description);
             this._showSongDetailsBox = input$1({ style: "width: 3em; margin-left: 1em;", type: "checkbox" });
             this._computedSamplesLabel = div$1({ style: "width: 10em;" }, new Text("0:00"));
             this.container = div$1({ class: "prompt noSelection", style: "width: 250px;" }, h2("Song Details"), div$1({ style: "display: flex; flex-direction: row; align-items: baseline; gap: 10px;" }, "Title: ", this._songTitle), div$1({ style: "display: flex; flex-direction: row; align-items: baseline; gap: 10px;" }, "Author: ", this._songAuthor), div$1({ style: "display: flex; flex-direction: column; align-items: baseline;" }, "Description: ", this._songDescription), div$1({ style: "vertical-align: middle; align-items: center; justify-content: space-between;" }, "Show info on load: ", this._showSongDetailsBox), div$1({ style: "display: flex; flex-direction: column; align-items: baseline;" }, "Song Theme: ", this._doc.song.setSongTheme), div$1({ style: "text-align: left;" }, div$1({ style: "display:flex; gap: 3px; margin-bottom: 1em;" }, "Song Length: ", this._computedSamplesLabel), div$1({ style: "margin-bottom: 0.5em;" }, "Pitch Channels: " + this._doc.song.pitchChannelCount), div$1({ style: "margin-bottom: 0.5em;" }, "Noise Channels: " + this._doc.song.noiseChannelCount), div$1({}, "Mod Channels: " + this._doc.song.modChannelCount), br(), "URL Length: " + location.href.length, br()), div$1({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton), this._cancelButton);
