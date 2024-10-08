@@ -24944,6 +24944,16 @@ var beepbox = (function (exports) {
                     instrumentObject["stringSustainType"] = Config.sustainTypeNames[this.stringSustainType];
                 }
             }
+            else if (this.type == 5) {
+                instrumentObject["unison"] = this.unison == Config.unisons.length ? "custom" : Config.unisons[this.unison].name;
+                if (this.unison == Config.unisons.length) {
+                    instrumentObject["unisonVoices"] = this.unisonVoices;
+                    instrumentObject["unisonSpread"] = this.unisonSpread;
+                    instrumentObject["unisonOffset"] = this.unisonOffset;
+                    instrumentObject["unisonExpression"] = this.unisonExpression;
+                    instrumentObject["unisonSign"] = this.unisonSign;
+                }
+            }
             else if (this.type == 1 || this.type == 11) {
                 const operatorArray = [];
                 for (const operator of this.operators) {
@@ -25793,6 +25803,7 @@ var beepbox = (function (exports) {
     class Song {
         constructor(string) {
             this.scaleCustom = [];
+            this.loopType = 1;
             this.channels = [];
             this.limitDecay = 4.0;
             this.limitRise = 4000.0;
@@ -25899,6 +25910,7 @@ var beepbox = (function (exports) {
             this.loopStart = 0;
             this.loopLength = 4;
             this.tempo = 120;
+            this.loopType = 1;
             this.reverb = 0;
             this.beatsPerBar = 8;
             this.barCount = 16;
@@ -25991,6 +26003,7 @@ var beepbox = (function (exports) {
             buffer.push(103, base64IntToCharCode[(this.barCount - 1) >> 6], base64IntToCharCode[(this.barCount - 1) & 0x3f]);
             buffer.push(106, base64IntToCharCode[(this.patternsPerChannel - 1) >> 6], base64IntToCharCode[(this.patternsPerChannel - 1) & 0x3f]);
             buffer.push(114, base64IntToCharCode[this.rhythm]);
+            buffer.push(90, base64IntToCharCode[this.loopType]);
             buffer.push(79);
             if (this.compressionRatio != 1.0 || this.limitRatio != 1.0 || this.limitRise != 4000.0 || this.limitDecay != 4.0 || this.limitThreshold != 1.0 || this.compressionThreshold != 1.0 || this.masterGain != 1.0) {
                 buffer.push(base64IntToCharCode[Math.round(this.compressionRatio < 1 ? this.compressionRatio * 10 : 10 + (this.compressionRatio - 1) * 60)]);
@@ -26820,6 +26833,11 @@ var beepbox = (function (exports) {
                                 this.tempo = (base64CharCodeToInt[compressed.charCodeAt(charIndex++)] << 6) | (base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
                             }
                             this.tempo = clamp(Config.tempoMin, Config.tempoMax + 1, this.tempo);
+                        }
+                        break;
+                    case 90:
+                        {
+                            this.loopType = base64CharCodeToInt[compressed.charCodeAt(charIndex++)];
                         }
                         break;
                     case 109:
@@ -28913,6 +28931,7 @@ var beepbox = (function (exports) {
                 "customScale": this.scaleCustom,
                 "key": Config.keys[this.key].name,
                 "keyOctave": this.octave,
+                "loopType": this.loopType,
                 "introBars": this.loopStart,
                 "loopBars": this.loopLength,
                 "beatsPerBar": this.beatsPerBar,
@@ -29307,6 +29326,9 @@ var beepbox = (function (exports) {
             }
             if (jsonObject["beatsPerMinute"] != undefined) {
                 this.tempo = clamp(Config.tempoMin, Config.tempoMax + 1, jsonObject["beatsPerMinute"] | 0);
+            }
+            if (jsonObject["loopType"] != undefined) {
+                this.loopType = jsonObject["loopType"] | 0;
             }
             if (jsonObject["keyOctave"] != undefined) {
                 this.octave = clamp(Config.octaveMin, Config.octaveMax + 1, jsonObject["keyOctave"] | 0);
@@ -31646,14 +31668,33 @@ var beepbox = (function (exports) {
                 this.computeLatestModValues();
         }
         getNextBar() {
+            var _a;
             let nextBar = this.bar + 1;
-            {
+            if (((_a = this.song) === null || _a === void 0 ? void 0 : _a.loopType) != null) {
+                if (this.song.loopType != 2) {
+                    if (this.isRecording) {
+                        if (nextBar >= this.song.barCount) {
+                            nextBar = this.song.barCount - 1;
+                        }
+                    }
+                    else if ((this.bar == this.loopBarEnd && !this.renderingSong)) {
+                        nextBar = this.loopBarStart;
+                    }
+                    else if (this.loopRepeatCount != 0 && nextBar == Math.max(this.loopBarEnd + 1, this.song.loopStart + this.song.loopLength)) {
+                        nextBar = this.song.loopStart;
+                    }
+                }
+                else if (this.song.loopType == 2 && (this.bar == this.song.barCount - 1)) {
+                    nextBar = 0;
+                }
+            }
+            else {
                 if (this.isRecording) {
                     if (nextBar >= this.song.barCount) {
                         nextBar = this.song.barCount - 1;
                     }
                 }
-                else if ((this.bar == this.loopBarEnd && !this.renderingSong)) {
+                else if (this.bar == this.loopBarEnd && !this.renderingSong) {
                     nextBar = this.loopBarStart;
                 }
                 else if (this.loopRepeatCount != 0 && nextBar == Math.max(this.loopBarEnd + 1, this.song.loopStart + this.song.loopLength)) {

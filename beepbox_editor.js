@@ -25752,15 +25752,6 @@ li.select2-results__option[role=group] > strong:hover {
         return 2.0 * Math.atan(radians * 0.5);
     }
 
-    let _loopType = 1;
-    function changeLoopType() {
-        if (_loopType < 3) {
-            _loopType += 1;
-        }
-        else {
-            _loopType = 1;
-        }
-    }
     const epsilon = (1.0e-24);
     function clamp(min, max, val) {
         max = max - 1;
@@ -27339,6 +27330,16 @@ li.select2-results__option[role=group] > strong:hover {
                     instrumentObject["stringSustainType"] = Config.sustainTypeNames[this.stringSustainType];
                 }
             }
+            else if (this.type == 5) {
+                instrumentObject["unison"] = this.unison == Config.unisons.length ? "custom" : Config.unisons[this.unison].name;
+                if (this.unison == Config.unisons.length) {
+                    instrumentObject["unisonVoices"] = this.unisonVoices;
+                    instrumentObject["unisonSpread"] = this.unisonSpread;
+                    instrumentObject["unisonOffset"] = this.unisonOffset;
+                    instrumentObject["unisonExpression"] = this.unisonExpression;
+                    instrumentObject["unisonSign"] = this.unisonSign;
+                }
+            }
             else if (this.type == 1 || this.type == 11) {
                 const operatorArray = [];
                 for (const operator of this.operators) {
@@ -28188,6 +28189,7 @@ li.select2-results__option[role=group] > strong:hover {
     class Song {
         constructor(string) {
             this.scaleCustom = [];
+            this.loopType = 1;
             this.channels = [];
             this.limitDecay = 4.0;
             this.limitRise = 4000.0;
@@ -28294,6 +28296,7 @@ li.select2-results__option[role=group] > strong:hover {
             this.loopStart = 0;
             this.loopLength = 4;
             this.tempo = 120;
+            this.loopType = 1;
             this.reverb = 0;
             this.beatsPerBar = 8;
             this.barCount = 16;
@@ -28386,6 +28389,7 @@ li.select2-results__option[role=group] > strong:hover {
             buffer.push(103, base64IntToCharCode[(this.barCount - 1) >> 6], base64IntToCharCode[(this.barCount - 1) & 0x3f]);
             buffer.push(106, base64IntToCharCode[(this.patternsPerChannel - 1) >> 6], base64IntToCharCode[(this.patternsPerChannel - 1) & 0x3f]);
             buffer.push(114, base64IntToCharCode[this.rhythm]);
+            buffer.push(90, base64IntToCharCode[this.loopType]);
             buffer.push(79);
             if (this.compressionRatio != 1.0 || this.limitRatio != 1.0 || this.limitRise != 4000.0 || this.limitDecay != 4.0 || this.limitThreshold != 1.0 || this.compressionThreshold != 1.0 || this.masterGain != 1.0) {
                 buffer.push(base64IntToCharCode[Math.round(this.compressionRatio < 1 ? this.compressionRatio * 10 : 10 + (this.compressionRatio - 1) * 60)]);
@@ -29215,6 +29219,11 @@ li.select2-results__option[role=group] > strong:hover {
                                 this.tempo = (base64CharCodeToInt[compressed.charCodeAt(charIndex++)] << 6) | (base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
                             }
                             this.tempo = clamp(Config.tempoMin, Config.tempoMax + 1, this.tempo);
+                        }
+                        break;
+                    case 90:
+                        {
+                            this.loopType = base64CharCodeToInt[compressed.charCodeAt(charIndex++)];
                         }
                         break;
                     case 109:
@@ -31308,6 +31317,7 @@ li.select2-results__option[role=group] > strong:hover {
                 "customScale": this.scaleCustom,
                 "key": Config.keys[this.key].name,
                 "keyOctave": this.octave,
+                "loopType": this.loopType,
                 "introBars": this.loopStart,
                 "loopBars": this.loopLength,
                 "beatsPerBar": this.beatsPerBar,
@@ -31702,6 +31712,9 @@ li.select2-results__option[role=group] > strong:hover {
             }
             if (jsonObject["beatsPerMinute"] != undefined) {
                 this.tempo = clamp(Config.tempoMin, Config.tempoMax + 1, jsonObject["beatsPerMinute"] | 0);
+            }
+            if (jsonObject["loopType"] != undefined) {
+                this.loopType = jsonObject["loopType"] | 0;
             }
             if (jsonObject["keyOctave"] != undefined) {
                 this.octave = clamp(Config.octaveMin, Config.octaveMax + 1, jsonObject["keyOctave"] | 0);
@@ -34041,22 +34054,38 @@ li.select2-results__option[role=group] > strong:hover {
                 this.computeLatestModValues();
         }
         getNextBar() {
+            var _a;
             let nextBar = this.bar + 1;
-            if (_loopType != 2) {
+            if (((_a = this.song) === null || _a === void 0 ? void 0 : _a.loopType) != null) {
+                if (this.song.loopType != 2) {
+                    if (this.isRecording) {
+                        if (nextBar >= this.song.barCount) {
+                            nextBar = this.song.barCount - 1;
+                        }
+                    }
+                    else if ((this.bar == this.loopBarEnd && !this.renderingSong)) {
+                        nextBar = this.loopBarStart;
+                    }
+                    else if (this.loopRepeatCount != 0 && nextBar == Math.max(this.loopBarEnd + 1, this.song.loopStart + this.song.loopLength)) {
+                        nextBar = this.song.loopStart;
+                    }
+                }
+                else if (this.song.loopType == 2 && (this.bar == this.song.barCount - 1)) {
+                    nextBar = 0;
+                }
+            }
+            else {
                 if (this.isRecording) {
                     if (nextBar >= this.song.barCount) {
                         nextBar = this.song.barCount - 1;
                     }
                 }
-                else if ((this.bar == this.loopBarEnd && !this.renderingSong)) {
+                else if (this.bar == this.loopBarEnd && !this.renderingSong) {
                     nextBar = this.loopBarStart;
                 }
                 else if (this.loopRepeatCount != 0 && nextBar == Math.max(this.loopBarEnd + 1, this.song.loopStart + this.song.loopLength)) {
                     nextBar = this.song.loopStart;
                 }
-            }
-            else if (_loopType == 2 && (this.bar == this.song.barCount - 1)) {
-                nextBar = 0;
             }
             return nextBar;
         }
@@ -42392,6 +42421,21 @@ li.select2-results__option[role=group] > strong:hover {
         constructor(doc, oldValue, newValue) {
             super();
             doc.song.showSongDetails = newValue;
+            doc.notifier.changed();
+            if (oldValue != newValue)
+                this._didSomething();
+        }
+    }
+    class ChangeLoopType extends Change {
+        constructor(doc, oldValue, newValue) {
+            super();
+            if (newValue < 3) {
+                newValue++;
+            }
+            else {
+                newValue = 1;
+            }
+            doc.song.loopType = newValue;
             doc.notifier.changed();
             if (oldValue != newValue)
                 this._didSomething();
@@ -51982,7 +52026,7 @@ You should be redirected to the song at:<br /><br />
                 event.stopPropagation();
             };
             this._changeLoopType = () => {
-                changeLoopType();
+                this._doc.record(new ChangeLoopType(this._doc, this._doc.song.loopType, this._doc.song.loopType));
             };
             this._channelNameInputHide = () => {
                 this._channelNameInput.input.style.setProperty("display", "none");
@@ -60768,7 +60812,7 @@ You should be redirected to the song at:<br /><br />
                 this._openPrompt("sampleLoadingStatus");
             };
             this._loopTypeEvent = () => {
-                if (_loopType == 3) {
+                if (this._doc.song.loopType == 3) {
                     this._doc.synth.loopRepeatCount = 0;
                     this._loopEditor.container.style.display = "none";
                     SongEditor._styleElement.textContent = SongEditor._setLoopIcon[3];
@@ -60778,7 +60822,7 @@ You should be redirected to the song at:<br /><br />
                     this._loopBarButton.style.display = "none";
                     this._trackAndMuteContainer.style.marginBottom = "0.3em";
                 }
-                else if (_loopType == 2) {
+                else if (this._doc.song.loopType == 2) {
                     this._doc.synth.loopRepeatCount = -1;
                     this._loopEditor.container.style.display = "none";
                     SongEditor._styleElement.textContent = SongEditor._setLoopIcon[2];
@@ -60788,7 +60832,7 @@ You should be redirected to the song at:<br /><br />
                     this._loopBarButton.style.display = "none";
                     this._trackAndMuteContainer.style.marginBottom = "0.3em";
                 }
-                else if (_loopType == 1) {
+                else if (this._doc.song.loopType == 1) {
                     this._doc.synth.loopRepeatCount = -1;
                     this._loopEditor.container.style.display = "";
                     SongEditor._styleElement.textContent = SongEditor._setLoopIcon[1];
@@ -60820,6 +60864,7 @@ You should be redirected to the song at:<br /><br />
                         this._doc.synth.determineInvalidModulators(channel.instruments[j]);
                     }
                 }
+                this._loopTypeEvent();
                 this._barScrollBar.render();
                 this._trackEditor.render();
                 this._muteEditor.render();
@@ -60895,10 +60940,10 @@ You should be redirected to the song at:<br /><br />
                         this._deleteChannelButton.style.display = prefs.displayShortcutButtons ? "" : "none";
                         this._selectAllButton.style.display = prefs.displayShortcutButtons ? "" : "none";
                         this._duplicateButton.style.display = prefs.displayShortcutButtons ? "" : "none";
-                        if (_loopType != 1) {
+                        if (this._doc.song.loopType != 1) {
                             this._loopBarButton.style.display = prefs.displayShortcutButtons ? "none" : "none";
                         }
-                        else if (_loopType == 1) {
+                        else if (this._doc.song.loopType == 1) {
                             this._loopBarButton.style.display = prefs.displayShortcutButtons ? "" : "none";
                         }
                         this._notesDownButton.style.display = prefs.displayShortcutButtons ? "" : "none";
@@ -60945,10 +60990,10 @@ You should be redirected to the song at:<br /><br />
                         this._deleteChannelButton.style.display = prefs.displayShortcutButtons ? "" : "none";
                         this._selectAllButton.style.display = prefs.displayShortcutButtons ? "" : "none";
                         this._duplicateButton.style.display = prefs.displayShortcutButtons ? "" : "none";
-                        if (_loopType != 1) {
+                        if (this._doc.song.loopType != 1) {
                             this._loopBarButton.style.display = prefs.displayShortcutButtons ? "none" : "none";
                         }
-                        else if (_loopType == 1) {
+                        else if (this._doc.song.loopType == 1) {
                             this._loopBarButton.style.display = prefs.displayShortcutButtons ? "" : "none";
                         }
                         this._notesDownButton.style.display = prefs.displayShortcutButtons ? "" : "none";
@@ -62700,7 +62745,7 @@ You should be redirected to the song at:<br /><br />
                             break;
                         if (needControlForShortcuts == (event.ctrlKey || event.metaKey)) {
                             if (event.shiftKey) {
-                                if (_loopType == 1) {
+                                if (this._doc.song.loopType == 1) {
                                     const leftSel = Math.min(this._doc.selection.boxSelectionX0, this._doc.selection.boxSelectionX1);
                                     const rightSel = Math.max(this._doc.selection.boxSelectionX0, this._doc.selection.boxSelectionX1);
                                     if ((leftSel < this._doc.synth.loopBarStart || this._doc.synth.loopBarStart == -1)
@@ -62819,7 +62864,7 @@ You should be redirected to the song at:<br /><br />
                     case 70:
                         if (canPlayNotes)
                             break;
-                        if (_loopType == 1) {
+                        if (this._doc.song.loopType == 1) {
                             if (event.shiftKey) {
                                 this._doc.synth.loopBarStart = -1;
                                 this._doc.synth.loopBarEnd = -1;
@@ -64027,6 +64072,7 @@ You should be redirected to the song at:<br /><br />
                         this._doc.prefs.enableChannelMuting = !this._doc.prefs.enableChannelMuting;
                         for (const channel of this._doc.song.channels)
                             channel.muted = false;
+                        this._doc.song.loopType == 1;
                         this._doc.synth.loopRepeatCount = -1;
                         this._loopEditor.container.style.display = "";
                         break;
