@@ -1024,6 +1024,8 @@ var beepbox = (function (exports) {
         { name: "supersawDynamism", computeIndex: 38, displayName: "dynamism", interleave: false, isFilter: false, maxCount: 1, effect: null, compatibleInstruments: [8] },
         { name: "supersawSpread", computeIndex: 39, displayName: "spread", interleave: false, isFilter: false, maxCount: 1, effect: null, compatibleInstruments: [8] },
         { name: "supersawShape", computeIndex: 40, displayName: "saw↔pulse", interleave: false, isFilter: false, maxCount: 1, effect: null, compatibleInstruments: [8] },
+        { name: "ringModulation", computeIndex: 45, displayName: "ring mod", interleave: false, isFilter: false, maxCount: 1, effect: 12, compatibleInstruments: null },
+        { name: "ringModulationHz", computeIndex: 46, displayName: "ring mod hz", interleave: false, isFilter: false, maxCount: 1, effect: 12, compatibleInstruments: null },
         { name: "phaserFreq", computeIndex: 41, displayName: "phaser freq", interleave: false, isFilter: false, maxCount: 1, effect: 13, compatibleInstruments: null },
         { name: "phaserMix", computeIndex: 42, displayName: "phaser", interleave: false, isFilter: false, maxCount: 1, effect: 13, compatibleInstruments: null },
         { name: "phaserFeedback", computeIndex: 43, displayName: "phaser feedback", interleave: false, isFilter: false, maxCount: 1, effect: 13, compatibleInstruments: null },
@@ -32129,7 +32131,7 @@ li.select2-results__option[role=group] > strong:hover {
             this._modifiedEnvelopeIndices = [];
             this._modifiedEnvelopeCount = 0;
             this.lowpassCutoffDecayVolumeCompensation = 1.0;
-            const length = 45;
+            const length = 47;
             for (let i = 0; i < length; i++) {
                 this.envelopeStarts[i] = 1.0;
                 this.envelopeEnds[i] = 1.0;
@@ -32982,8 +32984,12 @@ li.select2-results__option[role=group] > strong:hover {
             if (usesRingModulation) {
                 let useRingModStart = instrument.ringModulation;
                 let useRingModEnd = instrument.ringModulation;
+                let useRingModEnvelopeStart = envelopeStarts[45];
+                let useRingModEnvelopeEnd = envelopeEnds[45];
                 let useRingModHzStart = Math.min(1.0, instrument.ringModulationHz / (Config.ringModHzRange - 1));
                 let useRingModHzEnd = Math.min(1.0, instrument.ringModulationHz / (Config.ringModHzRange - 1));
+                let useRingModHzEnvelopeStart = envelopeStarts[46];
+                let useRingModHzEnvelopeEnd = envelopeEnds[46];
                 let ringModMinHz = 20;
                 let ringModMaxHz = 4400;
                 if (synth.isModActive(Config.modulators.dictionary["ring modulation"].index, channelIndex, instrumentIndex)) {
@@ -32998,13 +33004,13 @@ li.select2-results__option[role=group] > strong:hover {
                     useRingModHzStart = Math.min(1.0, Math.max(0.0, (synth.getModValue(Config.modulators.dictionary["ring mod hertz"].index, channelIndex, instrumentIndex, false)) / (Config.ringModHzRange - 1)));
                     useRingModHzEnd = Math.min(1.0, Math.max(0.0, (synth.getModValue(Config.modulators.dictionary["ring mod hertz"].index, channelIndex, instrumentIndex, false)) / (Config.ringModHzRange - 1)));
                 }
-                let ringModStart = Math.min(1.0, useRingModStart / (Config.ringModRange - 1));
-                let ringModEnd = Math.min(1.0, useRingModEnd / (Config.ringModRange - 1));
+                let ringModStart = Math.min(1.0, (useRingModStart * useRingModEnvelopeStart) / (Config.ringModRange - 1));
+                let ringModEnd = Math.min(1.0, (useRingModEnd * useRingModEnvelopeEnd) / (Config.ringModRange - 1));
                 this.ringModMix = ringModStart;
                 this.ringModMixDelta = (ringModEnd - ringModStart) / roundedSamplesPerTick;
                 this.rmHzOffset = instrument.rmHzOffset;
-                let ringModPhaseDeltaStart = (clamp(1, ringModMaxHz + Config.rmHzOffsetCenter, (ringModMinHz * Math.pow(ringModMaxHz / ringModMinHz, useRingModHzStart)) + (this.rmHzOffset - Config.rmHzOffsetCenter))) / synth.samplesPerSecond;
-                let ringModPhaseDeltaEnd = (clamp(1, ringModMaxHz + Config.rmHzOffsetCenter, (ringModMinHz * Math.pow(ringModMaxHz / ringModMinHz, useRingModHzEnd)) + (this.rmHzOffset - Config.rmHzOffsetCenter))) / synth.samplesPerSecond;
+                let ringModPhaseDeltaStart = (clamp(1, ringModMaxHz + Config.rmHzOffsetCenter, ((ringModMinHz * Math.pow(ringModMaxHz / ringModMinHz, useRingModHzStart)) * useRingModHzEnvelopeStart) + (this.rmHzOffset - Config.rmHzOffsetCenter))) / synth.samplesPerSecond;
+                let ringModPhaseDeltaEnd = (clamp(1, ringModMaxHz + Config.rmHzOffsetCenter, ((ringModMinHz * Math.pow(ringModMaxHz / ringModMinHz, useRingModHzEnd)) * useRingModHzEnvelopeEnd) + (this.rmHzOffset - Config.rmHzOffsetCenter))) / synth.samplesPerSecond;
                 this.ringModPhaseDelta = ringModPhaseDeltaStart;
                 this.ringModPhaseDeltaScale = Math.pow(ringModPhaseDeltaEnd / ringModPhaseDeltaStart, 1.0 / roundedSamplesPerTick);
                 this.rmWaveformIndex = instrument.rmWaveformIndex;
