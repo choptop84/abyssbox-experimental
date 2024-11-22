@@ -938,7 +938,7 @@ var beepbox = (function (exports) {
     Config.harmonicsControlPointBits = 3;
     Config.harmonicsMax = (1 << Config.harmonicsControlPointBits) - 1;
     Config.harmonicsWavelength = 1 << 11;
-    Config.pulseWidthRange = 50;
+    Config.pulseWidthRange = 100;
     Config.pulseWidthStepPower = 0.5;
     Config.supersawVoiceCount = 7;
     Config.supersawDynamismMax = 6;
@@ -1010,12 +1010,19 @@ var beepbox = (function (exports) {
         { name: "supersawDynamism", computeIndex: 38, displayName: "dynamism", interleave: false, isFilter: false, maxCount: 1, effect: null, compatibleInstruments: [8] },
         { name: "supersawSpread", computeIndex: 39, displayName: "spread", interleave: false, isFilter: false, maxCount: 1, effect: null, compatibleInstruments: [8] },
         { name: "supersawShape", computeIndex: 40, displayName: "saw↔pulse", interleave: false, isFilter: false, maxCount: 1, effect: null, compatibleInstruments: [8] },
-        { name: "ringModulation", computeIndex: 45, displayName: "ring mod", interleave: false, isFilter: false, maxCount: 1, effect: 12, compatibleInstruments: null },
-        { name: "ringModulationHz", computeIndex: 46, displayName: "ring mod hz", interleave: false, isFilter: false, maxCount: 1, effect: 12, compatibleInstruments: null },
         { name: "phaserFreq", computeIndex: 41, displayName: "phaser freq", interleave: false, isFilter: false, maxCount: 1, effect: 13, compatibleInstruments: null },
         { name: "phaserMix", computeIndex: 42, displayName: "phaser", interleave: false, isFilter: false, maxCount: 1, effect: 13, compatibleInstruments: null },
         { name: "phaserFeedback", computeIndex: 43, displayName: "phaser feedback", interleave: false, isFilter: false, maxCount: 1, effect: 13, compatibleInstruments: null },
         { name: "phaserStages", computeIndex: 44, displayName: "phaser stages", interleave: false, isFilter: false, maxCount: 1, effect: 13, compatibleInstruments: null },
+        { name: "ringModulation", computeIndex: 45, displayName: "ring mod", interleave: false, isFilter: false, maxCount: 1, effect: 12, compatibleInstruments: null },
+        { name: "ringModulationHz", computeIndex: 46, displayName: "ring mod hz", interleave: false, isFilter: false, maxCount: 1, effect: 12, compatibleInstruments: null },
+        { name: "distortion", computeIndex: 47, displayName: "distortion", interleave: false, isFilter: false, maxCount: 1, effect: 3, compatibleInstruments: null },
+        { name: "bitcrusherQuantization", computeIndex: 48, displayName: "bitcrush", interleave: false, isFilter: false, maxCount: 1, effect: 4, compatibleInstruments: null },
+        { name: "bitcrusherFrequency", computeIndex: 49, displayName: "freq crush", interleave: false, isFilter: false, maxCount: 1, effect: 4, compatibleInstruments: null },
+        { name: "chorus", computeIndex: 50, displayName: "chorus", interleave: false, isFilter: false, maxCount: 1, effect: 1, compatibleInstruments: null },
+        { name: "echoSustain", computeIndex: 51, displayName: "echo sustain", interleave: false, isFilter: false, maxCount: 1, effect: 6, compatibleInstruments: null },
+        { name: "reverb", computeIndex: 52, displayName: "reverb", interleave: false, isFilter: false, maxCount: 1, effect: 0, compatibleInstruments: null },
+        { name: "panning", computeIndex: 53, displayName: "panning", interleave: false, isFilter: false, maxCount: 1, effect: 2, compatibleInstruments: null },
     ]);
     Config.operatorWaves = toNameMap([
         { name: "sine", samples: Config.sineWave },
@@ -1130,7 +1137,7 @@ var beepbox = (function (exports) {
             pianoName: "Detune",
             maxRawVol: Config.songDetuneMax - Config.songDetuneMin, newNoteVol: Math.ceil((Config.songDetuneMax - Config.songDetuneMin) / 2), forSong: true, convertRealFactor: -250, associatedEffect: 15,
             promptName: "Song Detune",
-            promptDesc: ["This setting controls the overall detune of the entire song. There is no associated slider.", "At $MID, your song will have no extra detune applied and sound unchanged from default. Each tick corresponds to four cents, or four hundredths of a pitch. Thus, each change of 25 ticks corresponds to one half-step of detune, up to 10 half-steps up at $HI, or 10 half-steps down at $LO.", "[MULTIPLICATIVE] [$LO - $HI] [cents x4]"] },
+            promptDesc: ["This setting controls the overall detune of the entire song. There is no associated slider.", "At $MID, your song will have no extra detune applied and sound unchanged from default. Each tick corresponds to four cents, or four hundredths of a pitch. Thus, each change of 25 ticks corresponds to one half-step of detune, up to 10 half-steps up at $HI, or 10 half-steps down at $LO.", "[ADDITIVE] [$LO - $HI] [cents x4]"] },
         { name: "vibrato speed",
             pianoName: "Vibrato Speed",
             maxRawVol: 30, newNoteVol: 0, forSong: false, convertRealFactor: 0, associatedEffect: 9,
@@ -1324,6 +1331,11 @@ var beepbox = (function (exports) {
             maxRawVol: Config.phaserMaxStages, newNoteVol: 0, forSong: false, convertRealFactor: 0, associatedEffect: 13,
             promptName: "Phaser Stages",
             promptDesc: ["This setting controls the number of phaser stages in your insturment, just like the phaser stages slider.", "At $LO, your instrument will have no phaser stages. At $HI, it will be at maximum.", "[OVERWRITING] [$LO - $HI]"] },
+        { name: "song pitch shift",
+            pianoName: "Song Pitch Shift",
+            maxRawVol: (Config.pitchShiftRange * 2) - 2, newNoteVol: Config.pitchShiftRange, forSong: true, convertRealFactor: -Config.pitchShiftRange + 1, associatedEffect: 7,
+            promptName: "Songwide Pitch Shift",
+            promptDesc: ["This setting controls the pitch offset of all instruments regardless of whether or not the instrument has the effect itself, just like the pitch shift slider.", "At $MID your instrument will have no pitch shift. This increases as you decrease toward $LO pitches (half-steps) at the low end, or increases towards +$HI pitches at the high end.", "[ADDITIVE] [$LO - $HI] [pitch]"] },
     ]);
     function centerWave(wave) {
         let sum = 0.0;
@@ -1366,7 +1378,7 @@ var beepbox = (function (exports) {
         }
     }
     function getPulseWidthRatio(pulseWidth) {
-        return pulseWidth / (Config.pulseWidthRange * 2);
+        return pulseWidth / (Config.pulseWidthRange);
     }
     function getDrumWave(index, inverseRealFourierTransform, scaleElementsByFactor) {
         let wave = Config.chipNoises[index].samples;
@@ -2433,11 +2445,7 @@ var beepbox = (function (exports) {
 	--dont-loop-symbol: url("./image_assets/icon-loop-once.png");
 		}
 		
-			@font-face {
-		   font-family: "AbyssType";
-		   src:
- 		   url("./image_assets/abysstype.otf") format("opentype") tech(color-COLRv1),
-			}
+			
 
 			/* sets background image */
 			body {
@@ -2506,7 +2514,7 @@ var beepbox = (function (exports) {
     				border-image-slice: 4 fill !important; 
    				border-image-width: 4px !important; 
 				border-image-repeat: stretch !important;
-    				padding: 4px !important; 
+    				
 
     				image-rendering: -moz-crisp-edges !important;         /* Firefox */
     				image-rendering: -webkit-optimize-contrast !important; /* Webkit (Chrome/Safari) */
@@ -2537,13 +2545,9 @@ var beepbox = (function (exports) {
  		   url("./image_assets/abysstype_small.otf") format("opentype") tech(color-COLRv1),
 			}
 
-			html {
- 		   	font-family: 'AbyssType';
-			}
+			
 
-			div.channelBoxLabel {
-				font-family: 'AbyssType_small' !important;
-			}
+			
 
 			.beepboxEditor input[type="range"]::-webkit-slider-thumb
 			{
@@ -2792,17 +2796,9 @@ var beepbox = (function (exports) {
 	--dont-loop-symbol: url("./image_assets/icon-loop-once.png");
 		}
 		
-			@font-face {
-		   font-family: "AbyssType";
-		   src:
- 		   url("./image_assets/abysstype.otf") format("opentype") tech(color-COLRv1),
-			}
+			
 
-			@font-face {
-		   font-family: "AbyssType";
-		   src:
- 		   url("./image_assets/abysstype.otf") format("opentype") tech(color-COLRv1),
-			}
+			
 
 			@font-face {
 		   font-family: "AbyssType_small";
@@ -2878,9 +2874,7 @@ var beepbox = (function (exports) {
 			html {
  		   font-family: 'AbyssType';
 			}
-			div.channelBoxLabel {
-				font-family: 'AbyssType_small' !important;
-			}
+			
 
 			.beepboxEditor input[type="range"]::-webkit-slider-thumb
 			{
@@ -3156,7 +3150,7 @@ var beepbox = (function (exports) {
 						border-image-slice: 4 fill !important; 
 					   border-image-width: 4px !important; 
 					border-image-repeat: stretch !important;
-						padding: 4px !important; 
+						
 	
 						image-rendering: -moz-crisp-edges !important;         /* Firefox */
 						image-rendering: -webkit-optimize-contrast !important; /* Webkit (Chrome/Safari) */
@@ -3215,17 +3209,9 @@ var beepbox = (function (exports) {
 	--dont-loop-symbol: url("./image_assets/icon-loop-once.png");
 		}
 		
-			@font-face {
-		   font-family: "AbyssType";
-		   src:
- 		   url("./image_assets/abysstype.otf") format("opentype") tech(color-COLRv1),
-			}
+			
 
-			@font-face {
-		   font-family: "AbyssType";
-		   src:
- 		   url("./image_assets/abysstype.otf") format("opentype") tech(color-COLRv1),
-			}
+			
 
 			@font-face {
 		   font-family: "AbyssType_small";
@@ -3241,9 +3227,7 @@ var beepbox = (function (exports) {
 			html {
  		   font-family: 'AbyssType';
 			}
-			div.channelBoxLabel {
-				font-family: 'AbyssType_small' !important;
-			}
+			
 
 			.beepboxEditor input[type="range"]::-webkit-slider-thumb
 			{
@@ -3631,11 +3615,7 @@ var beepbox = (function (exports) {
 	--dont-loop-symbol: url("./image_assets/icon-loop-once.png");
 		}
 		
-			@font-face {
-		   font-family: "AbyssType";
-		   src:
- 		   url("./image_assets/abysstype.otf") format("opentype") tech(color-COLRv1),
-			}
+			
 
 			/* sets background image */
 			body {
@@ -3704,7 +3684,7 @@ var beepbox = (function (exports) {
     				border-image-slice: 4 fill !important; 
    				border-image-width: 4px !important; 
 				border-image-repeat: stretch !important;
-    				padding: 4px !important; 
+    				
 
     				image-rendering: -moz-crisp-edges !important;         /* Firefox */
     				image-rendering: -webkit-optimize-contrast !important; /* Webkit (Chrome/Safari) */
@@ -3735,13 +3715,9 @@ var beepbox = (function (exports) {
  		   url("./image_assets/abysstype_small.otf") format("opentype") tech(color-COLRv1),
 			}
 
-			html {
- 		   	font-family: 'AbyssType';
-			}
+			
 
-			div.channelBoxLabel {
-				font-family: 'AbyssType_small' !important;
-			}
+			
 
 			.beepboxEditor input[type="range"]::-webkit-slider-thumb
 			{
@@ -5305,11 +5281,7 @@ var beepbox = (function (exports) {
 		cursor: url("abyssbox_cursor.png"), auto !important;
 		}
 
-			@font-face {
-		   font-family: "AbyssType";
-		   src:
- 		   url("./image_assets/abysstype.otf") format("opentype") tech(color-COLRv1),
-			}
+			
 
 			button.envelopeDropdown, div.selectRow button:not(.copyButton,.pasteButton,.exportInstrumentButton,.importInstrumentButton) {
 				--ui-widget-background: var(--editor-background) !important;
@@ -5348,7 +5320,7 @@ var beepbox = (function (exports) {
     				border-image-slice: 4 fill !important; 
    				border-image-width: 4px !important; 
 				border-image-repeat: stretch !important;
-    				padding: 4px !important; 
+    				
 
     				image-rendering: -moz-crisp-edges !important;         /* Firefox */
     				image-rendering: -webkit-optimize-contrast !important; /* Webkit (Chrome/Safari) */
@@ -5374,13 +5346,9 @@ var beepbox = (function (exports) {
  		   url("./image_assets/abysstype_small.otf") format("opentype") tech(color-COLRv1),
 			}
 
-			html {
- 		   	font-family: 'AbyssType';
-			}
+			
 
-			div.channelBoxLabel {
-				font-family: 'AbyssType_small' !important;
-			}
+			
 
 		   
 
@@ -6950,11 +6918,7 @@ var beepbox = (function (exports) {
 			border-radius: 0px;
 		} /* Thanks to LeoV's Skeumorphic theme on this one */
 
-			@font-face {
-		   font-family: "AbyssType";
-		   src:
- 		   url("./image_assets/abysstype.otf") format("opentype") tech(color-COLRv1),
-			}
+			
 
 			/*#Hotdog {
 				content: url("https://choptop84.github.io/choptop84s-image-repository/abclassic_hotdog.png");
@@ -7061,9 +7025,7 @@ var beepbox = (function (exports) {
 				content: url("https://choptop84.github.io/choptop84s-image-repository/AbyssBoxYumeNikkiThemeLogo.png");
 				}
 
-			/*html {
- 		   	font-family: 'AbyssType';
-			}*/
+			/**/
 
 			div.channelBoxLabel {
 				font-family: 'yumeNumbers' !important;
@@ -8616,7 +8578,7 @@ var beepbox = (function (exports) {
 							border-image-slice: 4 fill !important; 
 						   border-image-width: 4px !important; 
 						border-image-repeat: stretch !important;
-							padding: 4px !important; 
+							
 			
 							image-rendering: -moz-crisp-edges !important;         /* Firefox */
 							image-rendering: -webkit-optimize-contrast !important; /* Webkit (Chrome/Safari) */
@@ -9212,7 +9174,7 @@ var beepbox = (function (exports) {
 								border-image-slice: 4 fill !important; 
 							   border-image-width: 4px !important; 
 							border-image-repeat: stretch !important;
-								padding: 4px !important; 
+								
 			
 								image-rendering: -moz-crisp-edges !important;         /* Firefox */
 								image-rendering: -webkit-optimize-contrast !important; /* Webkit (Chrome/Safari) */
@@ -10193,7 +10155,7 @@ var beepbox = (function (exports) {
 							border-image-slice: 4 fill !important; 
 						   border-image-width: 4px !important; 
 						border-image-repeat: stretch !important;
-							padding: 4px !important; 
+							
 		
 							image-rendering: -moz-crisp-edges !important;         /* Firefox */
 							image-rendering: -webkit-optimize-contrast !important; /* Webkit (Chrome/Safari) */
@@ -10637,7 +10599,7 @@ var beepbox = (function (exports) {
 						 border-image-slice: 4 fill !important; 
 						border-image-width: 4px !important; 
 					 border-image-repeat: stretch !important;
-						 padding: 4px !important; 
+						 
 			
 						 image-rendering: -moz-crisp-edges !important;         /* Firefox */
 						 image-rendering: -webkit-optimize-contrast !important; /* Webkit (Chrome/Safari) */
@@ -12735,7 +12697,7 @@ var beepbox = (function (exports) {
 					border-image-slice: 4 fill !important; 
 				   border-image-width: 4px !important; 
 				border-image-repeat: stretch !important;
-					padding: 4px !important; 
+					
 
 					image-rendering: -moz-crisp-edges !important;         /* Firefox */
 					image-rendering: -webkit-optimize-contrast !important; /* Webkit (Chrome/Safari) */
@@ -13905,7 +13867,7 @@ var beepbox = (function (exports) {
 					border-image-slice: 5 fill !important; 
 				   border-image-width: 5px !important;  
 				border-image-repeat: repeat !important;
-					padding: 4px !important; 
+					
 	
 					image-rendering: -moz-crisp-edges !important;         /* Firefox */
 					image-rendering: -webkit-optimize-contrast !important; /* Webkit (Chrome/Safari) */
@@ -13922,10 +13884,58 @@ var beepbox = (function (exports) {
 			html {
 			font-family: 'AbyssType';
 			}
-			div.channelBoxLabel {
-				font-family: 'AbyssType_small' !important;
-			}
+			
 	`,
+        "ultrabox dark": `
+		:root {
+		/*--mod-title: #CCCCCC;*/
+		--loop-accent: #CCCCCC;
+		--playhead: #CCCCCC;
+		/*--primary-text: #CCCCCC;
+		--hover-preview: #CCCCCC;*/
+		--link-accent: #FF8EC5;
+		--indicator-primary: #FF8EC5;
+		/*--indicator-primary: #CCCCCC;*/
+		/*--indicator-secondary: #E856B2;*/
+		--white-piano-key: #CCCCCC;
+		/*--black-piano-key: #444;*/
+		--text-selection: #932253;
+		--oscilloscope-line-L: #CCCCCC;
+		--oscilloscope-line-R: #932253;
+		--pitch-channel-limit: 8;
+		--pitch1-secondary-channel: #A83030;
+		--pitch1-primary-channel:   #FF7C7C;
+		--pitch1-secondary-note:    #B51532;
+		--pitch1-primary-note:      #FFA3A3;
+		--pitch2-secondary-channel: #C75000;
+		--pitch2-primary-channel:   #FF9752;
+		--pitch2-secondary-note:    #FF771C;
+		--pitch2-primary-note:      #FFCDAB;
+		--pitch3-secondary-channel: #A1A100;
+		--pitch3-primary-channel: #FFFF25;
+		--pitch3-secondary-note: #C7C700;
+		--pitch3-primary-note: #FFFF92;
+		--pitch4-secondary-channel: #139620;
+		--pitch4-primary-channel:   #25ff3a;
+		--pitch4-secondary-note:    #139620;
+		--pitch4-primary-note:      #25ff3a;
+		--pitch5-secondary-channel: #0099A1;
+		--pitch5-primary-channel:   #25F3FF;
+		--pitch5-secondary-note:    #00BDC7;
+		--pitch5-primary-note:      #92F9FF;
+		--pitch6-secondary-channel: #58599E;
+		--pitch6-primary-channel:   #5EA3FF;
+		--pitch6-secondary-note:    #183AC7;
+		--pitch6-primary-note:      #9EC8FF;
+		--pitch7-secondary-channel: #6038a5;
+		--pitch7-primary-channel:   #C760FF;
+		--pitch7-secondary-note:    #5433A0;
+		--pitch7-primary-note:      #D99EFF;
+		--pitch8-secondary-channel: #932253;
+		--pitch8-primary-channel:   #FF60A5;
+		--pitch8-secondary-note:    #8E1C4E;
+		--pitch8-primary-note:      #FF8EC5;
+		}`,
         "modbox classic": `
 			:root {
 				--page-margin: black;
@@ -24431,7 +24441,7 @@ var beepbox = (function (exports) {
             this.legacyTieOver = false;
             this.clicklessTransition = false;
             this.aliases = false;
-            this.pulseWidth = Config.pulseWidthRange;
+            this.pulseWidth = Config.pulseWidthRange / 2;
             this.decimalOffset = 0;
             this.supersawDynamism = Config.supersawDynamismMax;
             this.supersawSpread = Math.ceil(Config.supersawSpreadMax / 2.0);
@@ -24640,7 +24650,7 @@ var beepbox = (function (exports) {
                     break;
                 case 6:
                     this.chord = Config.chords.dictionary["arpeggio"].index;
-                    this.pulseWidth = Config.pulseWidthRange;
+                    this.pulseWidth = Config.pulseWidthRange / 2;
                     this.decimalOffset = 0;
                     break;
                 case 7:
@@ -24669,7 +24679,7 @@ var beepbox = (function (exports) {
                     this.supersawDynamism = Config.supersawDynamismMax;
                     this.supersawSpread = Math.ceil(Config.supersawSpreadMax / 2.0);
                     this.supersawShape = 0;
-                    this.pulseWidth = Config.pulseWidthRange - 1;
+                    this.pulseWidth = Config.pulseWidthRange / 2 - 1;
                     this.decimalOffset = 0;
                     break;
                 default:
@@ -25295,7 +25305,7 @@ var beepbox = (function (exports) {
                 this.pulseWidth = clamp(1, Config.pulseWidthRange + 1, Math.round(instrumentObject["pulseWidth"]));
             }
             else {
-                this.pulseWidth = Config.pulseWidthRange;
+                this.pulseWidth = Config.pulseWidthRange / 2;
             }
             if (instrumentObject["decimalOffset"] != undefined) {
                 this.decimalOffset = clamp(0, 99 + 1, Math.round(instrumentObject["decimalOffset"]));
@@ -26149,7 +26159,7 @@ var beepbox = (function (exports) {
                         buffer.push(base64IntToCharCode[instrument.ringModulation]);
                         buffer.push(base64IntToCharCode[instrument.ringModulationHz]);
                         buffer.push(base64IntToCharCode[instrument.rmWaveformIndex]);
-                        buffer.push(base64IntToCharCode[instrument.rmPulseWidth]);
+                        buffer.push(base64IntToCharCode[(instrument.rmPulseWidth) >> 6], base64IntToCharCode[(instrument.rmPulseWidth) & 0x3F]);
                         buffer.push(base64IntToCharCode[(instrument.rmHzOffset - Config.rmHzOffsetMin) >> 6], base64IntToCharCode[(instrument.rmHzOffset - Config.rmHzOffsetMin) & 0x3F]);
                     }
                     if (effectsIncludePhaser(instrument.effects)) {
@@ -26300,7 +26310,7 @@ var beepbox = (function (exports) {
                             encodeUnisonSettings(buffer, instrument.unisonVoices, instrument.unisonSpread, instrument.unisonOffset, instrument.unisonExpression, instrument.unisonSign, instrument.unisonBuzzes);
                     }
                     else if (instrument.type == 6) {
-                        buffer.push(87, base64IntToCharCode[instrument.pulseWidth]);
+                        buffer.push(87, base64IntToCharCode[instrument.pulseWidth >> 6], base64IntToCharCode[instrument.pulseWidth & 0x3f]);
                         buffer.push(base64IntToCharCode[instrument.decimalOffset >> 6], base64IntToCharCode[instrument.decimalOffset & 0x3f]);
                         buffer.push(104, base64IntToCharCode[instrument.unison]);
                         if (instrument.unison == Config.unisons.length)
@@ -26308,7 +26318,7 @@ var beepbox = (function (exports) {
                     }
                     else if (instrument.type == 8) {
                         buffer.push(120, base64IntToCharCode[instrument.supersawDynamism], base64IntToCharCode[instrument.supersawSpread], base64IntToCharCode[instrument.supersawShape]);
-                        buffer.push(87, base64IntToCharCode[instrument.pulseWidth]);
+                        buffer.push(87, base64IntToCharCode[instrument.pulseWidth >> 6], base64IntToCharCode[instrument.pulseWidth & 0x3f]);
                         buffer.push(base64IntToCharCode[instrument.decimalOffset >> 6], base64IntToCharCode[instrument.decimalOffset & 0x3f]);
                     }
                     else if (instrument.type == 7) {
@@ -27328,9 +27338,16 @@ var beepbox = (function (exports) {
                     case 87:
                         {
                             const instrument = this.channels[instrumentChannelIterator].instruments[instrumentIndexIterator];
-                            instrument.pulseWidth = clamp(0, Config.pulseWidthRange + (+(fromJummBox)) + 1, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
-                            if (fromBeepBox) {
-                                instrument.pulseWidth = Math.round(Math.pow(0.5, (7 - instrument.pulseWidth) * Config.pulseWidthStepPower) * Config.pulseWidthRange);
+                            if ((fromAbyssBox && !beforeThree)) {
+                                instrument.pulseWidth = clamp(0, 101, (base64CharCodeToInt[compressed.charCodeAt(charIndex++)] << 6) | (base64CharCodeToInt[compressed.charCodeAt(charIndex++)]));
+                            }
+                            else {
+                                if (!fromBeepBox) {
+                                    instrument.pulseWidth = clamp(0, Config.pulseWidthRange / 2 + (+(fromJummBox)) + 1, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
+                                }
+                                else {
+                                    instrument.pulseWidth = Math.round(Math.pow(0.5, (7 - instrument.pulseWidth) * Config.pulseWidthStepPower) * Config.pulseWidthRange);
+                                }
                             }
                             if ((beforeNine && fromBeepBox) || (beforeFive && fromJummBox) || (beforeFour && fromGoldBox)) {
                                 const pregoldToEnvelope = [0, 1, 2, 4, 5, 6, 8, 9, 10, 12, 13, 14, 16, 17, 18, 19, 20, 21, 23, 24, 25, 27, 28, 29, 32, 33, 34, 31, 11];
@@ -27757,8 +27774,11 @@ var beepbox = (function (exports) {
                                     instrument.ringModulation = clamp(0, Config.ringModRange, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
                                     instrument.ringModulationHz = clamp(0, Config.ringModHzRange, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
                                     instrument.rmWaveformIndex = clamp(0, Config.operatorWaves.length, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
-                                    instrument.rmPulseWidth = clamp(0, Config.pulseWidthRange, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
-                                    if (fromAbyssBox && !beforeThree) {
+                                    if ((fromAbyssBox && beforeThree)) {
+                                        instrument.rmPulseWidth = clamp(0, Config.pulseWidthRange, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
+                                    }
+                                    else {
+                                        instrument.rmPulseWidth = clamp(0, Config.pulseWidthRange, (base64CharCodeToInt[compressed.charCodeAt(charIndex++)] << 6) + base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
                                         instrument.rmHzOffset = clamp(Config.rmHzOffsetMin, Config.rmHzOffsetMax + 1, (base64CharCodeToInt[compressed.charCodeAt(charIndex++)] << 6) + base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
                                     }
                                 }
@@ -29745,7 +29765,7 @@ var beepbox = (function (exports) {
             this._modifiedEnvelopeIndices = [];
             this._modifiedEnvelopeCount = 0;
             this.lowpassCutoffDecayVolumeCompensation = 1.0;
-            const length = 47;
+            const length = 54;
             for (let i = 0; i < length; i++) {
                 this.envelopeStarts[i] = 1.0;
                 this.envelopeEnds[i] = 1.0;
@@ -30397,6 +30417,8 @@ var beepbox = (function (exports) {
             if (usesDistortion) {
                 let useDistortionStart = instrument.distortion;
                 let useDistortionEnd = instrument.distortion;
+                let useDistortionEnvelopeStart = envelopeStarts[47];
+                let useDistortionEnvelopeEnd = envelopeEnds[47];
                 if (synth.isModActive(Config.modulators.dictionary["distortion"].index, channelIndex, instrumentIndex)) {
                     useDistortionStart = synth.getModValue(Config.modulators.dictionary["distortion"].index, channelIndex, instrumentIndex, false);
                     useDistortionEnd = synth.getModValue(Config.modulators.dictionary["distortion"].index, channelIndex, instrumentIndex, true);
@@ -30405,8 +30427,8 @@ var beepbox = (function (exports) {
                     useDistortionStart = clamp(0, Config.distortionRange, useDistortionStart * (synth.getModValue(Config.modulators.dictionary["song distortion"].index, undefined, undefined, false) - Config.modulators.dictionary["song distortion"].convertRealFactor) / Config.distortionRange);
                     useDistortionEnd = clamp(0, Config.distortionRange, useDistortionEnd * (synth.getModValue(Config.modulators.dictionary["song distortion"].index, undefined, undefined, true) - Config.modulators.dictionary["song distortion"].convertRealFactor) / Config.distortionRange);
                 }
-                const distortionSliderStart = Math.min(1.0, useDistortionStart / (Config.distortionRange - 1));
-                const distortionSliderEnd = Math.min(1.0, useDistortionEnd / (Config.distortionRange - 1));
+                const distortionSliderStart = Math.min(1.0, (useDistortionStart * useDistortionEnvelopeStart) / (Config.distortionRange - 1));
+                const distortionSliderEnd = Math.min(1.0, (useDistortionEnd * useDistortionEnvelopeEnd) / (Config.distortionRange - 1));
                 const distortionStart = Math.pow(1.0 - 0.895 * (Math.pow(20.0, distortionSliderStart) - 1.0) / 19.0, 2.0);
                 const distortionEnd = Math.pow(1.0 - 0.895 * (Math.pow(20.0, distortionSliderEnd) - 1.0) / 19.0, 2.0);
                 const distortionDriveStart = (1.0 + 2.0 * distortionSliderStart) / Config.distortionBaseVolume;
@@ -30419,12 +30441,16 @@ var beepbox = (function (exports) {
             if (usesBitcrusher) {
                 let freqSettingStart = instrument.bitcrusherFreq;
                 let freqSettingEnd = instrument.bitcrusherFreq;
+                let freqSettingEnvelopeStart = envelopeStarts[49];
+                let freqSettingEnvelopeEnd = envelopeEnds[49];
                 if (synth.isModActive(Config.modulators.dictionary["freq crush"].index, channelIndex, instrumentIndex)) {
                     freqSettingStart = synth.getModValue(Config.modulators.dictionary["freq crush"].index, channelIndex, instrumentIndex, false);
                     freqSettingEnd = synth.getModValue(Config.modulators.dictionary["freq crush"].index, channelIndex, instrumentIndex, true);
                 }
                 let quantizationSettingStart = instrument.bitcrusherQuantization;
                 let quantizationSettingEnd = instrument.bitcrusherQuantization;
+                let quantizationSettingEnvelopeStart = envelopeStarts[48];
+                let quantizationSettingEnvelopeEnd = envelopeEnds[48];
                 if (synth.isModActive(Config.modulators.dictionary["bit crush"].index, channelIndex, instrumentIndex)) {
                     quantizationSettingStart = synth.getModValue(Config.modulators.dictionary["bit crush"].index, channelIndex, instrumentIndex, false);
                     quantizationSettingEnd = synth.getModValue(Config.modulators.dictionary["bit crush"].index, channelIndex, instrumentIndex, true);
@@ -30438,18 +30464,18 @@ var beepbox = (function (exports) {
                     freqSettingEnd = clamp(0, Config.bitcrusherFreqRange, freqSettingEnd * (synth.getModValue(Config.modulators.dictionary["song freqcrush"].index, undefined, undefined, true) - Config.modulators.dictionary["song freqcrush"].convertRealFactor) / Config.bitcrusherFreqRange);
                 }
                 const basePitch = Config.keys[synth.song.key].basePitch + (Config.pitchesPerOctave * synth.song.octave);
-                const freqStart = Instrument.frequencyFromPitch(basePitch + 60) * Math.pow(2.0, (Config.bitcrusherFreqRange - 1 - freqSettingStart) * Config.bitcrusherOctaveStep);
-                const freqEnd = Instrument.frequencyFromPitch(basePitch + 60) * Math.pow(2.0, (Config.bitcrusherFreqRange - 1 - freqSettingEnd) * Config.bitcrusherOctaveStep);
+                const freqStart = Instrument.frequencyFromPitch(basePitch + 60) * Math.pow(2.0, (Config.bitcrusherFreqRange - 1 - (freqSettingStart * freqSettingEnvelopeStart)) * Config.bitcrusherOctaveStep);
+                const freqEnd = Instrument.frequencyFromPitch(basePitch + 60) * Math.pow(2.0, (Config.bitcrusherFreqRange - 1 - (freqSettingEnd * freqSettingEnvelopeEnd)) * Config.bitcrusherOctaveStep);
                 const phaseDeltaStart = Math.min(1.0, freqStart / samplesPerSecond);
                 const phaseDeltaEnd = Math.min(1.0, freqEnd / samplesPerSecond);
                 this.bitcrusherPhaseDelta = phaseDeltaStart;
                 this.bitcrusherPhaseDeltaScale = Math.pow(phaseDeltaEnd / phaseDeltaStart, 1.0 / roundedSamplesPerTick);
-                const scaleStart = 2.0 * Config.bitcrusherBaseVolume * Math.pow(2.0, 1.0 - Math.pow(2.0, (Config.bitcrusherQuantizationRange - 1 - quantizationSettingStart) * 0.5));
-                const scaleEnd = 2.0 * Config.bitcrusherBaseVolume * Math.pow(2.0, 1.0 - Math.pow(2.0, (Config.bitcrusherQuantizationRange - 1 - quantizationSettingEnd) * 0.5));
+                const scaleStart = 2.0 * Config.bitcrusherBaseVolume * Math.pow(2.0, 1.0 - Math.pow(2.0, (Config.bitcrusherQuantizationRange - 1 - (quantizationSettingStart * quantizationSettingEnvelopeStart)) * 0.5));
+                const scaleEnd = 2.0 * Config.bitcrusherBaseVolume * Math.pow(2.0, 1.0 - Math.pow(2.0, (Config.bitcrusherQuantizationRange - 1 - (quantizationSettingEnd * quantizationSettingEnvelopeEnd)) * 0.5));
                 this.bitcrusherScale = scaleStart;
                 this.bitcrusherScaleScale = Math.pow(scaleEnd / scaleStart, 1.0 / roundedSamplesPerTick);
-                const foldLevelStart = 2.0 * Config.bitcrusherBaseVolume * Math.pow(1.5, Config.bitcrusherQuantizationRange - 1 - quantizationSettingStart);
-                const foldLevelEnd = 2.0 * Config.bitcrusherBaseVolume * Math.pow(1.5, Config.bitcrusherQuantizationRange - 1 - quantizationSettingEnd);
+                const foldLevelStart = 2.0 * Config.bitcrusherBaseVolume * Math.pow(1.5, Config.bitcrusherQuantizationRange - 1 - (quantizationSettingStart * quantizationSettingEnvelopeStart));
+                const foldLevelEnd = 2.0 * Config.bitcrusherBaseVolume * Math.pow(1.5, Config.bitcrusherQuantizationRange - 1 - (quantizationSettingEnd * quantizationSettingEnvelopeEnd));
                 this.bitcrusherFoldLevel = foldLevelStart;
                 this.bitcrusherFoldLevelScale = Math.pow(foldLevelEnd / foldLevelStart, 1.0 / roundedSamplesPerTick);
             }
@@ -30535,6 +30561,8 @@ var beepbox = (function (exports) {
             let delayInputMultStart = 1.0;
             let delayInputMultEnd = 1.0;
             if (usesPanning) {
+                const panEnvelopeStart = envelopeStarts[53] * 2.0 - 1.0;
+                const panEnvelopeEnd = envelopeEnds[53] * 2.0 - 1.0;
                 let usePanStart = instrument.pan;
                 let usePanEnd = instrument.pan;
                 if (synth.isModActive(Config.modulators.dictionary["pan"].index, channelIndex, instrumentIndex)) {
@@ -30545,8 +30573,8 @@ var beepbox = (function (exports) {
                     usePanStart = clamp(-Config.panMax / 2, Config.panMax, usePanStart + synth.getModValue(Config.modulators.dictionary["song panning"].index, undefined, undefined, false));
                     usePanEnd = clamp(-Config.panMax / 2, Config.panMax, usePanEnd + synth.getModValue(Config.modulators.dictionary["song panning"].index, undefined, undefined, true));
                 }
-                let panStart = Math.max(-1.0, Math.min(1.0, (usePanStart - Config.panCenter) / Config.panCenter));
-                let panEnd = Math.max(-1.0, Math.min(1.0, (usePanEnd - Config.panCenter) / Config.panCenter));
+                let panStart = Math.max(-1.0, Math.min(1.0, ((usePanStart - Config.panCenter) / Config.panCenter) * panEnvelopeStart));
+                let panEnd = Math.max(-1.0, Math.min(1.0, ((usePanEnd - Config.panCenter) / Config.panCenter) * panEnvelopeEnd));
                 const volumeStartL = Math.cos((1 + panStart) * Math.PI * 0.25) * 1.414;
                 const volumeStartR = Math.cos((1 - panStart) * Math.PI * 0.25) * 1.414;
                 const volumeEndL = Math.cos((1 + panEnd) * Math.PI * 0.25) * 1.414;
@@ -30574,6 +30602,8 @@ var beepbox = (function (exports) {
                 this.panningOffsetDeltaR = (delayEndR - delayStartR) / roundedSamplesPerTick;
             }
             if (usesChorus) {
+                const chorusEnvelopeStart = envelopeStarts[50];
+                const chorusEnvelopeEnd = envelopeEnds[50];
                 let useChorusStart = instrument.chorus;
                 let useChorusEnd = instrument.chorus;
                 if (synth.isModActive(Config.modulators.dictionary["chorus"].index, channelIndex, instrumentIndex)) {
@@ -30584,8 +30614,8 @@ var beepbox = (function (exports) {
                     useChorusStart = clamp(0, Config.chorusRange, useChorusStart * (synth.getModValue(Config.modulators.dictionary["song chorus"].index, undefined, undefined, false) - Config.modulators.dictionary["song chorus"].convertRealFactor) / Config.chorusRange);
                     useChorusEnd = clamp(0, Config.chorusRange, useChorusEnd * (synth.getModValue(Config.modulators.dictionary["song chorus"].index, undefined, undefined, true) - Config.modulators.dictionary["song chorus"].convertRealFactor) / Config.chorusRange);
                 }
-                let chorusStart = Math.min(1.0, useChorusStart / (Config.chorusRange - 1));
-                let chorusEnd = Math.min(1.0, useChorusEnd / (Config.chorusRange - 1));
+                let chorusStart = Math.min(1.0, (useChorusStart * chorusEnvelopeStart) / (Config.chorusRange - 1));
+                let chorusEnd = Math.min(1.0, (useChorusEnd * chorusEnvelopeEnd) / (Config.chorusRange - 1));
                 chorusStart = chorusStart * 0.6 + (Math.pow(chorusStart, 6.0)) * 0.4;
                 chorusEnd = chorusEnd * 0.6 + (Math.pow(chorusEnd, 6.0)) * 0.4;
                 const chorusCombinedMultStart = 1.0 / Math.sqrt(3.0 * chorusStart * chorusStart + 1.0);
@@ -30633,14 +30663,16 @@ var beepbox = (function (exports) {
             let maxEchoMult = 0.0;
             let averageEchoDelaySeconds = 0.0;
             if (usesEcho) {
+                const echoSustainEnvelopeStart = envelopeStarts[51];
+                const echoSustainEnvelopeEnd = envelopeEnds[51];
                 let useEchoSustainStart = instrument.echoSustain;
                 let useEchoSustainEnd = instrument.echoSustain;
                 if (synth.isModActive(Config.modulators.dictionary["echo"].index, channelIndex, instrumentIndex)) {
                     useEchoSustainStart = Math.max(0.0, synth.getModValue(Config.modulators.dictionary["echo"].index, channelIndex, instrumentIndex, false));
                     useEchoSustainEnd = Math.max(0.0, synth.getModValue(Config.modulators.dictionary["echo"].index, channelIndex, instrumentIndex, true));
                 }
-                const echoMultStart = Math.min(1.0, Math.pow(useEchoSustainStart / Config.echoSustainRange, 1.1)) * 0.9;
-                const echoMultEnd = Math.min(1.0, Math.pow(useEchoSustainEnd / Config.echoSustainRange, 1.1)) * 0.9;
+                const echoMultStart = Math.min(1.0, Math.pow((useEchoSustainStart * echoSustainEnvelopeStart) / Config.echoSustainRange, 1.1)) * 0.9;
+                const echoMultEnd = Math.min(1.0, Math.pow((useEchoSustainEnd * echoSustainEnvelopeEnd) / Config.echoSustainRange, 1.1)) * 0.9;
                 this.echoMult = echoMultStart;
                 this.echoMultDelta = Math.max(0.0, (echoMultEnd - echoMultStart) / roundedSamplesPerTick);
                 maxEchoMult = Math.max(echoMultStart, echoMultEnd);
@@ -30730,6 +30762,8 @@ var beepbox = (function (exports) {
                 this.phaserStagesDelta = (phaserStagesEnd - phaserStagesStart) / roundedSamplesPerTick;
             }
             if (usesReverb) {
+                const reverbEnvelopeStart = envelopeStarts[52];
+                const reverbEnvelopeEnd = envelopeEnds[52];
                 let useReverbStart = instrument.reverb;
                 let useReverbEnd = instrument.reverb;
                 if (synth.isModActive(Config.modulators.dictionary["reverb"].index, channelIndex, instrumentIndex)) {
@@ -30740,8 +30774,8 @@ var beepbox = (function (exports) {
                     useReverbStart *= (synth.getModValue(Config.modulators.dictionary["song reverb"].index, undefined, undefined, false) - Config.modulators.dictionary["song reverb"].convertRealFactor) / Config.reverbRange;
                     useReverbEnd *= (synth.getModValue(Config.modulators.dictionary["song reverb"].index, undefined, undefined, true) - Config.modulators.dictionary["song reverb"].convertRealFactor) / Config.reverbRange;
                 }
-                const reverbStart = Math.min(1.0, Math.pow(useReverbStart / Config.reverbRange, 0.667)) * 0.425;
-                const reverbEnd = Math.min(1.0, Math.pow(useReverbEnd / Config.reverbRange, 0.667)) * 0.425;
+                const reverbStart = Math.min(1.0, Math.pow(reverbEnvelopeStart * useReverbStart / Config.reverbRange, 0.667)) * 0.425;
+                const reverbEnd = Math.min(1.0, Math.pow(reverbEnvelopeEnd * useReverbEnd / Config.reverbRange, 0.667)) * 0.425;
                 this.reverbMult = reverbStart;
                 this.reverbMultDelta = (reverbEnd - reverbStart) / roundedSamplesPerTick;
                 maxReverbMult = Math.max(reverbStart, reverbEnd);
@@ -32959,6 +32993,9 @@ var beepbox = (function (exports) {
             const envelopeStarts = tone.envelopeComputer.envelopeStarts;
             const envelopeEnds = tone.envelopeComputer.envelopeEnds;
             instrument.noteFilter = tmpNoteFilter;
+            if (transition.continues && (tone.prevNote == null || tone.note == null)) {
+                instrumentState.envelopeComputer.reset();
+            }
             if (tone.note != null && transition.slides) {
                 const prevNote = tone.prevNote;
                 const nextNote = tone.nextNote;
@@ -32991,7 +33028,7 @@ var beepbox = (function (exports) {
                     }
                 }
             }
-            if (effectsIncludePitchShift(instrument.effects)) {
+            if (effectsIncludePitchShift(instrument.effects) || this.isModActive(Config.modulators.dictionary["song pitch shift"].index, channelIndex, tone.instrumentIndex)) {
                 let pitchShift = Config.justIntonationSemitones[instrument.pitchShift] / intervalScale;
                 let pitchShiftScalarStart = 1.0;
                 let pitchShiftScalarEnd = 1.0;
@@ -32999,6 +33036,11 @@ var beepbox = (function (exports) {
                     pitchShift = Config.justIntonationSemitones[Config.justIntonationSemitones.length - 1];
                     pitchShiftScalarStart = (this.getModValue(Config.modulators.dictionary["pitch shift"].index, channelIndex, tone.instrumentIndex, false)) / (Config.pitchShiftCenter);
                     pitchShiftScalarEnd = (this.getModValue(Config.modulators.dictionary["pitch shift"].index, channelIndex, tone.instrumentIndex, true)) / (Config.pitchShiftCenter);
+                }
+                if (this.isModActive(Config.modulators.dictionary["song pitch shift"].index, channelIndex, tone.instrumentIndex)) {
+                    pitchShift = Config.justIntonationSemitones[Config.justIntonationSemitones.length - 1];
+                    pitchShiftScalarStart = clamp((-Config.pitchShiftRange * 2) + 1, Config.pitchShiftRange - 1, (pitchShiftScalarStart + this.getModValue(Config.modulators.dictionary["song pitch shift"].index, undefined, undefined, true)) - 1) / (Config.pitchShiftCenter);
+                    pitchShiftScalarEnd = clamp((-Config.pitchShiftRange * 2) + 1, Config.pitchShiftRange - 1, (pitchShiftScalarEnd + this.getModValue(Config.modulators.dictionary["song pitch shift"].index, undefined, undefined, true)) - 1) / (Config.pitchShiftCenter);
                 }
                 const envelopeStart = envelopeStarts[18];
                 const envelopeEnd = envelopeEnds[18];
