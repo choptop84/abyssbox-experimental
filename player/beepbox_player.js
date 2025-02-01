@@ -433,6 +433,7 @@ var beepbox = (function (exports) {
         { name: "Harmonic Major", realName: "harmonic major", flags: [true, false, true, false, true, true, false, true, true, false, false, true] },
         { name: "Harmonic Minor", realName: "harmonic minor", flags: [true, false, true, true, false, true, false, true, true, false, false, true] },
         { name: "Melodic Minor", realName: "melodic minor", flags: [true, false, true, true, false, true, false, true, false, true, false, true] },
+        { name: "Blues Major", realName: "blues major", flags: [true, false, true, true, true, false, false, true, false, true, false, false] },
         { name: "Blues", realName: "blues", flags: [true, false, false, true, false, true, true, true, false, false, true, false] },
         { name: "Altered", realName: "altered", flags: [true, true, false, true, true, false, true, false, true, false, true, false] },
         { name: "Major Pentatonic", realName: "major pentatonic", flags: [true, false, true, false, true, false, false, true, false, true, false, false] },
@@ -1071,7 +1072,7 @@ var beepbox = (function (exports) {
     };
     Config.perEnvelopeBoundMin = 0;
     Config.perEnvelopeBoundMax = 2;
-    Config.randomEnvelopeSeedMax = 64;
+    Config.randomEnvelopeSeedMax = 63;
     Config.randomEnvelopeStepsMax = 24;
     Config.pickedStringDispersionCenterFreq = 6000.0;
     Config.pickedStringDispersionFreqScale = 0.3;
@@ -26845,6 +26846,9 @@ var beepbox = (function (exports) {
                         }
                         else if (Config.newEnvelopes[instrument.envelopes[envelopeIndex].envelope].name == "lfo") {
                             buffer.push(base64IntToCharCode[instrument.envelopes[envelopeIndex].waveform]);
+                            if (instrument.envelopes[envelopeIndex].waveform == 5 || instrument.envelopes[envelopeIndex].waveform == 6) {
+                                buffer.push(base64IntToCharCode[instrument.envelopes[envelopeIndex].steps]);
+                            }
                         }
                         buffer.push(base64IntToCharCode[(+instrument.envelopes[envelopeIndex].inverse)] ? base64IntToCharCode[(+instrument.envelopes[envelopeIndex].inverse)] : base64IntToCharCode[0]);
                         if (Config.newEnvelopes[instrument.envelopes[envelopeIndex].envelope].name != "pitch" && Config.newEnvelopes[instrument.envelopes[envelopeIndex].envelope].name != "note size" && Config.newEnvelopes[instrument.envelopes[envelopeIndex].envelope].name != "punch" && Config.newEnvelopes[instrument.envelopes[envelopeIndex].envelope].name != "none") {
@@ -28671,7 +28675,10 @@ var beepbox = (function (exports) {
                                     let waveform = 0;
                                     if ((fromAbyssBox && !beforeThree) || fromSlarmoosBox) {
                                         if (Config.newEnvelopes[envelope].name == "lfo") {
-                                            waveform = clamp(0, 4, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
+                                            waveform = clamp(0, 7, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
+                                            if (waveform == 5 || waveform == 6) {
+                                                steps = clamp(1, Config.randomEnvelopeStepsMax + 1, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
+                                            }
                                         }
                                         else if (Config.newEnvelopes[envelope].name == "random") {
                                             steps = clamp(1, Config.randomEnvelopeStepsMax + 1, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
@@ -30545,7 +30552,7 @@ var beepbox = (function (exports) {
                     timeSinceStart = synth.computeTicksSinceStart();
                     steps = instrument.envelopes[envelopeIndex].steps;
                     seed = instrument.envelopes[envelopeIndex].seed;
-                    if (instrument.envelopes[envelopeIndex].waveform >= (envelope.name == "lfo" ? 4 : 4)) {
+                    if (instrument.envelopes[envelopeIndex].waveform >= (envelope.name == "lfo" ? 7 : 4)) {
                         instrument.envelopes[envelopeIndex].waveform = 0;
                     }
                     waveform = instrument.envelopes[envelopeIndex].waveform;
@@ -30738,6 +30745,30 @@ var beepbox = (function (exports) {
                             else {
                                 return (beats * envelopeSpeed) % 1 * boundAdjust + perEnvelopeLowerBound;
                             }
+                        case 4:
+                            let trap = 0;
+                            if (inverse) {
+                                trap = (perEnvelopeUpperBound / 2) - (boundAdjust * 2 / Math.PI) * Math.asin(Math.sin((Math.PI / 2) + beats * Math.PI * 2.0 * envelopeSpeed)) + (perEnvelopeLowerBound / 2);
+                            }
+                            else {
+                                trap = (perEnvelopeUpperBound / 2) + (boundAdjust * 2 / Math.PI) * Math.asin(Math.sin((Math.PI / 2) + beats * Math.PI * 2.0 * envelopeSpeed)) + (perEnvelopeLowerBound / 2);
+                            }
+                            return Math.max(perEnvelopeLowerBound, Math.min(perEnvelopeUpperBound, trap));
+                        case 5:
+                            if (steps <= 1)
+                                return 1;
+                            let saw = (beats * envelopeSpeed) % 1;
+                            if (inverse) {
+                                return perEnvelopeUpperBound - Math.floor(saw * steps) * boundAdjust / (steps - 1);
+                            }
+                            else {
+                                return Math.floor(saw * steps) * boundAdjust / (steps - 1) + perEnvelopeLowerBound;
+                            }
+                        case 6:
+                            if (steps <= 1)
+                                return 1;
+                            let tri = 0.5 + (inverse ? -1 : 1) * (1 / Math.PI) * Math.asin(Math.sin((Math.PI / 2) + beats * Math.PI * 2.0 * envelopeSpeed));
+                            return Math.round(tri * (steps - 1)) * boundAdjust / (steps - 1) + perEnvelopeLowerBound;
                         default: throw new Error("Unrecognized operator envelope waveform type: " + waveform);
                     }
                 case 9:
