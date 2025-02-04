@@ -62652,7 +62652,7 @@ You should be redirected to the song at:<br /><br />
             this._volumeBarBox = div({ class: "playback-volume-bar", style: "height: 12px; align-self: center;" }, this._volumeBarContainer);
             this._fileMenu = select({ style: "width: 100%;" }, option({ selected: true, disabled: true, hidden: false }, "File"), option({ value: "new" }, "+ New Blank Song"), option({ value: "import" }, "↑ > Import/Export Song (" + EditorConfig.ctrlSymbol + "S)"), option({ value: "copyUrl" }, "⎘ Copy Song URL"), option({ value: "shareUrl" }, "⤳ Share Song URL"), option({ value: "shortenUrl" }, "… Shorten Song URL"), option({ value: "configureShortener" }, "🛠 > Customize Url Shortener"), option({ value: "viewPlayer" }, "▶ View in Song Player"), option({ value: "copyEmbed" }, "⎘ Copy HTML Embed Code"), option({ value: "songRecovery" }, "⚠ > Recover Recent Song"));
             this._editMenu = select({ style: "width: 100%;" }, option({ selected: true, disabled: true, hidden: false }, "Edit"), option({ value: "undo" }, "Undo (Z)"), option({ value: "redo" }, "Redo (Y)"), option({ value: "copy" }, "Copy Pattern (C)"), option({ value: "pasteNotes" }, "Paste Pattern Notes (V)"), option({ value: "pasteNumbers" }, "Paste Pattern Numbers (" + EditorConfig.ctrlSymbol + "⇧V)"), option({ value: "insertBars" }, "Insert Bar (⏎)"), option({ value: "deleteBars" }, "Delete Selected Bars (⌫)"), option({ value: "insertChannel" }, "Insert Channel (" + EditorConfig.ctrlSymbol + "⏎)"), option({ value: "deleteChannel" }, "Delete Selected Channels (" + EditorConfig.ctrlSymbol + "⌫)"), option({ value: "selectChannel" }, "Select Channel (⇧A)"), option({ value: "selectAll" }, "Select All (A)"), option({ value: "duplicatePatterns" }, "Duplicate Reused Patterns (D)"), option({ value: "transposeUp" }, "Move Notes Up (+ or ⇧+)"), option({ value: "transposeDown" }, "Move Notes Down (- or ⇧-)"), option({ value: "moveNotesSideways" }, "> Move All Notes Sideways (W)"), option({ value: "generateEuclideanRhythm" }, "> Generate Euclidean Rhythm (E)"), option({ value: "beatsPerBar" }, "> Change Beats Per Bar (B)"), option({ value: "barCount" }, "> Change Song Length (L)"), option({ value: "channelSettings" }, "> Channel Settings (Q)"), option({ value: "limiterSettings" }, "> Limiter Settings (⇧L)"), option({ value: "addExternal" }, "> Add Custom Samples (⇧Q)"), option({ value: "songTheme" }, "> Set Theme For Song"), option({ value: "presetsPrompt" }, "> Select Presets"));
-            this._optionsMenu = select({ style: "width: 100%;" }, option({ selected: true, disabled: true, hidden: false }, "Preferences"), optgroup({ label: "Technical" }, option({ value: "autoPlay" }, "Auto Play on Load"), option({ value: "autoFollow" }, "Auto Follow Playhead"), option({ value: "enableNotePreview" }, "Hear Added Notes"), option({ value: "notesOutsideScale" }, "Place Notes Out of Scale"), option({ value: "setDefaultScale" }, "Set Current Scale as Default"), option({ value: "alwaysFineNoteVol" }, "Always Fine Note Volume"), option({ value: "enableChannelMuting" }, "Enable Channel Muting"), option({ value: "instrumentCopyPaste" }, "Enable Copy/Paste Buttons"), option({ value: "instrumentImportExport" }, "Enable Import/Export Buttons"), option({ value: "displayBrowserUrl" }, "Enable Song Data in URL"), option({ value: "closePromptByClickoff" }, "Close prompts on click off"), option({ value: "oldMobileLayout" }, "Use the Old mobile layout (Reload)"), option({ value: "instrumentSettingsSimplifier" }, "Use Mobile Instrument Settings"), option({ value: "promptSongDetails" }, "Prompt Song Details on Load"), option({ value: "recordingSetup" }, "Note Recording...")), optgroup({ label: "Appearance" }, option({ value: "showThird" }, 'Highlight "Third" Note (SandBox)'), option({ value: "showFifth" }, 'Highlight "Fifth" Note'), option({ value: "advancedColorScheme" }, "Advanced Color Scheme (ModBox)"), option({ value: "notesFlashWhenPlayed" }, "Notes Flash When Played (DB2)"), option({ value: "showChannels" }, "Show All Channels"), option({ value: "showScrollBar" }, "Show Octave Scroll Bar"), option({ value: "showLetters" }, "Show Piano Keys"), option({ value: "displayVolumeBar" }, "Show Playback Volume"), option({ value: "showOscilloscope" }, "Show Oscilloscope"), option({ value: "showSampleLoadingStatus" }, "Show Sample Loading Status"), option({ value: "showDescription" }, "Show Description"), option({ value: "frostedGlassBackground" }, "Use Frosted Glass Prompt Backdrops"), option({ value: "displayShortcutButtons" }, "Display Mobile Shortcut Buttons"), option({ value: "oldModNotes" }, 'Use Old Mod Notes'), option({ value: "selectionCounter" }, 'Selection Counter'), option({ value: "layout" }, "> Set Layout"), option({ value: "colorTheme" }, "> Set Theme"), option({ value: "customTheme" }, "> Custom Theme")));
+            this._optionsMenu = select({ style: "width: 100%;" }, option({ selected: true, disabled: true, hidden: false }, "Preferences"), optgroup({ label: "Technical" }, option({ value: "autoPlay" }, "Auto Play on Load"), option({ value: "autoFollow" }, "Auto Follow Playhead"), option({ value: "enableNotePreview" }, "Hear Added Notes"), option({ value: "notesOutsideScale" }, "Place Notes Out of Scale"), option({ value: "setDefaultScale" }, "Set Current Scale as Default"), option({ value: "alwaysFineNoteVol" }, "Always Fine Note Volume"), option({ value: "enableChannelMuting" }, "Enable Channel Muting"), option({ value: "instrumentCopyPaste" }, "Enable Copy/Paste Buttons"), option({ value: "instrumentImportExport" }, "Enable Import/Export Buttons"), option({ value: "displayBrowserUrl" }, "Enable Song Data in URL"), option({ value: "closePromptByClickoff" }, "Close prompts on click off"), option({ value: "oldMobileLayout" }, "Use the Old mobile layout (Reload)"), option({ value: "instrumentSettingsSimplifier" }, "Use Instrument Setting Tabs"), option({ value: "promptSongDetails" }, "Prompt Song Details on Load"), option({ value: "recordingSetup" }, "Note Recording...")), optgroup({ label: "Appearance" }, option({ value: "showThird" }, 'Highlight "Third" Note (SandBox)'), option({ value: "showFifth" }, 'Highlight "Fifth" Note'), option({ value: "advancedColorScheme" }, "Advanced Color Scheme (ModBox)"), option({ value: "notesFlashWhenPlayed" }, "Notes Flash When Played (DB2)"), option({ value: "showChannels" }, "Show All Channels"), option({ value: "showScrollBar" }, "Show Octave Scroll Bar"), option({ value: "showLetters" }, "Show Piano Keys"), option({ value: "displayVolumeBar" }, "Show Playback Volume"), option({ value: "showOscilloscope" }, "Show Oscilloscope"), option({ value: "showSampleLoadingStatus" }, "Show Sample Loading Status"), option({ value: "showDescription" }, "Show Description"), option({ value: "frostedGlassBackground" }, "Use Frosted Glass Prompt Backdrops"), option({ value: "displayShortcutButtons" }, "Display Mobile Shortcut Buttons"), option({ value: "oldModNotes" }, 'Use Old Mod Notes'), option({ value: "selectionCounter" }, 'Selection Counter'), option({ value: "layout" }, "> Set Layout"), option({ value: "colorTheme" }, "> Set Theme"), option({ value: "customTheme" }, "> Custom Theme")));
             this._scaleSelect = buildOptions(select(), Config.scales.map(scale => scale.name));
             this._keySelect = buildOptions(select(), Config.keys.map(key => key.name).reverse());
             this._octaveStepper = input({ style: "width: 59.5%;", type: "number", min: Config.octaveMin, max: Config.octaveMax, value: "0" });
@@ -62889,85 +62889,23 @@ You should be redirected to the song at:<br /><br />
             this._feedbackAmplitudeSlider = new Slider(input({ type: "range", min: "0", max: Config.operatorAmplitudeMax, value: "0", step: "1", title: "Feedback Amplitude" }), this._doc, (oldValue, newValue) => new ChangeFeedbackAmplitude(this._doc, oldValue, newValue), false);
             this._feedbackRow2 = div({ class: "selectRow" }, span({ class: "tip", onclick: () => this._openPrompt("feedbackVolume") }, "Fdback Vol:"), this._feedbackAmplitudeSlider.container);
             this._addEnvelopeButton = button({ type: "button", class: "add-envelope" });
-            this._customInstrumentSettingsGroup = div({ class: "editor-controls" }, div({ id: "InstrumentDiv" }, this._panSliderRow, this._panDropdownGroup, this._chipWaveSelectRow, this._chipNoiseSelectRow, this._useChipWaveAdvancedLoopControlsRow, this._chipWaveLoopModeSelectRow, this._chipWaveLoopStartRow, this._chipWaveLoopEndRow, this._chipWaveStartOffsetRow, this._chipWavePlayBackwardsRow, this._customWaveDraw, this._eqFilterTypeRow, this._eqFilterRow, this._eqFilterSimpleCutRow, this._eqFilterSimplePeakRow, this._fadeInOutRow, this._algorithmSelectRow, this._algorithm6OpSelectRow, this._phaseModGroup, this._feedbackRow1, this._feedback6OpRow1, this._feedbackRow2, this._spectrumRow, this._harmonicsRow, this._drumsetGroup, this._supersawDynamismRow, this._supersawSpreadRow, this._supersawShapeRow, this._pulseWidthRow, this._pulseWidthDropdownGroup, this._stringSustainRow, div({ style: "" }, this._unisonSelectRow), this._unisonDropdownGroup), div({ id: "effectsDiv" }, div({ class: "effectsNameDiv", style: `padding: 2px 0; margin-left: 2em; display: flex; align-items: center;` }, span({ style: `flex-grow: 1; text-align: center;` }, span({ class: "tip", onclick: () => this._openPrompt("effects") }, "Effects")), div({ class: "effects-menu" }, this._effectsSelect)), div({ class: "effectsOpDiv" }, this._transitionRow, this._transitionDropdownGroup, this._chordSelectRow, this._chordDropdownGroup, this._pitchShiftRow, this._detuneSliderRow, this._vibratoSelectRow, this._vibratoDropdownGroup, this._noteFilterTypeRow, this._noteFilterRow, this._noteFilterSimpleCutRow, this._noteFilterSimplePeakRow, this._distortionRow, this._aliasingRow, this._bitcrusherQuantizationRow, this._bitcrusherFreqRow, this._chorusRow, this._echoSustainRow, this._echoDelayRow, this._reverbRow, this._ringModContainerRow, this._phaserMixRow, this._phaserFreqRow, this._phaserFeedbackRow, this._phaserStagesRow, this._upperNoteLimitRow, this._lowerNoteLimitRow, this._invertWaveRow)), div({ id: "envelopesDiv" }, div({ class: "envelopesNameDiv", style: `padding: 2px 0; margin-left: 2em; display: flex; align-items: center;` }, span({ style: `flex-grow: 1; text-align: center;` }, span({ class: "tip", onclick: () => this._openPrompt("envelopes") }, "Envelopes")), this._envelopeDropdown, this._addEnvelopeButton), div({ class: "envelopesOpDiv" }, this._envelopeDropdownGroup, this.envelopeEditor.container)));
+            this._instrumentDiv = div({ id: "InstrumentDiv" }, this._panSliderRow, this._panDropdownGroup, this._chipWaveSelectRow, this._chipNoiseSelectRow, this._useChipWaveAdvancedLoopControlsRow, this._chipWaveLoopModeSelectRow, this._chipWaveLoopStartRow, this._chipWaveLoopEndRow, this._chipWaveStartOffsetRow, this._chipWavePlayBackwardsRow, this._customWaveDraw, this._eqFilterTypeRow, this._eqFilterRow, this._eqFilterSimpleCutRow, this._eqFilterSimplePeakRow, this._fadeInOutRow, this._algorithmSelectRow, this._algorithm6OpSelectRow, this._phaseModGroup, this._feedbackRow1, this._feedback6OpRow1, this._feedbackRow2, this._spectrumRow, this._harmonicsRow, this._drumsetGroup, this._supersawDynamismRow, this._supersawSpreadRow, this._supersawShapeRow, this._pulseWidthRow, this._pulseWidthDropdownGroup, this._stringSustainRow, div({ style: "" }, this._unisonSelectRow), this._unisonDropdownGroup);
+            this._effectDiv = div({ id: "effectsDiv" }, div({ class: "effectsNameDiv", style: `padding: 2px 0; margin-left: 2em; display: flex; align-items: center;` }, span({ style: `flex-grow: 1; text-align: center;` }, span({ class: "tip", onclick: () => this._openPrompt("effects") }, "Effects")), div({ class: "effects-menu" }, this._effectsSelect)), div({ class: "effectsOpDiv" }, this._transitionRow, this._transitionDropdownGroup, this._chordSelectRow, this._chordDropdownGroup, this._pitchShiftRow, this._detuneSliderRow, this._vibratoSelectRow, this._vibratoDropdownGroup, this._noteFilterTypeRow, this._noteFilterRow, this._noteFilterSimpleCutRow, this._noteFilterSimplePeakRow, this._distortionRow, this._aliasingRow, this._bitcrusherQuantizationRow, this._bitcrusherFreqRow, this._chorusRow, this._echoSustainRow, this._echoDelayRow, this._reverbRow, this._ringModContainerRow, this._phaserMixRow, this._phaserFreqRow, this._phaserFeedbackRow, this._phaserStagesRow, this._upperNoteLimitRow, this._lowerNoteLimitRow, this._invertWaveRow));
+            this._envelopeDiv = div({ id: "envelopesDiv" }, div({ class: "envelopesNameDiv", style: `padding: 2px 0; margin-left: 2em; display: flex; align-items: center;` }, span({ style: `flex-grow: 1; text-align: center;` }, span({ class: "tip", onclick: () => this._openPrompt("envelopes") }, "Envelopes")), this._envelopeDropdown, this._addEnvelopeButton), div({ class: "envelopesOpDiv" }, this._envelopeDropdownGroup, this.envelopeEditor.container));
+            this._customInstrumentSettingsGroup = div({ class: "editor-controls" }, this._instrumentDiv, this._effectDiv, this._envelopeDiv);
             this._instrumentCopyGroup = div({ class: "editor-controls" }, div({ class: "selectRow" }, this._instrumentCopyButton, this._instrumentPasteButton));
             this._instrumentExportGroup = div({ class: "editor-controls" }, div({ class: "selectRow" }, this._instrumentExportButton, this._instrumentImportButton));
             this._instrumentSettingsTextRow = div({ id: "instrumentSettingsText", style: `padding: 3px 0; max-width: 15em; text-align: center; color: ${ColorConfig.secondaryText};` }, "Instrument Settings");
             this._instrumentTypeSelectRow = div({ class: "selectRow", id: "typeSelectRow" }, span({ class: "tip", onclick: () => this._openPrompt("instrumentType") }, "Type:"), div(div({ class: "pitchSelect" }, this._pitchedPresetSelect), div({ class: "drumSelect" }, this._drumPresetSelect)));
             this.selectedPatternCounter = div({ style: "margin:5px; pointer-events: none;" }, this._doc.selection.boxSelectionWidth * this._doc.selection.boxSelectionHeight);
             this.selectedPatternDiv = div({ style: "background: var(--ui-widget-background); font-weight: bold; border-radius: 5px; height: 32px; position: absolute; font-size: 20px; text-align: center; align-content: center;", title: "The total number of patterns you have selected in the track editor." }, this.selectedPatternCounter);
-            this._mobileInstSettingsButton = button({ class: "mobileInstButton", type: "button", style: "width:33%;", onclick: () => this._setSettingToInstrument() }, "Settings");
-            this._mobileEffectsButton = button({ class: "mobileEffectsButton", type: "button", style: "width:30%; background: #fff0; color: var(--text-color-dim);", onclick: () => this._setSettingToEffect() }, "Effects");
-            this._mobileEnvelopesButton = button({ class: "mobileEnvelopesButton", type: "button", style: "width:37%; background: #fff0; color: var(--text-color-dim);", onclick: () => this._setSettingToEnvelope() }, "Envelope");
+            this._mobileInstSettingsButton = button({ class: "mobileInstButton", type: "button", style: "width:33%;", onclick: () => this._changeSetting(1) }, "Settings");
+            this._mobileEffectsButton = button({ class: "mobileEffectsButton", type: "button", style: "width:30%; background: #fff0; color: var(--text-color-dim);", onclick: () => this._changeSetting(2) }, "Effects");
+            this._mobileEnvelopesButton = button({ class: "mobileEnvelopesButton", type: "button", style: "width:37%; background: #fff0; color: var(--text-color-dim);", onclick: () => this._changeSetting(3) }, "Envelope");
             this._instOptionsDiv = div({ class: "instMobileOptions", style: "display:none; padding-bottom: 4px;" }, this._mobileInstSettingsButton, this._mobileEffectsButton, this._mobileEnvelopesButton);
-            this._setSettingToInstrument = () => {
-                const colors = ColorConfig.getChannelColor(this._doc.song, this._doc.channel);
-                this._instOptionsDiv.style.setProperty("--text-color-lit", colors.primaryNote);
-                this._instOptionsDiv.style.setProperty("--text-color-dim", colors.secondaryNote);
-                this._instOptionsDiv.style.setProperty("--background-color-lit", colors.primaryChannel);
-                this._instOptionsDiv.style.setProperty("--background-color-dim", colors.secondaryChannel);
-                const instStuffs = document.getElementById('InstrumentDiv');
-                const effectStuffs = document.getElementById('effectsDiv');
-                const envelopeStuffs = document.getElementById('envelopesDiv');
-                this._instSettingMode = 1;
-                instStuffs.style.display = "";
-                effectStuffs.style.display = "none";
-                envelopeStuffs.style.display = "none";
-                this._mobileInstSettingsButton.style.color = "var(--text-color-lit)";
-                this._mobileEffectsButton.style.color = "var(--text-color-dim)";
-                this._mobileEnvelopesButton.style.color = "var(--text-color-dim)";
-                this._mobileInstSettingsButton.style.background = "";
-                this._mobileEffectsButton.style.background = "#fff0";
-                this._mobileEnvelopesButton.style.background = "#fff0";
-                this._mobileInstSettingsButton.classList.remove("deactivated");
-                this._mobileEffectsButton.classList.add("deactivated");
-                this._mobileEnvelopesButton.classList.add("deactivated");
-            };
-            this._setSettingToEffect = () => {
-                const colors = ColorConfig.getChannelColor(this._doc.song, this._doc.channel);
-                this._instOptionsDiv.style.setProperty("--text-color-lit", colors.primaryNote);
-                this._instOptionsDiv.style.setProperty("--text-color-dim", colors.secondaryNote);
-                this._instOptionsDiv.style.setProperty("--background-color-lit", colors.primaryChannel);
-                this._instOptionsDiv.style.setProperty("--background-color-dim", colors.secondaryChannel);
-                const instStuffs = document.getElementById('InstrumentDiv');
-                const effectStuffs = document.getElementById('effectsDiv');
-                const envelopeStuffs = document.getElementById('envelopesDiv');
-                this._instSettingMode = 2;
-                instStuffs.style.display = "none";
-                effectStuffs.style.display = "";
-                envelopeStuffs.style.display = "none";
-                this._mobileInstSettingsButton.style.color = "var(--text-color-dim)";
-                this._mobileEffectsButton.style.color = "var(--text-color-lit)";
-                this._mobileEnvelopesButton.style.color = "var(--text-color-dim)";
-                this._mobileInstSettingsButton.style.background = "#fff0";
-                this._mobileEffectsButton.style.background = "";
-                this._mobileEnvelopesButton.style.background = "#fff0";
-                this._mobileInstSettingsButton.classList.add("deactivated");
-                this._mobileEffectsButton.classList.remove("deactivated");
-                this._mobileEnvelopesButton.classList.add("deactivated");
-            };
-            this._setSettingToEnvelope = () => {
-                const colors = ColorConfig.getChannelColor(this._doc.song, this._doc.channel);
-                this._instOptionsDiv.style.setProperty("--text-color-lit", colors.primaryNote);
-                this._instOptionsDiv.style.setProperty("--text-color-dim", colors.secondaryNote);
-                this._instOptionsDiv.style.setProperty("--background-color-lit", colors.primaryChannel);
-                this._instOptionsDiv.style.setProperty("--background-color-dim", colors.secondaryChannel);
-                const instStuffs = document.getElementById('InstrumentDiv');
-                const effectStuffs = document.getElementById('effectsDiv');
-                const envelopeStuffs = document.getElementById('envelopesDiv');
-                this._instSettingMode = 3;
-                instStuffs.style.display = "none";
-                effectStuffs.style.display = "none";
-                envelopeStuffs.style.display = "";
-                this._mobileInstSettingsButton.style.color = "var(--text-color-dim)";
-                this._mobileEffectsButton.style.color = "var(--text-color-dim)";
-                this._mobileEnvelopesButton.style.color = "var(--text-color-lit)";
-                this._mobileInstSettingsButton.style.background = "#fff0";
-                this._mobileEffectsButton.style.background = "#fff0";
-                this._mobileEnvelopesButton.style.background = "";
-                this._mobileInstSettingsButton.classList.add("deactivated");
-                this._mobileEffectsButton.classList.add("deactivated");
-                this._mobileEnvelopesButton.classList.remove("deactivated");
+            this._changeSetting = (setSetting) => {
+                this._instSettingMode = setSetting;
+                this.whenUpdated();
             };
             this._instrumentSettingsGroup = div({ class: "editor-controls" }, this._instrumentSettingsTextRow, this._instOptionsDiv, this._instrumentsButtonRow, this._instrumentTypeSelectRow, this._instrumentVolumeSliderRow, this._customInstrumentSettingsGroup);
             this._usedPatternIndicator = SVG.path({ d: "M -6 -6 H 6 V 6 H -6 V -6 M -2 -3 L -2 -3 L -1 -4 H 1 V 4 H -1 V -1.2 L -1.2 -1 H -2 V -3 z", fill: ColorConfig.indicatorSecondary, "fill-rule": "evenodd" });
@@ -63263,28 +63201,9 @@ You should be redirected to the song at:<br /><br />
                     this.selectedPatternDiv.style.display = "none";
                     if (this._doc.prefs.oldMobileLayout != true) {
                         this._promptContainer.style.left = "50vw";
-                        const effectStuffs = document.getElementById('effectsDiv');
-                        const envelopeStuffs = document.getElementById('envelopesDiv');
-                        const instStuffs = document.getElementById('InstrumentDiv');
-                        if (this._instSettingMode == 1) {
-                            instStuffs.style.display = "";
-                            effectStuffs.style.display = "none";
-                            envelopeStuffs.style.display = "none";
-                            console.log("Instrument Settings");
-                        }
-                        else if (this._instSettingMode == 2) {
-                            instStuffs.style.display = "none";
-                            effectStuffs.style.display = "";
-                            envelopeStuffs.style.display = "none";
-                            console.log("Effects Settings");
-                        }
-                        else if (this._instSettingMode == 3) {
-                            instStuffs.style.display = "none";
-                            effectStuffs.style.display = "none";
-                            envelopeStuffs.style.display = "";
-                            console.log("Envelopes Settings");
-                        }
-                        console.log("Current Setting: " + this._instSettingMode);
+                        this._instSettingMode == 1 ? this._instrumentDiv.style.display = "" : this._instrumentDiv.style.display = "none";
+                        this._instSettingMode == 2 ? this._effectDiv.style.display = "" : this._effectDiv.style.display = "none";
+                        this._instSettingMode == 3 ? this._envelopeDiv.style.display = "" : this._envelopeDiv.style.display = "none";
                         beepboxEditorContainer$1.style.borderImageSource = "";
                         this._settingsArea.style.display = "none";
                         this._trackArea.style.display = "none";
@@ -63575,7 +63494,7 @@ You should be redirected to the song at:<br /><br />
                     (prefs.displayBrowserUrl ? textOnIcon : textOffIcon) + "Enable Song Data in URL",
                     (prefs.closePromptByClickoff ? textOnIcon : textOffIcon) + "Close Prompts on Click Off",
                     (prefs.oldMobileLayout ? textOnIcon : textOffIcon) + "Use the Old mobile layout (Reload)",
-                    (prefs.instrumentSettingsSimplifier ? textOnIcon : textOffIcon) + "Use Mobile Instrument Settings",
+                    (prefs.instrumentSettingsSimplifier ? textOnIcon : textOffIcon) + "Use Instrument Setting Tabs",
                     (prefs.promptSongDetails ? textOnIcon : textOffIcon) + "Prompt Song Details on Load",
                     "> Note Recording",
                     "Appearance",
@@ -63992,25 +63911,31 @@ You should be redirected to the song at:<br /><br />
                         this._noteFilterSimplePeakRow.style.display = "none";
                         this._noteFilterTypeRow.style.display = "none";
                     }
-                    if (this._doc.prefs.instrumentSettingsSimplifier == true) {
-                        if (this._instSettingMode == 1) {
-                            this._setSettingToInstrument();
-                        }
-                        if (this._instSettingMode == 2) {
-                            this._setSettingToEffect();
-                        }
-                        if (this._instSettingMode == 3) {
-                            this._setSettingToEnvelope();
-                        }
+                    if (this._doc.prefs.instrumentSettingsSimplifier) {
+                        const colors = ColorConfig.getChannelColor(this._doc.song, this._doc.channel);
+                        this._instOptionsDiv.style.setProperty("--text-color-lit", colors.primaryNote);
+                        this._instOptionsDiv.style.setProperty("--text-color-dim", colors.secondaryNote);
+                        this._instOptionsDiv.style.setProperty("--background-color-lit", colors.primaryChannel);
+                        this._instOptionsDiv.style.setProperty("--background-color-dim", colors.secondaryChannel);
+                        this._instrumentDiv.style.display = (this._instSettingMode == 1) ? "" : "none";
+                        this._effectDiv.style.display = (this._instSettingMode == 2) ? "" : "none";
+                        this._envelopeDiv.style.display = (this._instSettingMode == 3) ? "" : "none";
+                        this._mobileInstSettingsButton.style.color = (this._instSettingMode == 1) ? "var(--text-color-lit)" : "var(--text-color-dim)";
+                        this._mobileEffectsButton.style.color = (this._instSettingMode == 2) ? "var(--text-color-lit)" : "var(--text-color-dim)";
+                        this._mobileEnvelopesButton.style.color = (this._instSettingMode == 3) ? "var(--text-color-lit)" : "var(--text-color-dim)";
+                        this._mobileInstSettingsButton.style.background = (this._instSettingMode == 1) ? "" : "#fff0";
+                        this._mobileEffectsButton.style.background = (this._instSettingMode == 2) ? "" : "#fff0";
+                        this._mobileEnvelopesButton.style.background = (this._instSettingMode == 3) ? "" : "#fff0";
+                        this._instSettingMode == 1 ? this._mobileInstSettingsButton.classList.remove("deactivated") : this._mobileInstSettingsButton.classList.add("deactivated");
+                        this._instSettingMode == 2 ? this._mobileEffectsButton.classList.remove("deactivated") : this._mobileEffectsButton.classList.add("deactivated");
+                        this._instSettingMode == 3 ? this._mobileEnvelopesButton.classList.remove("deactivated") : this._mobileEnvelopesButton.classList.add("deactivated");
+                        this._loopBarButton.style.display = prefs.displayShortcutButtons ? "" : "none";
                         this._instOptionsDiv.style.display = "";
                     }
                     else {
-                        const effectStuffs = document.getElementById('effectsDiv');
-                        const envelopeStuffs = document.getElementById('envelopesDiv');
-                        const instStuffs = document.getElementById('InstrumentDiv');
-                        instStuffs.style.display = "";
-                        effectStuffs.style.display = "";
-                        envelopeStuffs.style.display = "";
+                        this._instrumentDiv.style.display = "";
+                        this._effectDiv.style.display = "";
+                        this._envelopeDiv.style.display = "";
                         this._instOptionsDiv.style.display = "none";
                     }
                     if (effectsIncludeDistortion(instrument.effects)) {
@@ -65741,32 +65666,14 @@ You should be redirected to the song at:<br /><br />
             };
             this._displaySettingsEditor = () => {
                 this._menuMode = 3;
-                const effectStuffs = document.getElementById('effectsDiv');
-                const envelopeStuffs = document.getElementById('envelopesDiv');
-                const instStuffs = document.getElementById('InstrumentDiv');
                 if (this._menuMode == 3) {
                     this._patternArea.style.display = "none";
                     this._trackArea.style.display = "none";
                     this._settingsArea.style.display = "";
                     this.whenUpdated();
-                    if (this._instSettingMode == 1) {
-                        instStuffs.style.display = "";
-                        effectStuffs.style.display = "none";
-                        envelopeStuffs.style.display = "none";
-                        console.log("Instrument Settings");
-                    }
-                    else if (this._instSettingMode == 2) {
-                        instStuffs.style.display = "none";
-                        effectStuffs.style.display = "";
-                        envelopeStuffs.style.display = "none";
-                        console.log("Effects Settings");
-                    }
-                    else if (this._instSettingMode == 3) {
-                        instStuffs.style.display = "none";
-                        effectStuffs.style.display = "none";
-                        envelopeStuffs.style.display = "";
-                        console.log("Envelopes Settings");
-                    }
+                    this._instrumentDiv.style.display = (this._instSettingMode == 1) ? "" : "none";
+                    this._effectDiv.style.display = (this._instSettingMode == 2) ? "" : "none";
+                    this._envelopeDiv.style.display = (this._instSettingMode == 3) ? "" : "none";
                     if (window.innerWidth < window.innerHeight) {
                         this._mobilePatternButton.style.height = "80%";
                         this._mobileTrackButton.style.height = "80%";
