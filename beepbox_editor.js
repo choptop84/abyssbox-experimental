@@ -49,10 +49,11 @@ var beepbox = (function (exports) {
     }
     const sampleLoadingState = new SampleLoadingState();
     class SampleLoadedEvent extends Event {
-        constructor(totalSamples, samplesLoaded) {
+        constructor(totalSamples, samplesLoaded, samplesFailed) {
             super("sampleloaded");
             this.totalSamples = totalSamples;
             this.samplesLoaded = samplesLoaded;
+            this.samplesFailed = samplesFailed;
         }
     }
     class SampleLoadEvents extends EventTarget {
@@ -60,7 +61,13 @@ var beepbox = (function (exports) {
             super();
         }
     }
+    class SampleFailEvents extends EventTarget {
+        constructor() {
+            super();
+        }
+    }
     const sampleLoadEvents = new SampleLoadEvents();
+    new SampleFailEvents();
     function startLoadingSample(url, chipWaveIndex, presetSettings, rawLoopOptions, customSampleRate) {
         return __awaiter$1(this, void 0, void 0, function* () {
             const sampleLoaderAudioContext = new AudioContext({ sampleRate: customSampleRate });
@@ -98,14 +105,16 @@ var beepbox = (function (exports) {
                 }
                 sampleLoadingState.samplesLoaded++;
                 sampleLoadingState.statusTable[chipWaveIndex] = 1;
-                sampleLoadEvents.dispatchEvent(new SampleLoadedEvent(sampleLoadingState.totalSamples, sampleLoadingState.samplesLoaded));
+                sampleLoadEvents.dispatchEvent(new SampleLoadedEvent(sampleLoadingState.totalSamples, sampleLoadingState.samplesLoaded, sampleLoadingState.samplesFailed));
                 if (!closedSampleLoaderAudioContext) {
                     closedSampleLoaderAudioContext = true;
                     sampleLoaderAudioContext.close();
                 }
             }).catch((error) => {
                 sampleLoadingState.statusTable[chipWaveIndex] = 2;
-                alert("Failed to load " + url + ":\n" + error);
+                sampleLoadingState.samplesFailed++;
+                console.error("Failed to load " + url + ":\n" + error);
+                sampleLoadEvents.dispatchEvent(new SampleLoadedEvent(sampleLoadingState.totalSamples, sampleLoadingState.samplesLoaded, sampleLoadingState.samplesFailed));
                 if (!closedSampleLoaderAudioContext) {
                     closedSampleLoaderAudioContext = true;
                     sampleLoaderAudioContext.close();
@@ -313,7 +322,7 @@ var beepbox = (function (exports) {
                     Config.chipWaves[chipWaveIndex].samples = performIntegral(chipWaveSample);
                     sampleLoadingState.statusTable[chipWaveIndex] = 1;
                     sampleLoadingState.samplesLoaded++;
-                    sampleLoadEvents.dispatchEvent(new SampleLoadedEvent(sampleLoadingState.totalSamples, sampleLoadingState.samplesLoaded));
+                    sampleLoadEvents.dispatchEvent(new SampleLoadedEvent(sampleLoadingState.totalSamples, sampleLoadingState.samplesLoaded, sampleLoadingState.samplesFailed));
                     chipWaveIndexOffset++;
                 }
             });
@@ -357,7 +366,7 @@ var beepbox = (function (exports) {
                     Config.chipWaves[chipWaveIndex].samples = performIntegral(chipWaveSample);
                     sampleLoadingState.statusTable[chipWaveIndex] = 1;
                     sampleLoadingState.samplesLoaded++;
-                    sampleLoadEvents.dispatchEvent(new SampleLoadedEvent(sampleLoadingState.totalSamples, sampleLoadingState.samplesLoaded));
+                    sampleLoadEvents.dispatchEvent(new SampleLoadedEvent(sampleLoadingState.totalSamples, sampleLoadingState.samplesLoaded, sampleLoadingState.samplesFailed));
                     chipWaveIndexOffset++;
                 }
             });
@@ -415,7 +424,7 @@ var beepbox = (function (exports) {
                     Config.chipWaves[chipWaveIndex].samples = performIntegral(chipWaveSample);
                     sampleLoadingState.statusTable[chipWaveIndex] = 1;
                     sampleLoadingState.samplesLoaded++;
-                    sampleLoadEvents.dispatchEvent(new SampleLoadedEvent(sampleLoadingState.totalSamples, sampleLoadingState.samplesLoaded));
+                    sampleLoadEvents.dispatchEvent(new SampleLoadedEvent(sampleLoadingState.totalSamples, sampleLoadingState.samplesLoaded, sampleLoadingState.samplesFailed));
                     chipWaveIndexOffset++;
                 }
             });
@@ -22729,6 +22738,7 @@ var beepbox = (function (exports) {
     ColorConfig.textSelection = "var(--text-selection)";
     ColorConfig.boxSelectionFill = "var(--box-selection-fill)";
     ColorConfig.loopAccent = "var(--loop-accent)";
+    ColorConfig.sampleFailed = "var(--sample-failed, #f00)";
     ColorConfig.linkAccent = "var(--link-accent)";
     ColorConfig.uiWidgetBackground = "var(--ui-widget-background)";
     ColorConfig.uiWidgetFocus = "var(--ui-widget-focus)";
@@ -29551,7 +29561,8 @@ li.select2-results__option[role=group] > strong:hover {
                     sampleLoadingState.urlTable = {};
                     sampleLoadingState.totalSamples = 0;
                     sampleLoadingState.samplesLoaded = 0;
-                    sampleLoadEvents.dispatchEvent(new SampleLoadedEvent(sampleLoadingState.totalSamples, sampleLoadingState.samplesLoaded));
+                    sampleLoadingState.samplesFailed = 0;
+                    sampleLoadEvents.dispatchEvent(new SampleLoadedEvent(sampleLoadingState.totalSamples, sampleLoadingState.samplesLoaded, sampleLoadingState.samplesFailed));
                     for (const url of compressed_array) {
                         if (url.toLowerCase() === "legacysamples") {
                             if (!willLoadLegacySamples) {
@@ -31911,7 +31922,8 @@ li.select2-results__option[role=group] > strong:hover {
             sampleLoadingState.urlTable = {};
             sampleLoadingState.totalSamples = 0;
             sampleLoadingState.samplesLoaded = 0;
-            sampleLoadEvents.dispatchEvent(new SampleLoadedEvent(sampleLoadingState.totalSamples, sampleLoadingState.samplesLoaded));
+            sampleLoadingState.samplesFailed = 0;
+            sampleLoadEvents.dispatchEvent(new SampleLoadedEvent(sampleLoadingState.totalSamples, sampleLoadingState.samplesLoaded, sampleLoadingState.samplesFailed));
         }
         toJsonObject(enableIntro = true, loopCount = 1, enableOutro = true) {
             const channelArray = [];
@@ -61327,7 +61339,7 @@ You should be redirected to the song at:<br /><br />
             this._instructionsLink = a({ href: "#" }, "Wanna add your own samples? Click here!");
             this._description = div$4(div$4({ style: "margin-bottom: 0.5em; -webkit-user-select: text; -moz-user-select: text; -ms-user-select: text; user-select: text; cursor: text;" }, "Before you ask: "), div$4({ style: "margin-bottom: 0.5em; -webkit-user-select: text; -moz-user-select: text; -ms-user-select: text; user-select: text; cursor: text;" }, "legacySamples", " = Pandoras Box's Samples "), div$4({ style: "margin-bottom: 0.5em; -webkit-user-select: text; -moz-user-select: text; -ms-user-select: text; user-select: text; cursor: text;" }, "nintariboxSamples", " = nintaribox's Samples "), div$4({ style: "margin-bottom: 0.5em; -webkit-user-select: text; -moz-user-select: text; -ms-user-select: text; user-select: text; cursor: text;" }, "marioPaintboxSamples", " = MarioPaintBox's Samples."), div$4({ style: "margin-bottom: 0.5em;" }, "The order of these samples is important - if you change it you'll break your song!", "Since they're sorted by which ones you added first, changing the position of the sample in the list will", "change your instruments' sample to a different sample!"), div$4({ style: "margin-bottom: 0.5em;" }, this._instructionsLink));
             this._closeInstructionsButton = button$4({ style: "height: auto; min-height: var(--button-size); width: 100%;" }, "Close instructions");
-            this._instructionsArea = div$4({ style: "display: none; margin-top: 0; -webkit-user-select: text; -moz-user-select: text; -ms-user-select: text; user-select: text; cursor: text; overflow-y: auto;" }, div$4({ class: "promptTitle" }, h2$3({ class: "samplesExt", style: "text-align: inherit;" }, ""), h2$3({ class: "samplesTitle", style: "margin-bottom: 0.5em;" }, "Add Samples")), div$4({ style: "margin-top: 0.5em; margin-bottom: 0.5em;" }, "In UB and in turn AB, custom samples are loaded from arbitrary URLs."), div$4({ style: `margin-top: 0.5em; margin-bottom: 0.5em; color: ${ColorConfig.secondaryText};` }, "(Technically, the web server behind the URL needs to support ", a({ href: "https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS", target: "_blank", }, "CORS"), ", but you don't need to know about that: ", " the sample just won't load if that's not the case)"), div$4({ style: "margin-top: 0.5em; margin-bottom: 0.5em;" }, details(summary("Why arbitrary URLs?"), a({ href: "https://pandoras-box-archive.neptendo.repl.co/" }, "A certain BeepBox mod"), " did this with one central server, but it went down, taking down", " the samples with it, though thankfully it got archived.", " This is always an issue with servers: it may run out of space,", " stop working, and so on. With arbitrary URLs, you can always ", " change them to different ones if they stop working.")), div$4({ style: "margin-top: 0.5em; margin-bottom: 0.5em;" }, "As for where to upload your samples, here are some suggestions:", ul({ style: "text-align: left;" }, li(a({ href: "https://filegarden.com" }, "File Garden")), li(a({ href: "https://catbox.moe/" }, "Catbox")), li(a({ href: "https://www.dropbox.com" }, "Dropbox"), " (domain needs to be ", code("https://dl.dropboxusercontent.com"), ")"))), div$4({ style: "margin-top: 0.5em; margin-bottom: 0.5em;" }, "Static website hosting services may also work (such as ", a({ href: "https://pages.github.com" }, "GitHub Pages"), ")", " but those require a bit more setup."), div$4({ style: "margin-top: 0.5em; margin-bottom: 1em;" }, "Finally, if have a soundfont you'd like to get samples from, consider using this ", a({ href: "./sample_extractor.html", target: "_blank" }, "sample extractor"), "!"), div$4({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between; margin-top: 0.5em;" }, this._closeInstructionsButton));
+            this._instructionsArea = div$4({ style: "display: none; margin-top: 0; -webkit-user-select: text; -moz-user-select: text; -ms-user-select: text; user-select: text; cursor: text; overflow-y: auto;" }, div$4({ class: "promptTitle" }, h2$3({ class: "samplesExt", style: "text-align: inherit;" }, ""), h2$3({ class: "samplesTitle", style: "margin-bottom: 0.5em;" }, "Add Samples")), div$4({ style: "margin-top: 0.5em; margin-bottom: 0.5em;" }, "In UB and in turn AB, custom samples are loaded from arbitrary URLs."), div$4({ style: `margin-top: 0.5em; margin-bottom: 0.5em; color: ${ColorConfig.secondaryText};` }, "(Technically, the web server behind the URL needs to support ", a({ href: "https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS", target: "_blank", }, "CORS"), ", but you don't need to know about that: ", " the sample just won't load if that's not the case)"), div$4({ style: "margin-top: 0.5em; margin-bottom: 0.5em;" }, details(summary("Why arbitrary URLs?"), a({ href: "https://pandoras-box-archive.neptendo.repl.co/" }, "A certain BeepBox mod"), " did this with one central server, but it went down, taking down", " the samples with it, though thankfully it got archived.", " This is always an issue with servers: it may run out of space,", " stop working, and so on. With arbitrary URLs, you can always ", " change them to different ones if they stop working.")), div$4({ style: "margin-top: 0.5em; margin-bottom: 0.5em;" }, "As for where to upload your samples, here are some suggestions:", ul({ style: "text-align: left;" }, li(a({ href: "https://filegarden.com" }, "File Garden")), li(a({ href: "https://github.com/" }, "Github")), li(a({ href: "https://www.dropbox.com" }, "Dropbox"), " (domain needs to be ", code("https://dl.dropboxusercontent.com"), ")"))), div$4({ style: "margin-top: 0.5em; margin-bottom: 0.5em;" }, "Static website hosting services may also work (such as ", a({ href: "https://pages.github.com" }, "GitHub Pages"), ")", " but those require a bit more setup."), div$4({ style: "margin-top: 0.5em; margin-bottom: 1em;" }, "Finally, if have a soundfont you'd like to get samples from, consider using this ", a({ href: "./sample_extractor.html", target: "_blank" }, "sample extractor"), "!"), div$4({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between; margin-top: 0.5em;" }, this._closeInstructionsButton));
             this._addSamplesArea = div$4({ style: "overflow-y: auto;" }, div$4({ class: "promptTitle" }, h2$3({ class: "samplesExt", style: "text-align: inherit;" }, ""), h2$3({ class: "samplesTitle", style: "margin-bottom: 0.5em;" }, "Add Samples")), div$4({ style: "display: flex; flex-direction: column; align-items: center; margin-bottom: 0.5em;" }, this._description, div$4({ style: "width: 100%; max-height: 450px; overflow-y: scroll;" }, this._entryContainer), this._addSamplesAreaBottom), div$4({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton));
             this._bulkAddTextarea = textarea$1({
                 style: "width: 100%; height: 100%; resize: none; box-sizing: border-box;",
@@ -62942,7 +62954,8 @@ You should be redirected to the song at:<br /><br />
             this._trackArea = div({ class: "track-area" }, this._trackAndMuteContainer, this._barScrollBar.container);
             this._menuArea = div({ class: "menu-area" }, div({ class: "selectContainer menu file" }, this._fileMenu), div({ class: "selectContainer menu edit" }, this._editMenu), div({ class: "selectContainer menu preferences" }, this._optionsMenu));
             this._sampleLoadingBar = div({ style: `width: 0%; height: 100%; background-color: ${ColorConfig.indicatorPrimary};` });
-            this._sampleLoadingBarContainer = div({ class: `sampleLoadingContainer`, style: `width: 80%; height: 4px; overflow: hidden; margin-left: auto; margin-right: auto; margin-top: 0.5em; cursor: pointer; background-color: var(--empty-sample-bar, ${ColorConfig.indicatorSecondary});` }, this._sampleLoadingBar);
+            this._sampleFailedBar = div({ style: `width: 0%; height: 100%; background-color: ${ColorConfig.sampleFailed};` });
+            this._sampleLoadingBarContainer = div({ class: `sampleLoadingContainer`, style: `width: 80%; height: 4px; overflow: hidden; margin-left: auto; margin-right: auto; margin-top: 0.5em; cursor: pointer; display: flex; flex-direction: row; background-color: var(--empty-sample-bar, ${ColorConfig.indicatorSecondary});` }, this._sampleLoadingBar, this._sampleFailedBar);
             this._sampleLoadingStatusContainer = div({ style: "cursor: pointer;" }, div({ style: `margin-top: 0.5em; text-align: center; color: ${ColorConfig.secondaryText};` }, "Sample Loading Status"), div({ class: "selectRow", style: "height: 6px; margin-bottom: 0.5em;" }, this._sampleLoadingBarContainer));
             this._songSettingsArea = div({ class: "song-settings-area" }, div({ class: "editor-controls" }, div({ class: "editor-song-settings" }, div({ style: "margin: 3px 0; position: relative; text-align: center; color: ${ColorConfig.secondaryText};" }, div({ class: "tip", style: "flex-shrink: 0; position:absolute; left: 0; top: 0; width: 12px; height: 12px", onclick: () => this._openPrompt("usedPattern") }, SVG.svg({ style: "flex-shrink: 0; position: absolute; left: 0; top: 0; pointer-events: none;", width: "12px", height: "12px", "margin-right": "0.5em", viewBox: "-6 -6 12 12" }, this._usedPatternIndicator)), div({ class: "tip", style: "flex-shrink: 0; position: absolute; left: 14px; top: 0; width: 12px; height: 12px", onclick: () => this._openPrompt("usedInstrument") }, SVG.svg({ style: "flex-shrink: 0; position: absolute; left: 0; top: 0; pointer-events: none;", width: "12px", height: "12px", "margin-right": "1em", viewBox: "-6 -6 12 12" }, this._usedInstrumentIndicator)), "Song Settings", div({ style: "width: 100%; left: 0; top: -1px; position:absolute; overflow-x:clip;" }, this._jumpToModIndicator))), div({ class: "selectRow" }, span({ class: "tip", onclick: () => this._openPrompt("scale") }, "Scale: "), div({ class: "selectContainer" }, this._scaleSelect)), div({ class: "selectRow" }, span({ class: "tip", onclick: () => this._openPrompt("key") }, "Key: "), div({ class: "selectContainer" }, this._keySelect)), div({ class: "selectRow" }, span({ class: "tip", onclick: () => this._openPrompt("key_octave") }, "Octave: "), this._octaveStepper), div({ class: "selectRow" }, span({ class: "tip", onclick: () => this._openPrompt("tempo") }, "Tempo: "), span({ style: "display: flex;" }, this._tempoSlider.container, this._tempoStepper)), div({ class: "selectRow" }, span({ class: "tip", onclick: () => this._openPrompt("rhythm") }, "Rhythm: "), div({ class: "selectContainer" }, this._rhythmSelect)), this._sampleLoadingStatusContainer));
             this._songDetailsButton = button({ class: "details-button" });
@@ -66621,7 +66634,11 @@ You should be redirected to the song at:<br /><br />
             const percent = (e.totalSamples === 0
                 ? 0
                 : Math.floor((e.samplesLoaded / e.totalSamples) * 100));
+            const failedPercent = (e.totalSamples === 0
+                ? 0
+                : Math.floor((e.samplesFailed / e.totalSamples) * 100));
             this._sampleLoadingBar.style.width = `${percent}%`;
+            this._sampleFailedBar.style.width = `${failedPercent + 1}%`;
             if (e.totalSamples != 0) {
                 this._sampleLoadingBarContainer.style.backgroundColor = "var(--indicator-secondary)";
             }

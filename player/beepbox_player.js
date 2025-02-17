@@ -42,10 +42,11 @@ var beepbox = (function (exports) {
     }
     const sampleLoadingState = new SampleLoadingState();
     class SampleLoadedEvent extends Event {
-        constructor(totalSamples, samplesLoaded) {
+        constructor(totalSamples, samplesLoaded, samplesFailed) {
             super("sampleloaded");
             this.totalSamples = totalSamples;
             this.samplesLoaded = samplesLoaded;
+            this.samplesFailed = samplesFailed;
         }
     }
     class SampleLoadEvents extends EventTarget {
@@ -53,7 +54,13 @@ var beepbox = (function (exports) {
             super();
         }
     }
+    class SampleFailEvents extends EventTarget {
+        constructor() {
+            super();
+        }
+    }
     const sampleLoadEvents = new SampleLoadEvents();
+    new SampleFailEvents();
     function startLoadingSample(url, chipWaveIndex, presetSettings, rawLoopOptions, customSampleRate) {
         return __awaiter(this, void 0, void 0, function* () {
             const sampleLoaderAudioContext = new AudioContext({ sampleRate: customSampleRate });
@@ -91,14 +98,16 @@ var beepbox = (function (exports) {
                 }
                 sampleLoadingState.samplesLoaded++;
                 sampleLoadingState.statusTable[chipWaveIndex] = 1;
-                sampleLoadEvents.dispatchEvent(new SampleLoadedEvent(sampleLoadingState.totalSamples, sampleLoadingState.samplesLoaded));
+                sampleLoadEvents.dispatchEvent(new SampleLoadedEvent(sampleLoadingState.totalSamples, sampleLoadingState.samplesLoaded, sampleLoadingState.samplesFailed));
                 if (!closedSampleLoaderAudioContext) {
                     closedSampleLoaderAudioContext = true;
                     sampleLoaderAudioContext.close();
                 }
             }).catch((error) => {
                 sampleLoadingState.statusTable[chipWaveIndex] = 2;
-                alert("Failed to load " + url + ":\n" + error);
+                sampleLoadingState.samplesFailed++;
+                console.error("Failed to load " + url + ":\n" + error);
+                sampleLoadEvents.dispatchEvent(new SampleLoadedEvent(sampleLoadingState.totalSamples, sampleLoadingState.samplesLoaded, sampleLoadingState.samplesFailed));
                 if (!closedSampleLoaderAudioContext) {
                     closedSampleLoaderAudioContext = true;
                     sampleLoaderAudioContext.close();
@@ -299,7 +308,7 @@ var beepbox = (function (exports) {
                     Config.chipWaves[chipWaveIndex].samples = performIntegral(chipWaveSample);
                     sampleLoadingState.statusTable[chipWaveIndex] = 1;
                     sampleLoadingState.samplesLoaded++;
-                    sampleLoadEvents.dispatchEvent(new SampleLoadedEvent(sampleLoadingState.totalSamples, sampleLoadingState.samplesLoaded));
+                    sampleLoadEvents.dispatchEvent(new SampleLoadedEvent(sampleLoadingState.totalSamples, sampleLoadingState.samplesLoaded, sampleLoadingState.samplesFailed));
                     chipWaveIndexOffset++;
                 }
             });
@@ -343,7 +352,7 @@ var beepbox = (function (exports) {
                     Config.chipWaves[chipWaveIndex].samples = performIntegral(chipWaveSample);
                     sampleLoadingState.statusTable[chipWaveIndex] = 1;
                     sampleLoadingState.samplesLoaded++;
-                    sampleLoadEvents.dispatchEvent(new SampleLoadedEvent(sampleLoadingState.totalSamples, sampleLoadingState.samplesLoaded));
+                    sampleLoadEvents.dispatchEvent(new SampleLoadedEvent(sampleLoadingState.totalSamples, sampleLoadingState.samplesLoaded, sampleLoadingState.samplesFailed));
                     chipWaveIndexOffset++;
                 }
             });
@@ -401,7 +410,7 @@ var beepbox = (function (exports) {
                     Config.chipWaves[chipWaveIndex].samples = performIntegral(chipWaveSample);
                     sampleLoadingState.statusTable[chipWaveIndex] = 1;
                     sampleLoadingState.samplesLoaded++;
-                    sampleLoadEvents.dispatchEvent(new SampleLoadedEvent(sampleLoadingState.totalSamples, sampleLoadingState.samplesLoaded));
+                    sampleLoadEvents.dispatchEvent(new SampleLoadedEvent(sampleLoadingState.totalSamples, sampleLoadingState.samplesLoaded, sampleLoadingState.samplesFailed));
                     chipWaveIndexOffset++;
                 }
             });
@@ -22286,6 +22295,7 @@ var beepbox = (function (exports) {
     ColorConfig.textSelection = "var(--text-selection)";
     ColorConfig.boxSelectionFill = "var(--box-selection-fill)";
     ColorConfig.loopAccent = "var(--loop-accent)";
+    ColorConfig.sampleFailed = "var(--sample-failed, #f00)";
     ColorConfig.linkAccent = "var(--link-accent)";
     ColorConfig.uiWidgetBackground = "var(--ui-widget-background)";
     ColorConfig.uiWidgetFocus = "var(--ui-widget-focus)";
@@ -27165,7 +27175,8 @@ var beepbox = (function (exports) {
                     sampleLoadingState.urlTable = {};
                     sampleLoadingState.totalSamples = 0;
                     sampleLoadingState.samplesLoaded = 0;
-                    sampleLoadEvents.dispatchEvent(new SampleLoadedEvent(sampleLoadingState.totalSamples, sampleLoadingState.samplesLoaded));
+                    sampleLoadingState.samplesFailed = 0;
+                    sampleLoadEvents.dispatchEvent(new SampleLoadedEvent(sampleLoadingState.totalSamples, sampleLoadingState.samplesLoaded, sampleLoadingState.samplesFailed));
                     for (const url of compressed_array) {
                         if (url.toLowerCase() === "legacysamples") {
                             if (!willLoadLegacySamples) {
@@ -29525,7 +29536,8 @@ var beepbox = (function (exports) {
             sampleLoadingState.urlTable = {};
             sampleLoadingState.totalSamples = 0;
             sampleLoadingState.samplesLoaded = 0;
-            sampleLoadEvents.dispatchEvent(new SampleLoadedEvent(sampleLoadingState.totalSamples, sampleLoadingState.samplesLoaded));
+            sampleLoadingState.samplesFailed = 0;
+            sampleLoadEvents.dispatchEvent(new SampleLoadedEvent(sampleLoadingState.totalSamples, sampleLoadingState.samplesLoaded, sampleLoadingState.samplesFailed));
         }
         toJsonObject(enableIntro = true, loopCount = 1, enableOutro = true) {
             const channelArray = [];
