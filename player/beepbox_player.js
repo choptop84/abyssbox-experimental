@@ -54,13 +54,7 @@ var beepbox = (function (exports) {
             super();
         }
     }
-    class SampleFailEvents extends EventTarget {
-        constructor() {
-            super();
-        }
-    }
     const sampleLoadEvents = new SampleLoadEvents();
-    new SampleFailEvents();
     function startLoadingSample(url, chipWaveIndex, presetSettings, rawLoopOptions, customSampleRate) {
         return __awaiter(this, void 0, void 0, function* () {
             const sampleLoaderAudioContext = new AudioContext({ sampleRate: customSampleRate });
@@ -4033,6 +4027,7 @@ var beepbox = (function (exports) {
 
 			--note-flash: #ffffff;
 			--note-flash-secondary: #ffffff77;
+			--sample-failed: #bf2c78;
 
 		}
 
@@ -4421,6 +4416,527 @@ var beepbox = (function (exports) {
 			--track-editor-bg-pitch-dim: #0c2b3e; 		
 			--track-editor-bg-noise-dim: #08204f; 			
 			--track-editor-bg-mod-dim: #26145e; 
+
+		   }
+
+		   div.channelBox {
+			border-radius: 5px;
+		  }
+		  div.curChannelBox {
+			border-radius: 5px;
+		  }
+
+			`,
+        "Frutiger Aero Night": `
+			:root {		
+			--page-margin: #fff; 		
+			--editor-background: #290f37;		
+			--hover-preview: white; 		
+			--playhead: rgba(255, 255, 255, 0.9); 		
+			--primary-text: white; 		
+			--secondary-text: #d7ceff;		
+			--inverted-text: #140111;	 		
+			--text-selection: rgba(119,68,255,0.99); 		
+			--box-selection-fill: #0a091e; 		
+			--loop-accent: #ab6fe8; 		
+			--link-accent: #eba2ff; 		
+			--ui-widget-background: #c03ed2; 		
+			--ui-widget-focus: #582b76; 		
+			--pitch-background: #26032b; 		
+			--tonic: #8d46b5; 		
+			--fifth-note: #0e0297; 
+			--third-note: #bf2c78;		
+			--white-piano-key: #dbe5ec;		
+			--black-piano-key: #2f3a40;
+			--white-piano-key-text: #131200;		
+			--black-piano-key-text: #fff;					
+			--use-color-formula: true; 		
+			--track-editor-bg-pitch: linear-gradient(#2782b0,#0c2b3e); 		
+			--track-editor-bg-pitch-dim: linear-gradient(#0c2b3e70,#05151fc4); 		
+			--track-editor-bg-noise: linear-gradient(#2d4aa1,#08204f); 		
+			--track-editor-bg-noise-dim: linear-gradient(#08204f70, #031029c4); 		
+			--track-editor-bg-mod: linear-gradient(#46299e, #26145e); 		
+			--track-editor-bg-mod-dim: linear-gradient(#26145e70,#110630c4); 		
+			--multiplicative-mod-slider: #60769f; 		
+			--overwriting-mod-slider: #7d349e; 		
+			--indicator-primary: #9149b3; 		
+			--indicator-secondary: #b39dc4; 		
+			--select2-opt-group: #185f8a; 		
+			--input-box-outline: #18041a; 		
+			--mute-button-normal: #c597f9; 		
+			--mute-button-mod: #da5fff;		
+			--mod-label-primary: #6b1a7b; 		
+			--mod-label-secondary-text: rgb(86, 93, 120);
+			--mod-label-primary-text: gray; 
+			--progress-bar: #ec84f0;
+			--empty-sample-bar: #1d092f;
+
+			--pitch-secondary-channel-hue: 110; 		
+			--pitch-secondary-channel-hue-scale: 0; 		
+			--pitch-secondary-channel-sat: 63; 		
+			--pitch-secondary-channel-sat-scale: 0.1; 		
+			--pitch-secondary-channel-lum: 50; 		
+			--pitch-secondary-channel-lum-scale: 0.05; 
+		
+			--pitch-primary-channel-hue: 120; 		
+			--pitch-primary-channel-hue-scale: 6.1; 		
+			--pitch-primary-channel-sat: 75; 		
+			--pitch-primary-channel-sat-scale: 0.1; 		
+			--pitch-primary-channel-lum: 67.5; 		
+			--pitch-primary-channel-lum-scale: 0.05; 	
+	
+			--pitch-secondary-note-hue: 110; 		
+			--pitch-secondary-note-hue-scale: 6.1; 		
+			--pitch-secondary-note-sat: 63.9; 		
+			--pitch-secondary-note-sat-scale: 0.1; 		
+			--pitch-secondary-note-lum: 55; 		
+			--pitch-secondary-note-lum-scale: 0.05; 
+		
+			--pitch-primary-note-hue: 120; 		
+			--pitch-primary-note-hue-scale: 6.1; 		
+			--pitch-primary-note-sat: 100; 		
+			--pitch-primary-note-sat-scale: 0.05; 		
+			--pitch-primary-note-lum: 85.6; 		
+			--pitch-primary-note-lum-scale: 0.025; 
+		
+			--noise-secondary-channel-hue: 90; 		
+			--noise-secondary-channel-hue-scale: 2; 		
+			--noise-secondary-channel-sat: 65; 		
+			--noise-secondary-channel-sat-scale: 0; 		
+			--noise-secondary-channel-lum: 42; 		
+			--noise-secondary-channel-lum-scale: 0; 
+		
+			--noise-primary-channel-hue: 80; 		
+			--noise-primary-channel-hue-scale: 1; 		
+			--noise-primary-channel-sat: 100; 		
+			--noise-primary-channel-sat-scale: 1; 		
+			--noise-primary-channel-lum: 63.5; 		
+			--noise-primary-channel-lum-scale: 0; 
+		
+			--noise-secondary-note-hue: 90; 		
+			--noise-secondary-note-hue-scale: 2; 		
+			--noise-secondary-note-sat: 60; 		
+			--noise-secondary-note-sat-scale: 0; 		
+			--noise-secondary-note-lum: 35; 		
+			--noise-secondary-note-lum-scale: 0; 	
+	
+			--noise-primary-note-hue: 80; 		
+			--noise-primary-note-hue-scale: 2; 		
+			--noise-primary-note-sat: 100; 		
+			--noise-primary-note-sat-scale: 1; 		
+			--noise-primary-note-lum: 60; 		
+			--noise-primary-note-lum-scale: 1; 	
+	
+			--mod-secondary-channel-hue: 55; 		
+			--mod-secondary-channel-hue-scale: 1.5; 		
+			--mod-secondary-channel-sat: 100; 		
+			--mod-secondary-channel-sat-scale: 0; 		
+			--mod-secondary-channel-lum: 20; 		
+			--mod-secondary-channel-lum-scale: 0; 
+		
+			--mod-primary-channel-hue: 55; 		
+			--mod-primary-channel-hue-scale: 1.5; 		
+			--mod-primary-channel-sat: 96; 		
+			--mod-primary-channel-sat-scale: 0; 		
+			--mod-primary-channel-lum: 50; 		
+			--mod-primary-channel-lum-scale: 0; 
+		
+			--mod-secondary-note-hue: 55; 		
+			--mod-secondary-note-hue-scale: 1.5; 		
+			--mod-secondary-note-sat: 62; 		
+			--mod-secondary-note-sat-scale: 0; 		
+			--mod-secondary-note-lum: 45; 		
+			--mod-secondary-note-lum-scale: 0; 
+		
+			--mod-primary-note-hue: 55; 		
+			--mod-primary-note-hue-scale: 1.5; 		
+			--mod-primary-note-sat: 96; 		
+			--mod-primary-note-sat-scale: 0; 		
+			--mod-primary-note-lum: 85; 		
+			--mod-primary-note-lum-scale: 0; 	
+
+			--note-flash: #ffffff;
+			--note-flash-secondary: #ffffff77;
+			--sample-failed: #bf2c78;
+
+		}
+
+		* {
+		/*cursor: url("abyssbox_cursor.png"), auto !important;*/
+		--muted-symbol: url("https://choptop84.github.io/choptop84s-image-repository/vistaSpeakerIconMuted.png");
+		--unmuted-symbol: url("https://choptop84.github.io/choptop84s-image-repository/vistaSpeakerIcon.png");
+		}
+	
+
+		/* Frutiger Aero Icons */
+
+		div.promptContainerBG {
+			background-color: var(--editor-background) !important;
+			backdrop-filter: unset !important;
+			opacity: 0 !important;
+		}
+
+		div.mute-button::before {
+			background: #fff0 !important;
+			background-image: url("https://choptop84.github.io/choptop84s-image-repository/vistaSpeakerIcon.png") !important;
+			background-size: 18px !important;
+			background-position: center !important;
+			background-repeat: no-repeat !important;
+			mask-size: 800px !important;
+			color: #fff0;
+
+			image-rendering: -moz-crisp-edges !important;         /* Firefox */
+			image-rendering: -webkit-optimize-contrast !important; /* Webkit (Chrome/Safari) */
+			image-rendering: -o-crisp-edges !important;            /* Opera */
+			image-rendering: pixelated !important;                 /* Future browsers */
+			image-rendering: optimizeSpeed !important;             /* IE */
+		}
+
+		div.mute-button.muted::before {
+			background: #fff0 !important;
+			background-image: url("https://choptop84.github.io/choptop84s-image-repository/vistaSpeakerIconMuted.png") !important;
+			background-size: 18px !important;
+			background-position: center !important;
+			background-repeat: no-repeat !important;
+			mask-size: 800px !important;
+			color: #fff0;
+
+			image-rendering: -moz-crisp-edges !important;         /* Firefox */
+			image-rendering: -webkit-optimize-contrast !important; /* Webkit (Chrome/Safari) */
+			image-rendering: -o-crisp-edges !important;            /* Opera */
+			image-rendering: pixelated !important;                 /* Future browsers */
+			image-rendering: optimizeSpeed !important;             /* IE */
+		}
+
+		#text-content > section > h1 > font {
+			display: none;
+			}
+			#text-content > section > h1 {
+			margin: auto;
+			content: url("https://choptop84.github.io/choptop84s-image-repository/AbyssBoxFrutigerAeroThemeLogo.png");
+			}
+
+		button.mobileEffectsButton.deactivated {
+		box-shadow: none !important;
+		}
+
+		button.mobileInstButton.deactivated {
+		box-shadow: none !important;
+		}
+
+		button.mobileEnvelopesButton.deactivated {
+		box-shadow: none !important;
+		}
+
+		select.trackSelectBox {
+			border-image: none !important;
+		}
+
+			@font-face {
+		   font-family: "Frutiger";
+		   src:
+ 		   url("https://choptop84.github.io/choptop84s-image-repository/FrutigerLight.ttf") format("truetype") tech(color-COLRv1),
+			}
+
+			canvas#oscilascopeAll {
+				background: #2e538c !important; 
+				border: 2px solid #84aef000 !important;
+			}
+
+			.beepboxEditor .play-pause-area div:last-child {
+				position: relative;
+				width: 144px;
+				height: 32px;
+			  }
+			  .beepboxEditor .play-pause-area div:last-child::before {
+				content: "";
+				display: block;
+				width: calc(144px + 4px);
+				height: calc(32px + 4px);
+				box-shadow: 0px -1px 1px 0px rgba(0, 0, 0, 0.5), inset 0px 1px 2px 0px rgba(0, 0, 0, 0.5), inset 0px -1px 0px 0px rgba(255, 255, 255, 0.3);
+				position: absolute;
+				z-index: 1;
+			  }
+
+			div.prompt.noSelection{
+				background: linear-gradient(#84aef080, #2a3d6a80) !important; 
+				opacity: 77;
+				backdrop-filter: blur(14px);
+			}  
+
+			svg#firstImage {
+				opacity: 50%;
+				--editor-background: #000000;
+			}
+
+			/* sets background image */
+			body {
+			background-image: url("image_assets/frutigerbg3.png") !important;
+			background-position: top;
+			background-attachment: fixed;
+			background-repeat: no-repeat;
+			background-size: 145%;
+			image-rendering: optimizeQuality !important;             /* IE */ 
+				}
+
+			#beepboxEditorContainer {
+				background: linear-gradient(#f5abfb80, #4839b380) !important;
+				border-style: solid;
+  				border-color: #050428;
+				padding-bottom: 5px;
+				--inverted-text: black;
+				backdrop-filter: blur(14px);
+				box-shadow: inset 0 0 2000px rgba(0, 0, 0, 0.5)
+			}
+			#text-content {
+				background: linear-gradient(#4839b380, #22032f80);
+				border-style: solid;
+  				border-color: #050428;
+				  backdrop-filter: blur(14px);
+				  box-shadow: inset 0 0 2000px rgba(0, 0, 0, 0.5)
+			}
+
+				div.playback-bar-controls button.playButton, 
+				div.playback-bar-controls button.pauseButton, 
+				div.playback-bar-controls button.recordButton, 
+				div.playback-bar-controls button.stopButton, 
+				div.playback-bar-controls button.prevBarButton, 
+				div.playback-bar-controls button.nextBarButton, 
+				div.selectRow button.copyButton, 
+				div.selectRow button.pasteButton, 
+				div.editor-controls button.exportInstrumentButton, 
+				div.editor-controls button.importInstrumentButton,
+				div.editor-controls div button.add-envelope,
+				div.editor-controls div button.delete-envelope, 
+				.beepboxEditor .select2-selection__rendered,
+				.beepboxEditor .instrument-bar button,
+				.beepboxEditor .eq-filter-type-bar button .deactivated,
+				.beepboxEditor .note-filter-type-bar button .deactivated,
+				.beepboxEditor select  { 
+					box-shadow: 0px 1px 3px 0px rgb(0, 0, 0), inset 0px -12px 14px 0px rgba(0, 0, 0, 0.3), inset 0px -7px 4px 0px rgba(140, 47, 202, 0.71), inset 0px -15px 0px 0px rgba(0, 0, 0, 0.2), inset 0px 1px 2px 1px #ffffff54;
+					--ui-widget-background: linear-gradient(#db7aeecc, #8f62f2cc) !important;
+				}
+
+				.beepboxEditor select:focus
+				{
+					border-image-source: none;
+					--ui-widget-background: linear-gradient(#db7aeecc, #8f62f2cc) !important;
+					box-shadow: 0px 1px 3px 0px rgb(0, 0, 0), inset 0px -12px 14px 0px rgba(0, 0, 0, 0.3), inset 0px -7px 4px 0px rgba(140, 47, 202, 0.71), inset 0px -15px 0px 0px rgba(0, 0, 0, 0.2), inset 0px 1px 2px 1px #ffffff54
+				}
+
+				.beepboxEditor button, button
+				{
+					--ui-widget-background: linear-gradient(#db7aeecc, #8f62f2cc) !important;
+					box-shadow: 0px 1px 3px 0px rgb(0, 0, 0), inset 0px -12px 14px 0px rgba(0, 0, 0, 0.3), inset 0px -7px 4px 0px rgba(140, 47, 202, 0.71), inset 0px -15px 0px 0px rgba(0, 0, 0, 0.2), inset 0px 1px 2px 1px #ffffff54
+				}
+				.beepboxEditor .select2-container--open .select2-selection__rendered,
+				.beepboxEditor button:focus,
+				button:focus,
+				.beepboxEditor .instrument-bar .selected-instrument,
+				.beepboxEditor .eq-filter-type-bar button:not(.deactivated),
+				.beepboxEditor .note-filter-type-bar button:not(.deactivated)
+				{
+					--ui-widget-background: linear-gradient(#333, #444) !important;
+					box-shadow:
+						0px 0px 1px 1px rgba(0, 0, 0, 0.7),
+						inset 0px 2px 3px 0px rgba(0, 0, 0, 0.7),
+						inset 0px -1px 0px 0px rgba(255, 255, 255, 0.3)
+					;
+				}
+				 
+				.beepboxEditor .filterEditor svg,
+				.beepboxEditor .fadeInOut svg,
+				.beepboxEditor .harmonics svg,
+				.beepboxEditor .spectrum svg
+				{
+					background: rgba(0, 0, 0, 0.3) !important;
+					box-shadow:
+						0px 0px 1px 1px rgba(0, 0, 0, 0.7),
+						inset 0px 2px 3px 0px rgba(0, 0, 0, 0.7),
+						inset 0px -1px 0px 0px rgba(255, 255, 255, 0.3)
+					;
+				}
+				 
+				.beepboxEditor input[type="range"]::-webkit-slider-thumb
+				{
+					box-shadow:
+						0px 2px 2px 1px rgba(0, 0, 0, 0.4),
+						0px 0px 1px 1px rgba(0, 0, 0, 0.7),
+						inset 0px 1px 0px 0px rgba(255, 255, 255, 1),
+						inset 0px -1px 1px 0px rgba(0, 0, 0, 0.5),
+						inset 0px -8px 3px rgba(0, 0, 0, 0.2)
+					;
+				}
+				 
+				.beepboxEditor input[type="range"]::-webkit-slider-runnable-track
+				{
+					background: rgba(0, 0, 0, 0.2) !important;
+					box-shadow:
+						0px 0px 1px 1px rgba(0, 0, 0, 0.2),
+						inset 0px 1px 2px 0px rgba(0, 0, 0, 0.5),
+						inset 0px -1px 0px 0px rgba(255, 255, 255, 0.3)
+					;
+					border-radius: 4px;
+				}
+				 
+				.beepboxEditor input[type="range"]:focus::-webkit-slider-runnable-track
+				{
+					background: rgba(255, 255, 255, 0.2) !important;
+					box-shadow:
+						0px 0px 1px 1px rgba(0, 0, 0, 0.2),
+						inset 0px 1px 2px 0px rgba(0, 0, 0, 0.2),
+						inset 0px -1px 0px 0px rgba(255, 255, 255, 0.3)
+					;
+				}
+				 
+				.beepboxEditor input[type="range"]::-ms-thumb
+				{
+					box-shadow:
+						0px 2px 2px 1px rgba(0, 0, 0, 0.4),
+						0px 0px 1px 1px rgba(0, 0, 0, 0.7),
+						inset 0px 1px 0px 0px rgba(255, 255, 255, 1),
+						inset 0px -1px 1px 0px rgba(0, 0, 0, 0.5),
+						inset 0px -8px 3px rgba(0, 0, 0, 0.2)
+					;
+				}
+				 
+				.beepboxEditor input[type="range"]::-ms-track
+				{
+					background: rgba(0, 0, 0, 0.2) !important;
+					box-shadow:
+						0px 0px 1px 1px rgba(0, 0, 0, 0.2),
+						inset 0px 1px 2px 0px rgba(0, 0, 0, 0.5),
+						inset 0px -1px 0px 0px rgba(255, 255, 255, 0.3)
+					;
+					border-radius: 4px;
+				}
+				 
+				.beepboxEditor input[type="range"]:focus::-ms-track
+				{
+					background: rgba(255, 255, 255, 0.2) !important;
+					box-shadow:
+						0px 0px 1px 1px rgba(0, 0, 0, 0.2),
+						inset 0px 1px 2px 0px rgba(0, 0, 0, 0.2),
+						inset 0px -1px 0px 0px rgba(255, 255, 255, 0.3)
+					;
+				}
+				 
+				.beepboxEditor input[type="range"]::-moz-range-thumb
+				{
+					height: 16px !important;
+					width: 16px !important;
+					border-radius: 40px !important;
+					box-shadow:
+						0px 2px 2px 1px rgba(0, 0, 0, 0.4),
+						0px 0px 1px 1px rgba(0, 0, 0, 0.7),
+						inset 0px 1px 0px 0px rgba(255, 255, 255, 1),
+						inset 0px -1px 1px 0px rgba(0, 0, 0, 0.5),
+						inset 0px -8px 3px rgba(0, 0, 0, 0.2)
+					;
+				}
+				 
+				.beepboxEditor input[type="range"]::-moz-range-track
+				{
+					background: rgba(0, 0, 0, 0.2) !important;
+					box-shadow:
+						0px 0px 1px 1px rgba(0, 0, 0, 0.2),
+						inset 0px 1px 2px 0px rgba(0, 0, 0, 0.5),
+						inset 0px -1px 0px 0px rgba(255, 255, 255, 0.3)
+					;
+					border-radius: 4px;
+				}
+				 
+				.beepboxEditor input[type="range"]:focus::-moz-range-track
+				{
+					background: rgba(255, 255, 255, 0.2) !important;
+					box-shadow:
+						0px 0px 1px 1px rgba(0, 0, 0, 0.2),
+						inset 0px 1px 2px 0px rgba(0, 0, 0, 0.2),
+						inset 0px -1px 0px 0px rgba(255, 255, 255, 0.3)
+					;
+				}
+				 
+				.beepboxEditor input[type="text"],
+				.beepboxEditor input[type="number"]
+				{
+					border: none !important;
+					background: rgba(0, 0, 0, 0.2) !important;
+					box-shadow:
+						0px -1px 1px 0px rgba(0, 0, 0, 0.5),
+						inset 0px 1px 2px 0px rgba(0, 0, 0, 0.5),
+						inset 0px -1px 0px 0px rgba(255, 255, 255, 0.3)
+					;
+				}
+				 
+				.beepboxEditor input[type="checkbox"]
+				{
+					appearance: none;
+					background: rgba(0, 0, 0, 0.3);
+					color: currentColor;
+					border-radius: 1px;
+					width: 1em !important;
+					height: 1em !important;
+					box-shadow:
+						inset 0px 2px 3px 0px rgba(0, 0, 0, 0.7),
+						inset 0px -1px 0px 0px rgba(255, 255, 255, 0.3)
+					;
+				}
+				 
+				.beepboxEditor input[type="checkbox"]:checked
+				{
+					display: flex;
+					justify-content: center;
+				}
+				 
+				.beepboxEditor input[type="checkbox"]:checked:after
+				{
+					width: 1em;
+					height: 1em;
+					text-align: center;
+					font-size: 0.8em;
+					content: "✓";
+					color: currentColor;
+					text-shadow: 0px 0px 2px rgba(255, 255, 255, 0.5);
+				}
+
+			html {
+ 		   	font-family: 'Frutiger';
+			}
+
+			div.channelBoxLabel {
+				font-family: 'Frutiger' !important;
+			}
+
+				/* Use this code down here when you have transparent backgrounds!!! */
+
+		   div.beepboxEditor.load {
+			background: none !important;
+		   }
+
+		   div.noSelection {
+			background: none !important;
+		   }
+
+		   .beepboxEditor .loopEditor {
+			background: none !important;
+		   }
+
+		   .beepboxEditor .muteEditor {
+			background: linear-gradient(#9a76aa, #3d2448) !important;
+			border-radius: 5px;
+			box-shadow: 0px 1px 1px 0px rgb(0, 0, 0), inset 0px 3px 14px 0px rgba(0, 0, 0, 0.1), inset 0px -4px 0px 0px rgba(0, 0, 0, 0.1);
+			opacity: 65%;
+		   }
+
+		   div.muteEditor div {
+			background: none !important;
+			--track-editor-bg-pitch: #5f8fd6;
+			--track-editor-bg-noise: #5f8fd6;
+			--track-editor-bg-mod: #8a76c5;
+	
+			--track-editor-bg-pitch-dim: #2472a1; 		
+			--track-editor-bg-noise-dim: #2472a1; 			
+			--track-editor-bg-mod-dim: #4222a0; 
 
 		   }
 
@@ -7155,9 +7671,9 @@ var beepbox = (function (exports) {
         "Windows Xp": `
 			:root {		
 			--page-margin: #edead9; 		
-			--editor-background: #edead9; 		
+			--editor-background: #faf9f2; 		
 			--hover-preview: black; 		
-			--playhead: rgba(255, 255, 255, 0.9); 		
+			--playhead: #000; 		
 			--primary-text: #231f20; 		
 			--secondary-text: #231f20; 		
 			--inverted-text: black;	 		
@@ -7192,26 +7708,27 @@ var beepbox = (function (exports) {
 			--mod-label-secondary-text: rgb(120, 87, 86); 
 			--mod-label-primary-text: gray;
 			--progress-bar: #00ff00;
+			--octave-scrollbar: #cfcab2;
 
 --pitch-secondary-channel-hue: 0;		
 --pitch-secondary-channel-hue-scale: 6.1;		
 --pitch-secondary-channel-sat: 43.3;		
 --pitch-secondary-channel-sat-scale: 0.1;		
---pitch-secondary-channel-lum: 20;		
+--pitch-secondary-channel-lum: 30;		
 --pitch-secondary-channel-lum-scale: 0.05;
 		
 --pitch-primary-channel-hue: 0;		
 --pitch-primary-channel-hue-scale: 6.1;		
 --pitch-primary-channel-sat: 60;		
 --pitch-primary-channel-sat-scale: 0.1;		
---pitch-primary-channel-lum: 47.5;		
+--pitch-primary-channel-lum: 57.5;		
 --pitch-primary-channel-lum-scale: 0.05;
 		
 --pitch-secondary-note-hue: 0;		
 --pitch-secondary-note-hue-scale: 6.1;		
 --pitch-secondary-note-sat: 43.9;		
 --pitch-secondary-note-sat-scale: 0.1;		
---pitch-secondary-note-lum: 25;		
+--pitch-secondary-note-lum: 35;		
 --pitch-secondary-note-lum-scale: 0.05;
 		
 --pitch-primary-note-hue: 0;		
@@ -7225,14 +7742,14 @@ var beepbox = (function (exports) {
 --noise-secondary-channel-hue-scale: 2;		
 --noise-secondary-channel-sat: 25;		
 --noise-secondary-channel-sat-scale: 0;		
---noise-secondary-channel-lum: 22;		
+--noise-secondary-channel-lum: 32;		
 --noise-secondary-channel-lum-scale: 0;
 		
 --noise-primary-channel-hue: 0;		
 --noise-primary-channel-hue-scale: 2;		
 --noise-primary-channel-sat: 33;		
 --noise-primary-channel-sat-scale: 0;		
---noise-primary-channel-lum: 43.5;		
+--noise-primary-channel-lum: 53.5;		
 --noise-primary-channel-lum-scale: 0;
 		
 --noise-secondary-note-hue: 0;		
@@ -7267,7 +7784,7 @@ var beepbox = (function (exports) {
 --mod-secondary-note-hue-scale: 1.5;		
 --mod-secondary-note-sat: 42;		
 --mod-secondary-note-sat-scale: 0;		
---mod-secondary-note-lum: 25;		
+--mod-secondary-note-lum: 35;		
 --mod-secondary-note-lum-scale: 0;	
 	
 --mod-primary-note-hue: 192;		
@@ -7298,7 +7815,7 @@ var beepbox = (function (exports) {
 				}
 
 				html {
-				font-family: 'tahoma' !important;
+				font-family: 'tahoma';
 			   font-size: 150% !important;
 				}
 				div.channelBoxLabel {
@@ -7717,12 +8234,27 @@ var beepbox = (function (exports) {
 			}
 
 			#text-content {
-    				border-image-source: url("./image_assets/xptextbg.png");
-    				border-image-slice: 11 fill; 
-   				border-image-width: 11px; 
-				border-image-repeat: stretch;
-    				background-color: transparent; 
-    				padding: 14px; 
+    			margin: auto;
+				margin-top: auto;
+				text-align: center;
+				background: var(--editor-background);
+				border-radius: 15px;
+				border: 0px solid var(--ui-widget-background) !important;
+				padding-left: 20px !important;
+				box-shadow: 6px 6px 27px 4px rgba(0, 0, 0, 0.5) !important;
+				padding-top: 58px !important;
+				padding-right: 20px !important;
+				padding-bottom: 20px !important;
+				border-image-source: url("https://choptop84.github.io/choptop84s-image-repository/xpborder.png") !important;
+				border-image-slice: 34 !important;
+				border-image-width: 50px !important;
+				border-width: unset !important;
+				image-rendering: -moz-crisp-edges !important;
+				image-rendering: -webkit-optimize-contrast !important;
+				image-rendering: -o-crisp-edges !important;
+				image-rendering: pixelated !important;
+				image-rendering: optimizeSpeed !important;
+				margin-top: 15px;
 				}
 			#beepboxEditorContainer {
     				border-image-source: url("./image_assets/xptextbg.png");
@@ -7733,21 +8265,60 @@ var beepbox = (function (exports) {
     				padding: 13px; 
 				}
 
+			.pattern-area {
+			border: #fff 1px solid;
+			border-right-color: rgb(255, 255, 255);
+			border-bottom-color: rgb(255, 255, 255);
+			padding: 2px;
+			background: #f9f8f3;
+			border-right-color: #c7c7bd;
+			border-bottom-color: #c7c7bd;
+			}
+
+			.track-area {
+			--editor-background: #edead9;
+			--ui-widget-background: #edead9;
+			}
+
+			.beepboxEditor .muteEditor {
+			background: #edead9;
+			}
+
+			.settings-area {
+			border: #fff 1px solid;
+			border-right-color: rgb(255, 255, 255);
+			border-bottom-color: rgb(255, 255, 255);
+			padding: 2px;
+			background: #f9f8f3;
+			border-right-color: #c7c7bd;
+			border-bottom-color: #c7c7bd;
+			}
+
+			.beepboxEditor {
+			background: #edead9 !important;
+			}
+
+			#octaveScrollBarContainer {
+			--tonic: #9c9781;
+			}
+
+			.barScrollBar {
+			--ui-widget-background: #9c9781;
+			--editor-background: #edead9;
+			}
+
+			.songLoopButton {
+			background: #edead9;
+			}
+
 			#firstImage {
 				background-image: url("./image_assets/xpsongeditorbg.png") !important;
 				background-repeat: no-repeat !important;
 				background-size: 100% 100% !important;
 			}
 
-			div.menu-area {
-				--ui-widget-background: #edead9; 
-			}
 			select {
-				--ui-widget-background: #edead9; 
 				cursor: url("https://choptop84.github.io/choptop84s-image-repository/xphandcursor.png"), pointer !important;
-			}
-			div.playback-bar-controls {
-				--ui-widget-background: #edead9; 
 			}
 
 			.beepboxEditor input[type="range"]::-moz-range-track
@@ -23047,7 +23618,7 @@ var beepbox = (function (exports) {
                 { name: "Distortion Bass", generalMidi: false, settings: { "type": "Picked String", "eqFilter": [{ "type": "low-pass", "cutoffHz": 4756.83, "linearGain": 0.25 }, { "type": "high-pass", "cutoffHz": 88.39, "linearGain": 1.4142 }, { "type": "low-pass", "cutoffHz": 8000, "linearGain": 0.5 }, { "type": "peak", "cutoffHz": 1000, "linearGain": 0.5 }], "eqFilterType": false, "eqSimpleCut": 10, "eqSimplePeak": 0, "envelopeSpeed": 12, "discreteEnvelope": false, "eqSubFilters0": [{ "type": "low-pass", "cutoffHz": 4756.83, "linearGain": 0.25 }, { "type": "high-pass", "cutoffHz": 88.39, "linearGain": 1.4142 }, { "type": "low-pass", "cutoffHz": 8000, "linearGain": 0.5 }, { "type": "peak", "cutoffHz": 1000, "linearGain": 0.5 }], "effects": ["note filter", "distortion", "bitcrusher", "phaser"], "noteFilterType": false, "noteSimpleCut": 10, "noteSimplePeak": 0, "noteFilter": [{ "type": "high-pass", "cutoffHz": 88.39, "linearGain": 1.4142 }, { "type": "low-pass", "cutoffHz": 4000, "linearGain": 0.5 }], "noteSubFilters0": [{ "type": "high-pass", "cutoffHz": 88.39, "linearGain": 1.4142 }, { "type": "low-pass", "cutoffHz": 4000, "linearGain": 0.5 }], "distortion": 43, "aliases": false, "bitcrusherOctave": 6, "bitcrusherQuantization": 0, "phaserMix": 65, "phaserFreq": 19, "phaserFeedback": 61, "phaserStages": 52, "panDelay": 10, "fadeInSeconds": 0, "fadeOutTicks": 6, "harmonics": [86, 100, 100, 86, 86, 86, 86, 71, 71, 71, 71, 71, 71, 71, 71, 71, 71, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 71], "unison": "none", "stringSustain": 64, "envelopes": [{ "target": "noteFilterFreq", "envelope": "note size", "index": 1 }, { "target": "phaserFeedback", "envelope": "twang 3" }] } },
                 { name: "Phased Overdrive Guitar", generalMidi: false, settings: { "type": "Picked String", "eqFilter": [{ "type": "low-pass", "cutoffHz": 4756.83, "linearGain": 0.7071 }, { "type": "high-pass", "cutoffHz": 250, "linearGain": 1 }, { "type": "low-pass", "cutoffHz": 6727.17, "linearGain": 1.4142 }, { "type": "peak", "cutoffHz": 840.9, "linearGain": 0.3536 }], "eqFilterType": false, "eqSimpleCut": 10, "eqSimplePeak": 0, "envelopeSpeed": 12, "discreteEnvelope": false, "eqSubFilters0": [{ "type": "low-pass", "cutoffHz": 4756.83, "linearGain": 0.7071 }, { "type": "high-pass", "cutoffHz": 250, "linearGain": 1 }, { "type": "low-pass", "cutoffHz": 6727.17, "linearGain": 1.4142 }, { "type": "peak", "cutoffHz": 840.9, "linearGain": 0.3536 }], "effects": ["note filter", "distortion", "bitcrusher", "phaser"], "noteFilterType": false, "noteSimpleCut": 10, "noteSimplePeak": 0, "noteFilter": [{ "type": "high-pass", "cutoffHz": 297.3, "linearGain": 2 }, { "type": "low-pass", "cutoffHz": 2378.41, "linearGain": 0.7071 }], "noteSubFilters0": [{ "type": "high-pass", "cutoffHz": 297.3, "linearGain": 2 }, { "type": "low-pass", "cutoffHz": 2378.41, "linearGain": 0.7071 }], "distortion": 71, "aliases": false, "bitcrusherOctave": 6, "bitcrusherQuantization": 0, "phaserMix": 100, "phaserFreq": 19, "phaserFeedback": 61, "phaserStages": 52, "panDelay": 10, "fadeInSeconds": 0, "fadeOutTicks": 12, "harmonics": [86, 100, 100, 86, 86, 86, 86, 71, 71, 71, 71, 71, 71, 71, 71, 71, 71, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 71], "unison": "none", "stringSustain": 64, "envelopes": [{ "target": "noteFilterFreq", "envelope": "note size", "index": 1 }, { "target": "phaserFeedback", "envelope": "twang 2" }] } },
                 { name: "Phased Picked Guitar", generalMidi: false, settings: { "type": "Picked String", "eqFilter": [{ "type": "low-pass", "cutoffHz": 4756.83, "linearGain": 0.7071 }, { "type": "high-pass", "cutoffHz": 250, "linearGain": 1 }, { "type": "low-pass", "cutoffHz": 6727.17, "linearGain": 1.4142 }, { "type": "peak", "cutoffHz": 840.9, "linearGain": 0.3536 }], "eqFilterType": false, "eqSimpleCut": 10, "eqSimplePeak": 0, "envelopeSpeed": 12, "discreteEnvelope": false, "eqSubFilters0": [{ "type": "low-pass", "cutoffHz": 4756.83, "linearGain": 0.7071 }, { "type": "high-pass", "cutoffHz": 250, "linearGain": 1 }, { "type": "low-pass", "cutoffHz": 6727.17, "linearGain": 1.4142 }, { "type": "peak", "cutoffHz": 840.9, "linearGain": 0.3536 }], "effects": ["note filter", "distortion", "bitcrusher", "chorus", "echo", "phaser"], "noteFilterType": false, "noteSimpleCut": 10, "noteSimplePeak": 0, "noteFilter": [{ "type": "high-pass", "cutoffHz": 297.3, "linearGain": 2 }, { "type": "low-pass", "cutoffHz": 2378.41, "linearGain": 0.7071 }], "noteSubFilters0": [{ "type": "high-pass", "cutoffHz": 297.3, "linearGain": 2 }, { "type": "low-pass", "cutoffHz": 2378.41, "linearGain": 0.7071 }], "distortion": 29, "aliases": false, "bitcrusherOctave": 6, "bitcrusherQuantization": 0, "phaserMix": 77, "phaserFreq": 19, "phaserFeedback": 61, "phaserStages": 52, "panDelay": 10, "chorus": 43, "echoSustain": 43, "echoDelayBeats": 1, "fadeInSeconds": 0, "fadeOutTicks": 12, "harmonics": [86, 100, 100, 86, 86, 86, 86, 71, 71, 71, 71, 71, 71, 71, 71, 71, 71, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 71], "unison": "none", "stringSustain": 64, "envelopes": [{ "target": "noteFilterFreq", "envelope": "note size", "index": 1 }, { "target": "phaserMix", "envelope": "twang -1" }] } },
-                { name: "Acoustic Guitar", generalMidi: false, settings: { "type": "FM6op", "eqFilter": [{ "type": "peak", "cutoffHz": 353.55, "linearGain": 0.0884 }, { "type": "peak", "cutoffHz": 16000, "linearGain": 11.3137 }, { "type": "peak", "cutoffHz": 210.22, "linearGain": 4 }, { "type": "high-pass", "cutoffHz": 62.5, "linearGain": 0.25 }], "eqFilterType": false, "eqSimpleCut": 10, "eqSimplePeak": 0, "envelopeSpeed": 4, "discreteEnvelope": false, "eqSubFilters0": [{ "type": "peak", "cutoffHz": 353.55, "linearGain": 0.0884 }, { "type": "peak", "cutoffHz": 16000, "linearGain": 11.3137 }, { "type": "peak", "cutoffHz": 210.22, "linearGain": 4 }, { "type": "high-pass", "cutoffHz": 62.5, "linearGain": 0.25 }], "effects": ["transition type", "chord type", "detune", "vibrato", "note filter", "bitcrusher", "reverb"], "transition": "interrupt", "clicklessTransition": false, "chord": "strum", "fastTwoNoteArp": false, "arpeggioSpeed": 12, "detuneCents": 12, "vibrato": "none", "vibratoDepth": 0, "vibratoDelay": 0, "vibratoSpeed": 10, "vibratoType": 0, "noteFilterType": false, "noteSimpleCut": 10, "noteSimplePeak": 0, "noteFilter": [{ "type": "peak", "cutoffHz": 19027.31, "linearGain": 8 }], "noteSubFilters0": [{ "type": "peak", "cutoffHz": 19027.31, "linearGain": 8 }], "bitcrusherOctave": 6.5, "bitcrusherQuantization": 0, "panDelay": 20, "reverb": 3, "fadeInSeconds": 0.0125, "fadeOutTicks": 96, "algorithm": "1 2 3 4 5 6", "feedbackType": "1→2→3→4→5→6", "feedbackAmplitude": 15, "operators": [{ "frequency": "1×", "amplitude": 15, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "2×", "amplitude": 10, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "4×", "amplitude": 11, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "6×", "amplitude": 8, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "8×", "amplitude": 7, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "9×", "amplitude": 8, "waveform": "sine", "pulseWidth": 5 }], "envelopes": [{ "target": "feedbackAmplitude", "envelope": "twang", "inverse": false, "perEnvelopeSpeed": 128, "perEnvelopeLowerBound": 0, "perEnvelopeUpperBound": 1 }, { "target": "noteVolume", "envelope": "punch", "inverse": false, "perEnvelopeSpeed": 0, "perEnvelopeLowerBound": 0, "perEnvelopeUpperBound": 1 }, { "target": "operatorAmplitude", "envelope": "twang", "inverse": false, "perEnvelopeSpeed": 2, "perEnvelopeLowerBound": 0, "perEnvelopeUpperBound": 1, "index": 1 }, { "target": "operatorAmplitude", "envelope": "twang", "inverse": false, "perEnvelopeSpeed": 8, "perEnvelopeLowerBound": 0, "perEnvelopeUpperBound": 1, "index": 2 }, { "target": "operatorAmplitude", "envelope": "twang", "inverse": false, "perEnvelopeSpeed": 32, "perEnvelopeLowerBound": 0, "perEnvelopeUpperBound": 1, "index": 3 }, { "target": "operatorAmplitude", "envelope": "twang", "inverse": false, "perEnvelopeSpeed": 32, "perEnvelopeLowerBound": 0, "perEnvelopeUpperBound": 1, "index": 4 }, { "target": "operatorAmplitude", "envelope": "twang", "inverse": false, "perEnvelopeSpeed": 128, "perEnvelopeLowerBound": 0, "perEnvelopeUpperBound": 1, "index": 5 }, { "target": "noteFilterFreq", "envelope": "twang", "inverse": false, "perEnvelopeSpeed": 8, "perEnvelopeLowerBound": 0, "perEnvelopeUpperBound": 1, "index": 0 }, { "target": "operatorAmplitude", "envelope": "random", "inverse": false, "perEnvelopeSpeed": 0, "perEnvelopeLowerBound": 0, "perEnvelopeUpperBound": 1, "index": 2, "steps": 4, "seed": 2, "waveform": 2 }, { "target": "operatorAmplitude", "envelope": "random", "inverse": false, "perEnvelopeSpeed": 0, "perEnvelopeLowerBound": 0.5, "perEnvelopeUpperBound": 1, "index": 4, "steps": 4, "seed": 19, "waveform": 2 }, { "target": "operatorAmplitude", "envelope": "random", "inverse": false, "perEnvelopeSpeed": 0, "perEnvelopeLowerBound": 0.6, "perEnvelopeUpperBound": 1, "index": 5, "steps": 2, "seed": 21, "waveform": 2 }, { "target": "operatorAmplitude", "envelope": "random", "inverse": false, "perEnvelopeSpeed": 0, "perEnvelopeLowerBound": 0, "perEnvelopeUpperBound": 1, "index": 1, "steps": 4, "seed": 2, "waveform": 2 }, { "target": "noteVolume", "envelope": "random", "inverse": false, "perEnvelopeSpeed": 1, "perEnvelopeLowerBound": 0.7, "perEnvelopeUpperBound": 1.6, "steps": 8, "seed": 2, "waveform": 2 }, { "target": "detune", "envelope": "random", "inverse": false, "perEnvelopeSpeed": 1, "perEnvelopeLowerBound": 0, "perEnvelopeUpperBound": 1, "steps": 5, "seed": 2, "waveform": 2 }] } },
+                { name: "Accumula Guitar", generalMidi: false, settings: { "type": "FM6op", "eqFilter": [{ "type": "peak", "cutoffHz": 353.55, "linearGain": 0.0884 }, { "type": "peak", "cutoffHz": 16000, "linearGain": 11.3137 }, { "type": "peak", "cutoffHz": 210.22, "linearGain": 4 }, { "type": "high-pass", "cutoffHz": 62.5, "linearGain": 0.25 }], "eqFilterType": false, "eqSimpleCut": 10, "eqSimplePeak": 0, "envelopeSpeed": 4, "discreteEnvelope": false, "eqSubFilters0": [{ "type": "peak", "cutoffHz": 353.55, "linearGain": 0.0884 }, { "type": "peak", "cutoffHz": 16000, "linearGain": 11.3137 }, { "type": "peak", "cutoffHz": 210.22, "linearGain": 4 }, { "type": "high-pass", "cutoffHz": 62.5, "linearGain": 0.25 }], "effects": ["transition type", "chord type", "detune", "vibrato", "note filter", "bitcrusher", "reverb"], "transition": "interrupt", "clicklessTransition": false, "chord": "strum", "fastTwoNoteArp": false, "arpeggioSpeed": 12, "detuneCents": 12, "vibrato": "none", "vibratoDepth": 0, "vibratoDelay": 0, "vibratoSpeed": 10, "vibratoType": 0, "noteFilterType": false, "noteSimpleCut": 10, "noteSimplePeak": 0, "noteFilter": [{ "type": "peak", "cutoffHz": 19027.31, "linearGain": 8 }], "noteSubFilters0": [{ "type": "peak", "cutoffHz": 19027.31, "linearGain": 8 }], "bitcrusherOctave": 6.5, "bitcrusherQuantization": 0, "panDelay": 20, "reverb": 3, "fadeInSeconds": 0.0125, "fadeOutTicks": 96, "algorithm": "1 2 3 4 5 6", "feedbackType": "1→2→3→4→5→6", "feedbackAmplitude": 15, "operators": [{ "frequency": "1×", "amplitude": 15, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "2×", "amplitude": 10, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "4×", "amplitude": 11, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "6×", "amplitude": 8, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "8×", "amplitude": 7, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "9×", "amplitude": 8, "waveform": "sine", "pulseWidth": 5 }], "envelopes": [{ "target": "feedbackAmplitude", "envelope": "twang", "inverse": false, "perEnvelopeSpeed": 128, "perEnvelopeLowerBound": 0, "perEnvelopeUpperBound": 1 }, { "target": "noteVolume", "envelope": "punch", "inverse": false, "perEnvelopeSpeed": 0, "perEnvelopeLowerBound": 0, "perEnvelopeUpperBound": 1 }, { "target": "operatorAmplitude", "envelope": "twang", "inverse": false, "perEnvelopeSpeed": 2, "perEnvelopeLowerBound": 0, "perEnvelopeUpperBound": 1, "index": 1 }, { "target": "operatorAmplitude", "envelope": "twang", "inverse": false, "perEnvelopeSpeed": 8, "perEnvelopeLowerBound": 0, "perEnvelopeUpperBound": 1, "index": 2 }, { "target": "operatorAmplitude", "envelope": "twang", "inverse": false, "perEnvelopeSpeed": 32, "perEnvelopeLowerBound": 0, "perEnvelopeUpperBound": 1, "index": 3 }, { "target": "operatorAmplitude", "envelope": "twang", "inverse": false, "perEnvelopeSpeed": 32, "perEnvelopeLowerBound": 0, "perEnvelopeUpperBound": 1, "index": 4 }, { "target": "operatorAmplitude", "envelope": "twang", "inverse": false, "perEnvelopeSpeed": 128, "perEnvelopeLowerBound": 0, "perEnvelopeUpperBound": 1, "index": 5 }, { "target": "noteFilterFreq", "envelope": "twang", "inverse": false, "perEnvelopeSpeed": 8, "perEnvelopeLowerBound": 0, "perEnvelopeUpperBound": 1, "index": 0 }, { "target": "operatorAmplitude", "envelope": "random", "inverse": false, "perEnvelopeSpeed": 0, "perEnvelopeLowerBound": 0, "perEnvelopeUpperBound": 1, "index": 2, "steps": 4, "seed": 2, "waveform": 2 }, { "target": "operatorAmplitude", "envelope": "random", "inverse": false, "perEnvelopeSpeed": 0, "perEnvelopeLowerBound": 0.5, "perEnvelopeUpperBound": 1, "index": 4, "steps": 4, "seed": 19, "waveform": 2 }, { "target": "operatorAmplitude", "envelope": "random", "inverse": false, "perEnvelopeSpeed": 0, "perEnvelopeLowerBound": 0.6, "perEnvelopeUpperBound": 1, "index": 5, "steps": 2, "seed": 21, "waveform": 2 }, { "target": "operatorAmplitude", "envelope": "random", "inverse": false, "perEnvelopeSpeed": 0, "perEnvelopeLowerBound": 0, "perEnvelopeUpperBound": 1, "index": 1, "steps": 4, "seed": 2, "waveform": 2 }, { "target": "noteVolume", "envelope": "random", "inverse": false, "perEnvelopeSpeed": 1, "perEnvelopeLowerBound": 0.7, "perEnvelopeUpperBound": 1.6, "steps": 8, "seed": 2, "waveform": 2 }, { "target": "detune", "envelope": "random", "inverse": false, "perEnvelopeSpeed": 1, "perEnvelopeLowerBound": 0, "perEnvelopeUpperBound": 1, "steps": 5, "seed": 2, "waveform": 2 }] } },
             ]) },
         { name: "AbyssBox's Spooky Presets", presets: toNameMap([
                 { name: "Ghost House", generalMidi: false, settings: { "type": "FM", "eqFilter": [], "eqFilterType": false, "eqSimpleCut": 10, "eqSimplePeak": 0, "envelopeSpeed": 12, "discreteEnvelope": false, "eqSubFilters0": [], "effects": ["transition type", "vibrato", "bitcrusher"], "transition": "normal", "clicklessTransition": false, "vibrato": "heavy", "vibratoDepth": 0.45, "vibratoDelay": 0, "vibratoSpeed": 10, "vibratoType": 0, "bitcrusherOctave": 3.5, "bitcrusherQuantization": 43, "panDelay": 10, "fadeInSeconds": 0, "fadeOutTicks": -3, "algorithm": "1←(2 3←4)", "feedbackType": "1⟲", "feedbackAmplitude": 0, "operators": [{ "frequency": "1×", "amplitude": 15, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "1×", "amplitude": 4, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "1×", "amplitude": 6, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "1×", "amplitude": 7, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "1×", "amplitude": 0, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "1×", "amplitude": 0, "waveform": "sine", "pulseWidth": 5 }], "envelopes": [{ "target": "noteVolume", "envelope": "punch" }] } },
