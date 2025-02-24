@@ -29245,6 +29245,9 @@ var beepbox = (function (exports) {
                                         isTremolo2 = true;
                                         envTypeIndex--;
                                     }
+                                    else if (((!fromAbyssBox && !fromSlarmoosBox) || (fromAbyssBox && beforeThree)) && envTypeIndex > 9) {
+                                        envTypeIndex--;
+                                    }
                                     const envelope = clamp(0, Config.newEnvelopes.length, envTypeIndex);
                                     let pitchEnvelopeStart = 0;
                                     let pitchEnvelopeEnd = Config.maxPitch;
