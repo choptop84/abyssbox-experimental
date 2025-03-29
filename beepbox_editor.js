@@ -63820,7 +63820,7 @@ You should be redirected to the song at:<br /><br />
                 if (!isMobile) {
                     this._playPauseAreaMobile.style.display = "none";
                     if (window.localStorage.getItem("tutorialComplete") != "true") ;
-                    if (window.localStorage.getItem("curVer") != "1.6") {
+                    if (window.localStorage.getItem("curVer") != "1.5.1") {
                         document.body.appendChild(this.updatePromptHolder.updatePopupDiv);
                     }
                     if (this._doc.getFullScreen()) {
