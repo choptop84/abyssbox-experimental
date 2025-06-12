@@ -50704,6 +50704,9 @@ button.playButton::before {
 				.beepboxEditor .trackAndMuteContainer::-webkit-scrollbar-corner {
 					background-color: ${ColorConfig.editorBackground};
 				}
+				div.track-area {
+				display: flex;
+				}
 			}
 		`,
         "focus": `\
@@ -50793,6 +50796,9 @@ button.playButton::before {
 				}
 				.beepboxEditor .trackAndMuteContainer::-webkit-scrollbar-corner {
 					background-color: ${ColorConfig.editorBackground};
+				}
+				div.track-area {
+				display: flex;
 				}
 			}
 		`,
@@ -55733,7 +55739,7 @@ You should be redirected to the song at:<br /><br />
                     pitchOffset = y * 5 + x * 2 - 2;
                     break;
                 case "songScale":
-                    const scaleFlags = Config.scales[doc.song.scale].flags;
+                    const scaleFlags = doc.song.scale == Config.scales.dictionary["Custom"].index ? doc.song.scaleCustom : Config.scales[doc.song.scale].flags;
                     const scaleIndices = scaleFlags.map((flag, index) => flag ? index : null).filter((index) => index != null);
                     pitchOffset = (y - 1 + Math.floor(x / scaleIndices.length)) * Config.pitchesPerOctave + scaleIndices[(x + scaleIndices.length) % scaleIndices.length];
                     break;
@@ -59584,7 +59590,7 @@ You should be redirected to the song at:<br /><br />
                     this._keyboardLayoutPreview.removeChild(this._keyboardLayoutPreview.firstChild);
                 }
                 const rowLengths = [12, 12, 11, 10];
-                const scale = Config.scales[this._doc.song.scale].flags;
+                const scale = this._doc.song.scale == Config.scales.dictionary["Custom"].index ? this._doc.song.scaleCustom : Config.scales[this._doc.song.scale].flags;
                 for (let rowIndex = 0; rowIndex < 4; rowIndex++) {
                     const row = div$d({ style: "display: flex;" });
                     this._keyboardLayoutPreview.appendChild(row);
@@ -63239,7 +63245,8 @@ You should be redirected to the song at:<br /><br />
             this._songDescription = textarea({ placeholder: "Enter Description Here", style: "width: 100%; resize: none; background: var(--editor-background); color: white; height: 64px; border: 0.5px solid var(--input-box-outline); font-size: 14px;", maxlength: 1200 }, this._doc.song.description);
             this._showSongDetailsBox = input$1({ style: "width: 3em; margin-left: 1em;", type: "checkbox" });
             this._computedSamplesLabel = div$2({ style: "width: 10em;" }, new Text("0:00"));
-            this.container = div$2({ class: "prompt noSelection", style: "width: 250px;" }, h2("Song Details"), div$2({ style: "display: flex; flex-direction: row; align-items: baseline; gap: 10px;" }, "Title: ", this._songTitle), div$2({ style: "display: flex; flex-direction: row; align-items: baseline; gap: 10px;" }, "Author: ", this._songAuthor), div$2({ style: "display: flex; flex-direction: column; align-items: baseline;" }, "Description: ", this._songDescription), div$2({ style: "vertical-align: middle; align-items: center; justify-content: space-between;" }, "Show info on load: ", this._showSongDetailsBox), div$2({ style: "display: flex; flex-direction: column; align-items: baseline;" }, "Song Theme: ", this._doc.song.setSongTheme), div$2({ style: "text-align: left;" }, div$2({ style: "display:flex; gap: 3px; margin-bottom: 1em;" }, "Song Length: ", this._computedSamplesLabel), div$2({ style: "margin-bottom: 0.5em;" }, "Pitch Channels: " + this._doc.song.pitchChannelCount), div$2({ style: "margin-bottom: 0.5em;" }, "Noise Channels: " + this._doc.song.noiseChannelCount), div$2({}, "Mod Channels: " + this._doc.song.modChannelCount), br(), "URL Length: " + location.href.length, br()), div$2({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton), this._cancelButton);
+            this._cantShortenLabel = div$2({}, "You cannot shorten this url!");
+            this.container = div$2({ class: "prompt noSelection", style: "width: 250px;" }, h2("Song Details"), div$2({ style: "display: flex; flex-direction: row; align-items: baseline; gap: 10px;" }, "Title: ", this._songTitle), div$2({ style: "display: flex; flex-direction: row; align-items: baseline; gap: 10px;" }, "Author: ", this._songAuthor), div$2({ style: "display: flex; flex-direction: column; align-items: baseline;" }, "Description: ", this._songDescription), div$2({ style: "vertical-align: middle; align-items: center; justify-content: space-between;" }, "Show info on load: ", this._showSongDetailsBox), div$2({ style: "display: flex; flex-direction: column; align-items: baseline;" }, "Song Theme: ", this._doc.song.setSongTheme), div$2({ style: "text-align: left;" }, div$2({ style: "display:flex; gap: 3px; margin-bottom: 1em;" }, "Song Length: ", this._computedSamplesLabel), div$2({ style: "margin-bottom: 0.5em;" }, "Pitch Channels: " + this._doc.song.pitchChannelCount), div$2({ style: "margin-bottom: 0.5em;" }, "Noise Channels: " + this._doc.song.noiseChannelCount), div$2({}, "Mod Channels: " + this._doc.song.modChannelCount), br(), "URL Length: " + location.href.length, this._cantShortenLabel, br()), div$2({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton), this._cancelButton);
             this._close = () => {
                 this._doc.undo();
             };
@@ -63257,6 +63264,7 @@ You should be redirected to the song at:<br /><br />
                 this._doc.record(group, true);
             };
             this._showSongDetailsBox.checked = this._doc.song.showSongDetails;
+            this._cantShortenLabel.style.display = (location.href.length > (window.localStorage.getItem("shortenerStrategySelect") == "isgd" ? 5010 : 12233)) ? "" : "none";
             this._computedSamplesLabel.firstChild.textContent = this._doc.samplesToTime(this._doc.synth.getTotalSamples(true, true, 0));
             this._okayButton.addEventListener("click", this._saveChanges);
             this._cancelButton.addEventListener("click", this._close);
