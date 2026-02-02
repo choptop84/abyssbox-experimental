@@ -462,7 +462,6 @@ var beepbox = (function (exports) {
         { name: "Jacked Toad", realName: "jacked toad", flags: [true, false, true, true, false, true, true, true, true, false, true, true] },
         { name: "Dumb", realName: "Originally named, currently named, and will always be named 'dumb.'", flags: [true, false, false, false, false, true, true, true, true, false, false, true] },
         { name: "Test Scale", realName: "**t", flags: [true, true, false, false, false, true, true, false, false, true, true, false] },
-        { name: "die", realName: "death", flags: [true, false, false, false, false, false, false, false, true, false, false, false] },
         { name: "Custom", realName: "custom", flags: [true, false, true, true, false, false, false, true, true, false, true, true] },
     ]);
     Config.keys = toNameMap([
@@ -535,6 +534,7 @@ var beepbox = (function (exports) {
     Config.pickedStringBaseExpression = 0.025;
     Config.distortionBaseVolume = 0.011;
     Config.bitcrusherBaseVolume = 0.010;
+    Config.granularOutputLoudnessCompensation = 0.5;
     Config.rawChipWaves = toNameMap([
         { name: "rounded", expression: 0.94, samples: centerWave([0.0, 0.2, 0.4, 0.5, 0.6, 0.7, 0.8, 0.85, 0.9, 0.95, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.95, 0.9, 0.85, 0.8, 0.7, 0.6, 0.5, 0.4, 0.2, 0.0, -0.2, -0.4, -0.5, -0.6, -0.7, -0.8, -0.85, -0.9, -0.95, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -0.95, -0.9, -0.85, -0.8, -0.7, -0.6, -0.5, -0.4, -0.2]) },
         { name: "triangle", expression: 1.0, samples: centerWave([1.0 / 15.0, 3.0 / 15.0, 5.0 / 15.0, 7.0 / 15.0, 9.0 / 15.0, 11.0 / 15.0, 13.0 / 15.0, 15.0 / 15.0, 15.0 / 15.0, 13.0 / 15.0, 11.0 / 15.0, 9.0 / 15.0, 7.0 / 15.0, 5.0 / 15.0, 3.0 / 15.0, 1.0 / 15.0, -1.0 / 15.0, -3.0 / 15.0, -5.0 / 15.0, -7.0 / 15.0, -9.0 / 15.0, -11.0 / 15.0, -13.0 / 15.0, -15.0 / 15.0, -15.0 / 15.0, -13.0 / 15.0, -11.0 / 15.0, -9.0 / 15.0, -7.0 / 15.0, -5.0 / 15.0, -3.0 / 15.0, -1.0 / 15.0]) },
@@ -709,8 +709,8 @@ var beepbox = (function (exports) {
         { name: "resonance", voices: 2, spread: 0.0025, offset: 0.1, expression: 0.8, sign: -1.5 },
         { name: "FART", voices: 2, spread: 13, offset: -5, expression: 1.0, sign: -3 },
     ]);
-    Config.effectNames = ["reverb", "chorus", "panning", "distortion", "bitcrusher", "note filter", "echo", "pitch shift", "detune", "vibrato", "transition type", "chord type", "ring modulation", "phaser", "note range", "invert wave"];
-    Config.effectOrder = [2, 10, 11, 7, 8, 9, 5, 3, 4, 1, 6, 0, 12, 13, 14, 15];
+    Config.effectNames = ["reverb", "chorus", "panning", "distortion", "bitcrusher", "note filter", "echo", "pitch shift", "detune", "vibrato", "transition type", "chord type", "ring modulation", "phaser", "note range", "invert wave", "granular"];
+    Config.effectOrder = [2, 10, 11, 7, 8, 9, 5, 3, 4, 1, 6, 0, 12, 13, 14, 15, 16];
     Config.noteSizeMax = 6;
     Config.volumeRange = 50;
     Config.volumeLogScale = 0.1428;
@@ -718,16 +718,23 @@ var beepbox = (function (exports) {
     Config.panMax = Config.panCenter * 2;
     Config.panDelaySecondsMax = 0.001;
     Config.chorusRange = 8;
-    Config.ringModRange = 8;
-    Config.ringModHzRange = 64;
-    Config.rmHzOffsetCenter = 200;
-    Config.rmHzOffsetMax = 400;
-    Config.rmHzOffsetMin = 0;
     Config.chorusPeriodSeconds = 2.0;
     Config.chorusDelayRange = 0.0034;
     Config.chorusDelayOffsets = [[1.51, 2.10, 3.35], [1.47, 2.15, 3.25]];
     Config.chorusPhaseOffsets = [[0.0, 2.1, 4.2], [3.2, 5.3, 1.0]];
     Config.chorusMaxDelay = Config.chorusDelayRange * (1.0 + Config.chorusDelayOffsets[0].concat(Config.chorusDelayOffsets[1]).reduce((x, y) => Math.max(x, y)));
+    Config.ringModRange = 8;
+    Config.ringModHzRange = 64;
+    Config.rmHzOffsetCenter = 200;
+    Config.rmHzOffsetMax = 400;
+    Config.rmHzOffsetMin = 0;
+    Config.granularRange = 10;
+    Config.grainSizeMin = 40;
+    Config.grainSizeMax = 2000;
+    Config.grainSizeStep = 40;
+    Config.grainRangeMax = 1600;
+    Config.grainAmountsMax = 10;
+    Config.granularEnvelopeType = 0;
     Config.chords = toNameMap([
         { name: "simultaneous", customInterval: false, arpeggiates: false, strumParts: 0, singleTone: false },
         { name: "strum", customInterval: false, arpeggiates: false, strumParts: 1, singleTone: false },
@@ -828,84 +835,67 @@ var beepbox = (function (exports) {
         { name: "100×", mult: 100.0, hzOffset: 0.0, amplitudeSign: 1.0 }
     ]);
     Config.envelopes = toNameMap([
-        { name: "none", type: 0, speed: 0.0 },
-        { name: "note size", type: 1, speed: 0.0 },
-        { name: "punch", type: 4, speed: 0.0 },
-        { name: "flare -1", type: 5, speed: 128.0 },
-        { name: "flare 1", type: 5, speed: 32.0 },
-        { name: "flare 2", type: 5, speed: 8.0 },
-        { name: "flare 3", type: 5, speed: 2.0 },
-        { name: "twang -1", type: 6, speed: 128.0 },
-        { name: "twang 1", type: 6, speed: 32.0 },
-        { name: "twang 2", type: 6, speed: 8.0 },
-        { name: "twang 3", type: 6, speed: 2.0 },
-        { name: "swell -1", type: 7, speed: 128.0 },
-        { name: "swell 1", type: 7, speed: 32.0 },
-        { name: "swell 2", type: 7, speed: 8.0 },
-        { name: "swell 3", type: 7, speed: 2.0 },
-        { name: "tremolo0", type: 8, speed: 8.0 },
-        { name: "tremolo1", type: 8, speed: 4.0 },
-        { name: "tremolo2", type: 8, speed: 2.0 },
-        { name: "tremolo3", type: 8, speed: 1.0 },
-        { name: "tremolo4", type: 9, speed: 4.0 },
-        { name: "tremolo5", type: 9, speed: 2.0 },
-        { name: "tremolo6", type: 9, speed: 1.0 },
-        { name: "decay -1", type: 10, speed: 40.0 },
-        { name: "decay 1", type: 10, speed: 10.0 },
-        { name: "decay 2", type: 10, speed: 7.0 },
-        { name: "decay 3", type: 10, speed: 4.0 },
-        { name: "wibble-1", type: 11, speed: 128.0 },
-        { name: "wibble 1", type: 11, speed: 24.0 },
-        { name: "wibble 2", type: 11, speed: 12.0 },
-        { name: "wibble 3", type: 11, speed: 4.0 },
-        { name: "linear-2", type: 12, speed: 256.0 },
-        { name: "linear-1", type: 12, speed: 128.0 },
-        { name: "linear 1", type: 12, speed: 32.0 },
-        { name: "linear 2", type: 12, speed: 8.0 },
-        { name: "linear 3", type: 12, speed: 2.0 },
-        { name: "rise -2", type: 13, speed: 256.0 },
-        { name: "rise -1", type: 13, speed: 128.0 },
-        { name: "rise 1", type: 13, speed: 32.0 },
-        { name: "rise 2", type: 13, speed: 8.0 },
-        { name: "rise 3", type: 13, speed: 2.0 },
-        { name: "flute 1", type: 11, speed: 16.0 },
-        { name: "flute 2", type: 11, speed: 8.0 },
-        { name: "flute 3", type: 11, speed: 4.0 },
-        { name: "tripolo1", type: 8, speed: 9.0 },
-        { name: "tripolo2", type: 8, speed: 6.0 },
-        { name: "tripolo3", type: 8, speed: 3.0 },
-        { name: "tripolo4", type: 9, speed: 9.0 },
-        { name: "tripolo5", type: 9, speed: 6.0 },
-        { name: "tripolo6", type: 9, speed: 3.0 },
-        { name: "pentolo1", type: 8, speed: 10.0 },
-        { name: "pentolo2", type: 8, speed: 5.0 },
-        { name: "pentolo3", type: 8, speed: 2.5 },
-        { name: "pentolo4", type: 9, speed: 10.0 },
-        { name: "pentolo5", type: 9, speed: 5.0 },
-        { name: "pentolo6", type: 9, speed: 2.5 },
-        { name: "flutter 1", type: 8, speed: 14.0 },
-        { name: "flutter 2", type: 9, speed: 11.0 },
-        { name: "water-y flutter", type: 8, speed: 9.0 },
-        { name: "blip 1", type: 14, speed: 6.0 },
-        { name: "blip 2", type: 14, speed: 16.0 },
-        { name: "blip 3", type: 14, speed: 32.0 },
-    ]);
-    Config.newEnvelopes = toNameMap([
-        { name: "none", type: 0, speed: 0.0 },
-        { name: "note size", type: 1, speed: 0.0 },
-        { name: "pitch", type: 2, speed: 0.0 },
-        { name: "random", type: 3, speed: 4.0 },
-        { name: "punch", type: 4, speed: 0.0 },
-        { name: "flare", type: 5, speed: 32.0 },
-        { name: "twang", type: 6, speed: 32.0 },
-        { name: "swell", type: 7, speed: 32.0 },
-        { name: "lfo", type: 8, speed: 4.0 },
-        { name: "decay", type: 10, speed: 10.0 },
-        { name: "wibble", type: 11, speed: 24.0 },
-        { name: "linear", type: 12, speed: 32.0 },
-        { name: "rise", type: 13, speed: 32.0 },
-        { name: "blip", type: 14, speed: 6.0 },
-        { name: "fall", type: 15, speed: 2.0 },
+        { name: "none", type: 1, speed: 0.0 },
+        { name: "note size", type: 0, speed: 0.0 },
+        { name: "punch", type: 2, speed: 0.0 },
+        { name: "flare -1", type: 3, speed: 128.0 },
+        { name: "flare 1", type: 3, speed: 32.0 },
+        { name: "flare 2", type: 3, speed: 8.0 },
+        { name: "flare 3", type: 3, speed: 2.0 },
+        { name: "twang -1", type: 4, speed: 128.0 },
+        { name: "twang 1", type: 4, speed: 32.0 },
+        { name: "twang 2", type: 4, speed: 8.0 },
+        { name: "twang 3", type: 4, speed: 2.0 },
+        { name: "swell -1", type: 5, speed: 128.0 },
+        { name: "swell 1", type: 5, speed: 32.0 },
+        { name: "swell 2", type: 5, speed: 8.0 },
+        { name: "swell 3", type: 5, speed: 2.0 },
+        { name: "tremolo0", type: 6, speed: 8.0 },
+        { name: "tremolo1", type: 6, speed: 4.0 },
+        { name: "tremolo2", type: 6, speed: 2.0 },
+        { name: "tremolo3", type: 6, speed: 1.0 },
+        { name: "tremolo4", type: 7, speed: 4.0 },
+        { name: "tremolo5", type: 7, speed: 2.0 },
+        { name: "tremolo6", type: 7, speed: 1.0 },
+        { name: "decay -1", type: 8, speed: 40.0 },
+        { name: "decay 1", type: 8, speed: 10.0 },
+        { name: "decay 2", type: 8, speed: 7.0 },
+        { name: "decay 3", type: 8, speed: 4.0 },
+        { name: "wibble-1", type: 9, speed: 96.0 },
+        { name: "wibble 1", type: 9, speed: 24.0 },
+        { name: "wibble 2", type: 9, speed: 12.0 },
+        { name: "wibble 3", type: 9, speed: 4.0 },
+        { name: "linear-2", type: 11, speed: 256.0 },
+        { name: "linear-1", type: 11, speed: 128.0 },
+        { name: "linear 1", type: 11, speed: 32.0 },
+        { name: "linear 2", type: 11, speed: 8.0 },
+        { name: "linear 3", type: 11, speed: 2.0 },
+        { name: "rise -2", type: 12, speed: 256.0 },
+        { name: "rise -1", type: 12, speed: 128.0 },
+        { name: "rise 1", type: 12, speed: 32.0 },
+        { name: "rise 2", type: 12, speed: 8.0 },
+        { name: "rise 3", type: 12, speed: 2.0 },
+        { name: "flute 1", type: 9, speed: 16.0 },
+        { name: "flute 2", type: 9, speed: 8.0 },
+        { name: "flute 3", type: 9, speed: 4.0 },
+        { name: "tripolo1", type: 6, speed: 9.0 },
+        { name: "tripolo2", type: 6, speed: 6.0 },
+        { name: "tripolo3", type: 6, speed: 3.0 },
+        { name: "tripolo4", type: 7, speed: 9.0 },
+        { name: "tripolo5", type: 7, speed: 6.0 },
+        { name: "tripolo6", type: 7, speed: 3.0 },
+        { name: "pentolo1", type: 6, speed: 10.0 },
+        { name: "pentolo2", type: 6, speed: 5.0 },
+        { name: "pentolo3", type: 6, speed: 2.5 },
+        { name: "pentolo4", type: 7, speed: 10.0 },
+        { name: "pentolo5", type: 7, speed: 5.0 },
+        { name: "pentolo6", type: 7, speed: 2.5 },
+        { name: "flutter 1", type: 6, speed: 14.0 },
+        { name: "flutter 2", type: 7, speed: 11.0 },
+        { name: "water-y flutter", type: 6, speed: 9.0 },
+        { name: "blip 1", type: 13, speed: 6.0 },
+        { name: "blip 2", type: 13, speed: 16.0 },
+        { name: "blip 3", type: 13, speed: 32.0 },
     ]);
     Config.feedbacks = toNameMap([
         { name: "1⟲", indices: [[1], [], [], []] },
@@ -1129,14 +1119,18 @@ var beepbox = (function (exports) {
         { name: "phaserStages", computeIndex: 44, displayName: "phaser stages", interleave: false, isFilter: false, maxCount: 1, effect: 13, compatibleInstruments: null },
         { name: "ringModulation", computeIndex: 45, displayName: "ring mod", interleave: false, isFilter: false, maxCount: 1, effect: 12, compatibleInstruments: null },
         { name: "ringModulationHz", computeIndex: 46, displayName: "ring mod hz", interleave: false, isFilter: false, maxCount: 1, effect: 12, compatibleInstruments: null },
-        { name: "distortion", computeIndex: 48, displayName: "distortion", interleave: false, isFilter: false, maxCount: 1, effect: 3, compatibleInstruments: null },
-        { name: "bitcrusherQuantization", computeIndex: 49, displayName: "bitcrush", interleave: false, isFilter: false, maxCount: 1, effect: 4, compatibleInstruments: null },
-        { name: "bitcrusherFrequency", computeIndex: 50, displayName: "freq crush", interleave: false, isFilter: false, maxCount: 1, effect: 4, compatibleInstruments: null },
-        { name: "chorus", computeIndex: 51, displayName: "chorus", interleave: false, isFilter: false, maxCount: 1, effect: 1, compatibleInstruments: null },
-        { name: "echoSustain", computeIndex: 52, displayName: "echo sustain", interleave: false, isFilter: false, maxCount: 1, effect: 6, compatibleInstruments: null },
-        { name: "reverb", computeIndex: 53, displayName: "reverb", interleave: false, isFilter: false, maxCount: 1, effect: 0, compatibleInstruments: null },
-        { name: "panning", computeIndex: 54, displayName: "panning", interleave: false, isFilter: false, maxCount: 1, effect: 2, compatibleInstruments: null },
-        { name: "arpeggioSpeed", computeIndex: 55, displayName: "arpeggio speed", interleave: false, isFilter: false, maxCount: 1, effect: 11, compatibleInstruments: null },
+        { name: "distortion", computeIndex: 52, displayName: "distortion", interleave: false, isFilter: false, maxCount: 1, effect: 3, compatibleInstruments: null },
+        { name: "bitcrusherQuantization", computeIndex: 53, displayName: "bitcrush", interleave: false, isFilter: false, maxCount: 1, effect: 4, compatibleInstruments: null },
+        { name: "bitcrusherFrequency", computeIndex: 54, displayName: "freq crush", interleave: false, isFilter: false, maxCount: 1, effect: 4, compatibleInstruments: null },
+        { name: "chorus", computeIndex: 55, displayName: "chorus", interleave: false, isFilter: false, maxCount: 1, effect: 1, compatibleInstruments: null },
+        { name: "echoSustain", computeIndex: 56, displayName: "echo sustain", interleave: false, isFilter: false, maxCount: 1, effect: 6, compatibleInstruments: null },
+        { name: "reverb", computeIndex: 57, displayName: "reverb", interleave: false, isFilter: false, maxCount: 1, effect: 0, compatibleInstruments: null },
+        { name: "panning", computeIndex: 58, displayName: "panning", interleave: false, isFilter: false, maxCount: 1, effect: 2, compatibleInstruments: null },
+        { name: "arpeggioSpeed", computeIndex: 59, displayName: "arpeggio speed", interleave: false, isFilter: false, maxCount: 1, effect: 11, compatibleInstruments: null },
+        { name: "granular", computeIndex: 48, displayName: "granular", interleave: false, isFilter: false, maxCount: 1, effect: 16, compatibleInstruments: null },
+        { name: "grainFreq", computeIndex: 49, displayName: "grain freq", interleave: false, isFilter: false, maxCount: 1, effect: 16, compatibleInstruments: null },
+        { name: "grainSize", computeIndex: 50, displayName: "grain size", interleave: false, isFilter: false, maxCount: 1, effect: 16, compatibleInstruments: null },
+        { name: "grainRange", computeIndex: 51, displayName: "grain range", interleave: false, isFilter: false, maxCount: 1, effect: 16, compatibleInstruments: null },
     ]);
     Config.operatorWaves = toNameMap([
         { name: "sine", samples: Config.sineWave },
@@ -1164,32 +1158,32 @@ var beepbox = (function (exports) {
     Config.modulators = toNameMap([
         { name: "none",
             pianoName: "None",
-            maxRawVol: 6, newNoteVol: 6, forSong: true, convertRealFactor: 0, associatedEffect: 16,
+            maxRawVol: 6, newNoteVol: 6, forSong: true, convertRealFactor: 0, associatedEffect: 17,
             promptName: "No Mod Setting",
             promptDesc: ["No setting has been chosen yet, so this modulator will have no effect. Try choosing a setting with the dropdown, then click this '?' again for more info.", "[$LO - $HI]"] },
         { name: "song volume",
             pianoName: "Volume",
-            maxRawVol: 100, newNoteVol: 100, forSong: true, convertRealFactor: 0, associatedEffect: 16,
+            maxRawVol: 100, newNoteVol: 100, forSong: true, convertRealFactor: 0, associatedEffect: 17,
             promptName: "Song Volume",
             promptDesc: ["This setting affects the overall volume of the song, just like the main volume slider.", "At $HI, the volume will be unchanged from default, and it will get gradually quieter down to $LO.", "[MULTIPLICATIVE] [$LO - $HI] [%]"] },
         { name: "tempo",
             pianoName: "Tempo",
-            maxRawVol: Config.tempoMax - Config.tempoMin, newNoteVol: Math.ceil((Config.tempoMax - Config.tempoMin) / 2), forSong: true, convertRealFactor: Config.tempoMin, associatedEffect: 16,
+            maxRawVol: Config.tempoMax - Config.tempoMin, newNoteVol: Math.ceil((Config.tempoMax - Config.tempoMin) / 2), forSong: true, convertRealFactor: Config.tempoMin, associatedEffect: 17,
             promptName: "Song Tempo",
             promptDesc: ["This setting controls the speed your song plays at, just like the tempo slider.", "When you first make a note for this setting, it will default to your current tempo. Raising it speeds up the song, up to $HI BPM, and lowering it slows it down, to a minimum of $LO BPM.", "Note that you can make a 'swing' effect by rapidly changing between two tempo values.", "[OVERWRITING] [$LO - $HI] [BPM]"] },
         { name: "song reverb",
             pianoName: "Reverb",
-            maxRawVol: Config.reverbRange * 2, newNoteVol: Config.reverbRange, forSong: true, convertRealFactor: -Config.reverbRange, associatedEffect: 16,
+            maxRawVol: Config.reverbRange * 2, newNoteVol: Config.reverbRange, forSong: true, convertRealFactor: -Config.reverbRange, associatedEffect: 17,
             promptName: "Song Reverb",
             promptDesc: ["This setting affects the overall reverb of your song. It works by multiplying existing reverb for instruments, so those with no reverb set will be unaffected.", "At $MID, all instruments' reverb will be unchanged from default. This increases up to double the reverb value at $HI, or down to no reverb at $LO.", "[MULTIPLICATIVE] [$LO - $HI]"] },
         { name: "next bar",
             pianoName: "Next Bar",
-            maxRawVol: 1, newNoteVol: 1, forSong: true, convertRealFactor: 0, associatedEffect: 16,
+            maxRawVol: 1, newNoteVol: 1, forSong: true, convertRealFactor: 0, associatedEffect: 17,
             promptName: "Go To Next Bar",
             promptDesc: ["This setting functions a little different from most. Wherever a note is placed, the song will jump immediately to the next bar when it is encountered.", "This jump happens at the very start of the note, so the length of a next-bar note is irrelevant. Also, the note can be value 0 or 1, but the value is also irrelevant - wherever you place a note, the song will jump.", "You can make mixed-meter songs or intro sections by cutting off unneeded beats with a next-bar modulator.", "[$LO - $HI]"] },
         { name: "note volume",
             pianoName: "Note Vol.",
-            maxRawVol: Config.volumeRange, newNoteVol: Math.ceil(Config.volumeRange / 2), forSong: false, convertRealFactor: Math.ceil(-Config.volumeRange / 2.0), associatedEffect: 16,
+            maxRawVol: Config.volumeRange, newNoteVol: Math.ceil(Config.volumeRange / 2), forSong: false, convertRealFactor: Math.ceil(-Config.volumeRange / 2.0), associatedEffect: 17,
             promptName: "Note Volume",
             promptDesc: ["This setting affects the volume of your instrument as if its note size had been scaled.", "At $MID, an instrument's volume will be unchanged from default. This means you can still use the volume sliders to mix the base volume of instruments. The volume gradually increases up to $HI, or decreases down to mute at $LO.", "This setting was the default for volume modulation in JummBox for a long time. Due to some new effects like distortion and bitcrush, note volume doesn't always allow fine volume control. Also, this modulator affects the value of FM modulator waves instead of just carriers. This can distort the sound which may be useful, but also may be undesirable. In those cases, use the 'mix volume' modulator instead, which will always just scale the volume with no added effects.", "For display purposes, this mod will show up on the instrument volume slider, as long as there is not also an active 'mix volume' modulator anyhow. However, as mentioned, it works more like changing note volume.", "[MULTIPLICATIVE] [$LO - $HI]"] },
         { name: "pan",
@@ -1209,32 +1203,32 @@ var beepbox = (function (exports) {
             promptDesc: ["This setting controls the amount of distortion for your instrument, just like the distortion slider.", "At $LO, your instrument will have no distortion. At $HI, it will be at maximum.", "[OVERWRITING] [$LO - $HI]"] },
         { name: "fm slider 1",
             pianoName: "FM 1",
-            maxRawVol: 15, newNoteVol: 15, forSong: false, convertRealFactor: 0, associatedEffect: 16,
+            maxRawVol: 15, newNoteVol: 15, forSong: false, convertRealFactor: 0, associatedEffect: 17,
             promptName: "FM Slider 1",
             promptDesc: ["This setting affects the strength of the first FM slider, just like the corresponding slider on your instrument.", "It works in a multiplicative way, so at $HI your slider will sound the same is its default value, and at $LO it will sound like it has been moved all the way to the left.", "For the full range of control with this mod, move your underlying slider all the way to the right.", "[MULTIPLICATIVE] [$LO - $HI] [%]"] },
         { name: "fm slider 2",
             pianoName: "FM 2",
-            maxRawVol: 15, newNoteVol: 15, forSong: false, convertRealFactor: 0, associatedEffect: 16,
+            maxRawVol: 15, newNoteVol: 15, forSong: false, convertRealFactor: 0, associatedEffect: 17,
             promptName: "FM Slider 2",
             promptDesc: ["This setting affects the strength of the second FM slider, just like the corresponding slider on your instrument.", "It works in a multiplicative way, so at $HI your slider will sound the same is its default value, and at $LO it will sound like it has been moved all the way to the left.", "For the full range of control with this mod, move your underlying slider all the way to the right.", "[MULTIPLICATIVE] [$LO - $HI] [%]"] },
         { name: "fm slider 3",
             pianoName: "FM 3",
-            maxRawVol: 15, newNoteVol: 15, forSong: false, convertRealFactor: 0, associatedEffect: 16,
+            maxRawVol: 15, newNoteVol: 15, forSong: false, convertRealFactor: 0, associatedEffect: 17,
             promptName: "FM Slider 3",
             promptDesc: ["This setting affects the strength of the third FM slider, just like the corresponding slider on your instrument.", "It works in a multiplicative way, so at $HI your slider will sound the same is its default value, and at $LO it will sound like it has been moved all the way to the left.", "For the full range of control with this mod, move your underlying slider all the way to the right.", "[MULTIPLICATIVE] [$LO - $HI] [%]"] },
         { name: "fm slider 4",
             pianoName: "FM 4",
-            maxRawVol: 15, newNoteVol: 15, forSong: false, convertRealFactor: 0, associatedEffect: 16,
+            maxRawVol: 15, newNoteVol: 15, forSong: false, convertRealFactor: 0, associatedEffect: 17,
             promptName: "FM Slider 4",
             promptDesc: ["This setting affects the strength of the fourth FM slider, just like the corresponding slider on your instrument.", "It works in a multiplicative way, so at $HI your slider will sound the same is its default value, and at $LO it will sound like it has been moved all the way to the left.", "For the full range of control with this mod, move your underlying slider all the way to the right.", "[MULTIPLICATIVE] [$LO - $HI] [%]"] },
         { name: "fm feedback",
             pianoName: "FM Feedback",
-            maxRawVol: 15, newNoteVol: 15, forSong: false, convertRealFactor: 0, associatedEffect: 16,
+            maxRawVol: 15, newNoteVol: 15, forSong: false, convertRealFactor: 0, associatedEffect: 17,
             promptName: "FM Feedback",
             promptDesc: ["This setting affects the strength of the FM feedback slider, just like the corresponding slider on your instrument.", "It works in a multiplicative way, so at $HI your slider will sound the same is its default value, and at $LO it will sound like it has been moved all the way to the left.", "For the full range of control with this mod, move your underlying slider all the way to the right.", "[MULTIPLICATIVE] [$LO - $HI] [%]"] },
         { name: "pulse width",
             pianoName: "Pulse Width",
-            maxRawVol: Config.pulseWidthRange, newNoteVol: Config.pulseWidthRange, forSong: false, convertRealFactor: 0, associatedEffect: 16,
+            maxRawVol: Config.pulseWidthRange, newNoteVol: Config.pulseWidthRange, forSong: false, convertRealFactor: 0, associatedEffect: 17,
             promptName: "Pulse Width",
             promptDesc: ["This setting controls the width of this instrument's pulse wave, just like the pulse width slider.", "At $HI, your instrument will sound like a pure square wave (on 50% of the time). It will gradually sound narrower down to $LO, where it will be inaudible (as it is on 0% of the time).", "Changing pulse width randomly between a few values is a common strategy in chiptune music to lend some personality to a lead instrument.", "[OVERWRITING] [$LO - $HI] [%Duty]"] },
         { name: "detune",
@@ -1249,7 +1243,7 @@ var beepbox = (function (exports) {
             promptDesc: ["This setting controls the amount that your pitch moves up and down by during vibrato, just like the vibrato depth slider.", "At $LO, your instrument will have no vibrato depth so its vibrato would be inaudible. This increases up to $HI, where an extreme pitch change will be noticeable.", "[OVERWRITING] [$LO - $HI] [pitch ÷25]"] },
         { name: "song detune",
             pianoName: "Detune",
-            maxRawVol: Config.songDetuneMax - Config.songDetuneMin, newNoteVol: Math.ceil((Config.songDetuneMax - Config.songDetuneMin) / 2), forSong: true, convertRealFactor: -250, associatedEffect: 16,
+            maxRawVol: Config.songDetuneMax - Config.songDetuneMin, newNoteVol: Math.ceil((Config.songDetuneMax - Config.songDetuneMin) / 2), forSong: true, convertRealFactor: -250, associatedEffect: 17,
             promptName: "Song Detune",
             promptDesc: ["This setting controls the overall detune of the entire song. There is no associated slider.", "At $MID, your song will have no extra detune applied and sound unchanged from default. Each tick corresponds to four cents, or four hundredths of a pitch. Thus, each change of 25 ticks corresponds to one half-step of detune, up to 10 half-steps up at $HI, or 10 half-steps down at $LO.", "[ADDITIVE] [$LO - $HI] [cents x4]"] },
         { name: "vibrato speed",
@@ -1280,7 +1274,7 @@ var beepbox = (function (exports) {
             promptDesc: ["This setting functions a little different from most. Wherever a note is placed, the arpeggio of this instrument will reset at the very start of that note. This is most noticeable with lower arpeggio speeds. The lengths and values of notes for this setting don't matter, just the note start times.", "This mod can be used to sync up your apreggios so that they always sound the same, even if you are using an odd-ratio arpeggio speed or modulating arpeggio speed.", "[$LO - $HI]"] },
         { name: "eq filter",
             pianoName: "EQFlt",
-            maxRawVol: 10, newNoteVol: 0, forSong: false, convertRealFactor: 0, associatedEffect: 16,
+            maxRawVol: 10, newNoteVol: 0, forSong: false, convertRealFactor: 0, associatedEffect: 17,
             promptName: "EQ Filter",
             promptDesc: ["This setting controls a few separate things for your instrument's EQ filter.", "When the option 'morph' is selected, your modulator values will indicate a sub-filter index of your EQ filter to 'morph' to over time. For example, a change from 0 to 1 means your main filter (default) will morph to sub-filter 1 over the specified duration. You can shape the main filter and sub-filters in the large filter editor ('+' button). If your two filters' number, type, and order of filter dots all match up, the morph will happen smoothly and you'll be able to hear them changing. If they do not match up, the filters will simply jump between each other.", "Note that filters will morph based on endpoints in the pattern editor. So, if you specify a morph from sub-filter 1 to 4 but do not specifically drag in new endpoints for 2 and 3, it will morph directly between 1 and 4 without going through the others.", "If you target Dot X or Dot Y, you can finely tune the coordinates of a single dot for your filter. The number of available dots to choose is dependent on your main filter's dot count.", "[OVERWRITING] [$LO - $HI]"] },
         { name: "note filter",
@@ -1305,7 +1299,7 @@ var beepbox = (function (exports) {
             promptDesc: ["This setting controls the echo sustain (echo loudness) of your instrument, just like the echo slider.", "At $LO, your instrument will have no echo sustain and echo will not be audible. Echo sustain increases and the echo effect gets more noticeable up to the max value, $HI.", "[OVERWRITING] [$LO - $HI]"] },
         { name: "echo delay",
             pianoName: "Echo Delay",
-            maxRawVol: Config.echoDelayRange, newNoteVol: 0, forSong: false, convertRealFactor: 0, associatedEffect: 16,
+            maxRawVol: Config.echoDelayRange, newNoteVol: 0, forSong: false, convertRealFactor: 0, associatedEffect: 17,
             promptName: "Instrument Echo Delay",
             promptDesc: ["This setting controls the echo delay of your instrument, just like the echo delay slider.", "At $LO, your instrument will have very little echo delay, and this increases up to 2 beats of delay at $HI.", "[OVERWRITING] [$LO - $HI] [~beats ÷12]"]
         },
@@ -1316,12 +1310,12 @@ var beepbox = (function (exports) {
             promptDesc: ["This setting controls the chorus strength of your instrument, just like the chorus slider.", "At $LO, the chorus effect will be disabled. The strength of the chorus effect increases up to the max value, $HI.", "[OVERWRITING] [$LO - $HI]"] },
         { name: "eq filt cut",
             pianoName: "EQFlt Cut",
-            maxRawVol: Config.filterSimpleCutRange - 1, newNoteVol: Config.filterSimpleCutRange - 1, forSong: false, convertRealFactor: 0, associatedEffect: 16,
+            maxRawVol: Config.filterSimpleCutRange - 1, newNoteVol: Config.filterSimpleCutRange - 1, forSong: false, convertRealFactor: 0, associatedEffect: 17,
             promptName: "EQ Filter Cutoff Frequency",
             promptDesc: ["This setting controls the filter cut position of your instrument, just like the filter cut slider.", "This setting is roughly analagous to the horizontal position of a single low-pass dot on the advanced filter editor. At lower values, a wider range of frequencies is cut off.", "[OVERWRITING] [$LO - $HI]"] },
         { name: "eq filt peak",
             pianoName: "EQFlt Peak",
-            maxRawVol: Config.filterSimplePeakRange - 1, newNoteVol: 0, forSong: false, convertRealFactor: 0, associatedEffect: 16,
+            maxRawVol: Config.filterSimplePeakRange - 1, newNoteVol: 0, forSong: false, convertRealFactor: 0, associatedEffect: 17,
             promptName: "EQ Filter Peak Gain",
             promptDesc: ["This setting controls the filter peak position of your instrument, just like the filter peak slider.", "This setting is roughly analagous to the vertical position of a single low-pass dot on the advanced filter editor. At lower values, the cutoff frequency will not be emphasized, and at higher values you will hear emphasis on the cutoff frequency.", "[OVERWRITING] [$LO - $HI]"] },
         { name: "note filt cut",
@@ -1341,58 +1335,58 @@ var beepbox = (function (exports) {
             promptDesc: ["This setting controls the pitch offset of your instrument, just like the pitch shift slider.", "At $MID your instrument will have no pitch shift. This increases as you decrease toward $LO pitches (half-steps) at the low end, or increases towards +$HI pitches at the high end.", "[OVERWRITING] [$LO - $HI] [pitch]"] },
         { name: "sustain",
             pianoName: "Sustain",
-            maxRawVol: Config.stringSustainRange - 1, newNoteVol: 0, forSong: false, convertRealFactor: 0, associatedEffect: 16,
+            maxRawVol: Config.stringSustainRange - 1, newNoteVol: 0, forSong: false, convertRealFactor: 0, associatedEffect: 17,
             promptName: "Picked String Sustain",
             promptDesc: ["This setting controls the sustain of your picked string instrument, just like the sustain slider.", "At $LO, your instrument will have minimum sustain and sound 'plucky'. This increases to a more held sound as your modulator approaches the maximum, $HI.", "[OVERWRITING] [$LO - $HI]"] },
         { name: "mix volume",
             pianoName: "Mix Vol.",
-            maxRawVol: Config.volumeRange, newNoteVol: Math.ceil(Config.volumeRange / 2), forSong: false, convertRealFactor: Math.ceil(-Config.volumeRange / 2.0), associatedEffect: 16,
+            maxRawVol: Config.volumeRange, newNoteVol: Math.ceil(Config.volumeRange / 2), forSong: false, convertRealFactor: Math.ceil(-Config.volumeRange / 2.0), associatedEffect: 17,
             promptName: "Mix Volume",
             promptDesc: ["This setting affects the volume of your instrument as if its volume slider had been moved.", "At $MID, an instrument's volume will be unchanged from default. This means you can still use the volume sliders to mix the base volume of instruments, since this setting and the default value work multiplicatively. The volume gradually increases up to $HI, or decreases down to mute at $LO.", "Unlike the 'note volume' setting, mix volume is very straightforward and simply affects the resultant instrument volume after all effects are applied.", "[MULTIPLICATIVE] [$LO - $HI]"] },
         { name: "fm slider 5",
             pianoName: "FM 5",
-            maxRawVol: 15, newNoteVol: 15, forSong: false, convertRealFactor: 0, associatedEffect: 16,
+            maxRawVol: 15, newNoteVol: 15, forSong: false, convertRealFactor: 0, associatedEffect: 17,
             promptName: "FM Slider 5",
             promptDesc: ["This setting affects the strength of the fifth FM slider, just like the corresponding slider on your instrument.", "It works in a multiplicative way, so at $HI your slider will sound the same is its default value, and at $LO it will sound like it has been moved all the way to the left.", "For the full range of control with this mod, move your underlying slider all the way to the right.", "[MULTIPLICATIVE] [$LO - $HI] [%]"] },
         { name: "fm slider 6",
             pianoName: "FM 6",
-            maxRawVol: 15, newNoteVol: 15, forSong: false, convertRealFactor: 0, associatedEffect: 16,
+            maxRawVol: 15, newNoteVol: 15, forSong: false, convertRealFactor: 0, associatedEffect: 17,
             promptName: "FM Slider 6",
             promptDesc: ["This setting affects the strength of the sixth FM slider, just like the corresponding slider on your instrument.", "It works in a multiplicative way, so at $HI your slider will sound the same is its default value, and at $LO it will sound like it has been moved all the way to the left.", "For the full range of control with this mod, move your underlying slider all the way to the right.", "[MULTIPLICATIVE] [$LO - $HI] [%]"] },
         { name: "decimal offset",
             pianoName: "Decimal Offset",
-            maxRawVol: 99, newNoteVol: 0, forSong: false, convertRealFactor: 0, invertSliderIndicator: true, associatedEffect: 16,
+            maxRawVol: 99, newNoteVol: 0, forSong: false, convertRealFactor: 0, invertSliderIndicator: true, associatedEffect: 17,
             promptName: "Decimal Offset",
             promptDesc: ["This setting controls the decimal offset that is subtracted from the pulse width; use this for creating values like 12.5 or 6.25.", "[$LO - $HI]"] },
         { name: "envelope speed",
             pianoName: "EnvelopeSpd",
-            maxRawVol: 50, newNoteVol: 12, forSong: false, convertRealFactor: 0, associatedEffect: 16,
+            maxRawVol: 50, newNoteVol: 12, forSong: false, convertRealFactor: 0, associatedEffect: 17,
             promptName: "Envelope Speed",
             promptDesc: ["This setting controls how fast all of the envelopes for the instrument play.", "At $LO, your instrument's envelopes will be frozen, and at values near there they will change very slowly. At 12, the envelopes will work as usual, performing at normal speed. This increases up to $HI, where the envelopes will change very quickly. The speeds are given below:",
                 "[0-4]: x0, x1/16, x⅛, x⅕, x¼,", "[5-9]: x⅓, x⅖, x½, x⅔, x¾,", "[10-14]: x⅘, x0.9, x1, x1.1, x1.2,", "[15-19]: x1.3, x1.4, x1.5, x1.6, x1.7,", "[20-24]: x1.8, x1.9, x2, x2.1, x2.2,", "[25-29]: x2.3, x2.4, x2.5, x2.6, x2.7,", "[30-34]: x2.8, x2.9, x3, x3.1, x3.2,", "[35-39]: x3.3, x3.4, x3.5, x3.6, x3.7,", "[40-44]: x3.8, x3.9, x4, x4.15, x4.3,", "[45-50]: x4.5, x4.8, x5, x5.5, x6, x8", "[OVERWRITING] [$LO - $HI]"] },
         { name: "dynamism",
             pianoName: "Dynamism",
-            maxRawVol: Config.supersawDynamismMax, newNoteVol: 0, forSong: false, convertRealFactor: 0, associatedEffect: 16,
+            maxRawVol: Config.supersawDynamismMax, newNoteVol: 0, forSong: false, convertRealFactor: 0, associatedEffect: 17,
             promptName: "Supersaw Dynamism",
             promptDesc: ["This setting controls the supersaw dynamism of your instrument, just like the dynamism slider.", "At $LO, your instrument will have only a single pulse contributing. Increasing this will raise the contribution of other waves which is similar to a chorus effect. The effect gets more noticeable up to the max value, $HI.", "[OVERWRITING] [$LO - $HI]"] },
         { name: "spread",
             pianoName: "Spread",
-            maxRawVol: Config.supersawSpreadMax, newNoteVol: 0, forSong: false, convertRealFactor: 0, associatedEffect: 16,
+            maxRawVol: Config.supersawSpreadMax, newNoteVol: 0, forSong: false, convertRealFactor: 0, associatedEffect: 17,
             promptName: "Supersaw Spread",
             promptDesc: ["This setting controls the supersaw spread of your instrument, just like the spread slider.", "At $LO, all the pulses in your supersaw will be at the same frequency. Increasing this value raises the frequency spread of the contributing waves, up to a dissonant spread at the max value, $HI.", "[OVERWRITING] [$LO - $HI]"] },
         { name: "saw shape",
             pianoName: "Saw Shape",
-            maxRawVol: Config.supersawShapeMax, newNoteVol: 0, forSong: false, convertRealFactor: 0, associatedEffect: 16,
+            maxRawVol: Config.supersawShapeMax, newNoteVol: 0, forSong: false, convertRealFactor: 0, associatedEffect: 17,
             promptName: "Supersaw Shape",
             promptDesc: ["This setting controls the supersaw shape of your instrument, just like the Saw↔Pulse slider.", "As the slider's name implies, this effect will give you a sawtooth wave at $LO, and a full pulse width wave at $HI. Values in between will be a blend of the two.", "[OVERWRITING] [$LO - $HI] [%]"] },
         { name: "song bitcrush",
             pianoName: "Song Bit crush",
-            maxRawVol: Config.bitcrusherQuantizationRange * 2, newNoteVol: Config.bitcrusherQuantizationRange, forSong: true, convertRealFactor: -Config.bitcrusherQuantizationRange, associatedEffect: 16,
+            maxRawVol: Config.bitcrusherQuantizationRange * 2, newNoteVol: Config.bitcrusherQuantizationRange, forSong: true, convertRealFactor: -Config.bitcrusherQuantizationRange, associatedEffect: 17,
             promptName: "Song Bit crush",
             promptDesc: ["This setting affects the overall bitcrush of your song. It works by multiplying existing bitcrush for instruments, so those with no bitcrush set will be unaffected.", "At $MID, all instruments' bitcrush will be unchanged from default. This increases up to double the set bitcrush value at $HI, or down to no bitcrush at $LO.", "[MULTIPLICATIVE] [$LO - $HI]"] },
         { name: "song freqcrush",
             pianoName: "Song freqcrush",
-            maxRawVol: Config.bitcrusherFreqRange * 2, newNoteVol: Config.bitcrusherFreqRange, forSong: true, convertRealFactor: -Config.bitcrusherFreqRange, associatedEffect: 16,
+            maxRawVol: Config.bitcrusherFreqRange * 2, newNoteVol: Config.bitcrusherFreqRange, forSong: true, convertRealFactor: -Config.bitcrusherFreqRange, associatedEffect: 17,
             promptName: "Song Freq crush",
             promptDesc: ["This setting affects the overall frequency crush of your song. It works by multiplying existing freq crush for instruments, so those with no bitcrush or freq crush set will be unaffected.", "At $MID, all instruments' bitcrush will be unchanged from default. This increases up to double the set bitcrush value at $HI, or down to no bitcrush at $LO.", "[MULTIPLICATIVE] [$LO - $HI]"] },
         { name: "song panning",
@@ -1402,27 +1396,27 @@ var beepbox = (function (exports) {
             promptDesc: ["This setting affects the overall panning of your song. It works by adding to existing pan for instruments, so those with no panning set will be unaffected.", "At $MID, nothing will be added to the songs panning. At $HI, all instruments will have 100+ panning added, which would max out the panning. At $LO, -100+ panning added to it, which would make the panning as low as possible.", "[ADDITIVE] [$LO - $HI]"] },
         { name: "song chorus",
             pianoName: "Song Chorus",
-            maxRawVol: Config.chorusRange * 2, newNoteVol: Config.chorusRange, forSong: true, convertRealFactor: -Config.chorusRange, associatedEffect: 16,
+            maxRawVol: Config.chorusRange * 2, newNoteVol: Config.chorusRange, forSong: true, convertRealFactor: -Config.chorusRange, associatedEffect: 17,
             promptName: "Song Chorus",
             promptDesc: ["This setting affects the overall chorus of your song. It works by multiplying existing chorus for instruments, so those with no chorus set will be unaffected.", "At $MID, all instruments' chorus will be unchanged from default. This increases up to double the set chorus value at $HI, or down to no chorus at $LO.", "[MULTIPLICATIVE] [$LO - $HI]"] },
         { name: "song distortion",
             pianoName: "Song Distortion",
-            maxRawVol: Config.distortionRange * 2, newNoteVol: Config.distortionRange, forSong: true, convertRealFactor: -Config.distortionRange, associatedEffect: 16,
+            maxRawVol: Config.distortionRange * 2, newNoteVol: Config.distortionRange, forSong: true, convertRealFactor: -Config.distortionRange, associatedEffect: 17,
             promptName: "Song Distortion",
             promptDesc: ["This setting affects the overall distortion of your song. It works by multiplying existing distortion for instruments, so those with no distortion set will be unaffected.", "At $MID, all instruments' distortion will be unchanged from default. This increases up to double the set distortion value at $HI, or down to no distortion at $LO.", "[MULTIPLICATIVE] [$LO - $HI]"] },
         { name: "ring modulation",
             pianoName: "Ring Modulation",
-            maxRawVol: Config.ringModRange, newNoteVol: 0, forSong: false, convertRealFactor: 0, associatedEffect: 16,
+            maxRawVol: Config.ringModRange, newNoteVol: 0, forSong: false, convertRealFactor: 0, associatedEffect: 17,
             promptName: "Ring Modulation",
             promptDesc: ["This setting controls the Ring Modulation effect in your instrument.", "[OVERWRITING] [$LO - $HI]"] },
         { name: "song ring modulation",
             pianoName: "Songwide Ring Modulation",
-            maxRawVol: Config.ringModRange * 2, newNoteVol: Config.ringModRange, forSong: true, convertRealFactor: -Config.ringModRange, associatedEffect: 16,
+            maxRawVol: Config.ringModRange * 2, newNoteVol: Config.ringModRange, forSong: true, convertRealFactor: -Config.ringModRange, associatedEffect: 17,
             promptName: "Songwide Ring Modulation",
             promptDesc: ["This setting multiplies the Ring Modulation effect across all instruments.", "[MULTIPLICATIVE] [$LO - $HI]"] },
         { name: "ring mod hertz",
             pianoName: "Ring Modulation (Hertz)",
-            maxRawVol: Config.ringModHzRange, newNoteVol: 0, forSong: false, convertRealFactor: 0, associatedEffect: 16,
+            maxRawVol: Config.ringModHzRange, newNoteVol: 0, forSong: false, convertRealFactor: 0, associatedEffect: 17,
             promptName: "Ring Modulation (Hertz)",
             promptDesc: ["This setting controls the Hertz (Hz) used in the Ring Modulation effect in your instrument.", "[OVERWRITING] [$LO - $HI]"] },
         { name: "phaser",
@@ -1452,9 +1446,33 @@ var beepbox = (function (exports) {
             promptDesc: ["This setting controls the pitch offset of all instruments regardless of whether or not the instrument has the effect itself, just like the pitch shift slider.", "At $MID your instrument will have no pitch shift. This increases as you decrease toward $LO pitches (half-steps) at the low end, or increases towards +$HI pitches at the high end.", "[ADDITIVE] [$LO - $HI] [pitch]"] },
         { name: "individual envelope speed",
             pianoName: "IndvEnvSpd",
-            maxRawVol: 63, newNoteVol: 23, forSong: false, convertRealFactor: 0, associatedEffect: 16,
+            maxRawVol: 63, newNoteVol: 23, forSong: false, convertRealFactor: 0, associatedEffect: 17,
             promptName: "Individual Envelope Speed",
             promptDesc: ["This setting controls how fast the specified envelope of the instrument will play.", "At $LO, your the envelope will be frozen, and at values near there they will change very slowly. At 23, the envelope will work as usual, performing at normal speed. This increases up to $HI, where the envelope will change very quickly. The speeds are given below:", "[0-4]: x0, x0.01, x0.02, x0.03, x0.04,", "[5-9]: x0.05, x0.06, x0.07, x0.08, x0.09,", "[10-14]: x0.1, x0.2, x0.25, x0.3, x0.33,", "[15-19]: x0.4, x0.5, x0.6, x0.6667, x0.7,", "[20-24]: x0.75, x0.8, x0.9, x1, x1.25,", "[25-29]: x1.3333, x1.5, x1.6667, x1.75, x2,", "[30-34]: x2.25, x2.5, x2.75, x3, x3.5,", "[35-39]: x4, x4.5, x5, x5.5, x6,", "[40-44]: x6.5, x7, x7.5, x8, x8.5,", "[45-49]: x9, x9.5, x10, x11, x12", "[50-54]: x13, x14, x15, x16, x17", "[55-59]: x18, x19, x20, x24, x32", "[60-63]: x40, x64, x128, x256", "[OVERWRITING] [$LO - $HI]"] },
+        { name: "invert wave",
+            pianoName: "Invert Wave",
+            maxRawVol: 1, newNoteVol: 1, forSong: false, convertRealFactor: 0, associatedEffect: 15,
+            promptName: "Invert Wave",
+            promptDesc: ["Allows you to toggle the Invert Wave effect on instruments. Value must be exactly 1 for this to take effect.", "[$LO - $HI]"] },
+        { name: "granular",
+            pianoName: "Granular",
+            maxRawVol: Config.granularRange, newNoteVol: 0, forSong: false, convertRealFactor: 0, associatedEffect: 16,
+            promptName: "Granular",
+            promptDesc: ["This setting controls the granular effect in your instrument.", "[OVERWRITING] [$LO - $HI]"] },
+        { name: "grain freq",
+            pianoName: "Grain #",
+            maxRawVol: Config.grainAmountsMax, newNoteVol: 8, forSong: false, convertRealFactor: 0, associatedEffect: 16,
+            promptName: "Grain Count",
+            promptDesc: ["This setting controls the density of grains for the granular effect on your instrument.", "[OVERWRITING] [$LO - $HI]"] },
+        { name: "grain size",
+            pianoName: "Grain Size",
+            maxRawVol: Config.grainSizeMax / Config.grainSizeStep, newNoteVol: Config.grainSizeMin / Config.grainSizeStep, forSong: false, convertRealFactor: 0, associatedEffect: 16,
+            promptName: "Grain Size", promptDesc: ["This setting controls the grain size of the granular effect in your instrument.", "The number shown in the mod channel is multiplied by " + Config.grainSizeStep + " to get the actual grain size.", "[OVERWRITING] [$LO - $HI]"] },
+        { name: "grain range",
+            pianoName: "Grain Range",
+            maxRawVol: Config.grainRangeMax / Config.grainSizeStep, newNoteVol: 0, forSong: false, convertRealFactor: 0, associatedEffect: 16,
+            promptName: "Grain Range",
+            promptDesc: ["This setting controls the range of values for your grain size of the granular effect in your instrument, from no variation to a lot", "The number shown in the mod channel is multiplied by " + Config.grainSizeStep + " to get the actual grain size.", "[OVERWRITING] [$LO - $HI]"] },
     ]);
     function centerWave(wave) {
         let sum = 0.0;
@@ -1787,6 +1805,9 @@ var beepbox = (function (exports) {
     function effectsIncludeInvertWave(effects) {
         return (effects & (1 << 15)) != 0;
     }
+    function effectsIncludeGranular(effects) {
+        return (effects & (1 << 16)) != 0;
+    }
     function rawChipToIntegrated(raw) {
         const newArray = new Array(raw.length);
         const dictionary = {};
@@ -1841,7 +1862,7 @@ var beepbox = (function (exports) {
             return (_a = EditorConfig.presetCategories[0].presets.dictionary) === null || _a === void 0 ? void 0 : _a[TypePresets === null || TypePresets === void 0 ? void 0 : TypePresets[instrument]];
         }
     }
-    EditorConfig.version = "1.6";
+    EditorConfig.version = "1.7";
     EditorConfig.versionDisplayName = "AbyssBox " + EditorConfig.version;
     EditorConfig.releaseNotesURL = "./patch_notes.html";
     EditorConfig.isOnMac = /^Mac/i.test(navigator.platform) || /Mac OS X/i.test(navigator.userAgent) || /^(iPhone|iPad|iPod)/i.test(navigator.platform) || /(iPhone|iPad|iPod)/i.test(navigator.userAgent);
@@ -2224,7 +2245,6 @@ var beepbox = (function (exports) {
                 { name: "Distortion Bass", generalMidi: false, settings: { "type": "Picked String", "eqFilter": [{ "type": "low-pass", "cutoffHz": 4756.83, "linearGain": 0.25 }, { "type": "high-pass", "cutoffHz": 88.39, "linearGain": 1.4142 }, { "type": "low-pass", "cutoffHz": 8000, "linearGain": 0.5 }, { "type": "peak", "cutoffHz": 1000, "linearGain": 0.5 }], "eqFilterType": false, "eqSimpleCut": 10, "eqSimplePeak": 0, "envelopeSpeed": 12, "discreteEnvelope": false, "eqSubFilters0": [{ "type": "low-pass", "cutoffHz": 4756.83, "linearGain": 0.25 }, { "type": "high-pass", "cutoffHz": 88.39, "linearGain": 1.4142 }, { "type": "low-pass", "cutoffHz": 8000, "linearGain": 0.5 }, { "type": "peak", "cutoffHz": 1000, "linearGain": 0.5 }], "effects": ["note filter", "distortion", "bitcrusher", "phaser"], "noteFilterType": false, "noteSimpleCut": 10, "noteSimplePeak": 0, "noteFilter": [{ "type": "high-pass", "cutoffHz": 88.39, "linearGain": 1.4142 }, { "type": "low-pass", "cutoffHz": 4000, "linearGain": 0.5 }], "noteSubFilters0": [{ "type": "high-pass", "cutoffHz": 88.39, "linearGain": 1.4142 }, { "type": "low-pass", "cutoffHz": 4000, "linearGain": 0.5 }], "distortion": 43, "aliases": false, "bitcrusherOctave": 6, "bitcrusherQuantization": 0, "phaserMix": 65, "phaserFreq": 19, "phaserFeedback": 61, "phaserStages": 52, "panDelay": 10, "fadeInSeconds": 0, "fadeOutTicks": 6, "harmonics": [86, 100, 100, 86, 86, 86, 86, 71, 71, 71, 71, 71, 71, 71, 71, 71, 71, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 71], "unison": "none", "stringSustain": 64, "envelopes": [{ "target": "noteFilterFreq", "envelope": "note size", "index": 1 }, { "target": "phaserFeedback", "envelope": "twang 3" }] } },
                 { name: "Phased Overdrive Guitar", generalMidi: false, settings: { "type": "Picked String", "eqFilter": [{ "type": "low-pass", "cutoffHz": 4756.83, "linearGain": 0.7071 }, { "type": "high-pass", "cutoffHz": 250, "linearGain": 1 }, { "type": "low-pass", "cutoffHz": 6727.17, "linearGain": 1.4142 }, { "type": "peak", "cutoffHz": 840.9, "linearGain": 0.3536 }], "eqFilterType": false, "eqSimpleCut": 10, "eqSimplePeak": 0, "envelopeSpeed": 12, "discreteEnvelope": false, "eqSubFilters0": [{ "type": "low-pass", "cutoffHz": 4756.83, "linearGain": 0.7071 }, { "type": "high-pass", "cutoffHz": 250, "linearGain": 1 }, { "type": "low-pass", "cutoffHz": 6727.17, "linearGain": 1.4142 }, { "type": "peak", "cutoffHz": 840.9, "linearGain": 0.3536 }], "effects": ["note filter", "distortion", "bitcrusher", "phaser"], "noteFilterType": false, "noteSimpleCut": 10, "noteSimplePeak": 0, "noteFilter": [{ "type": "high-pass", "cutoffHz": 297.3, "linearGain": 2 }, { "type": "low-pass", "cutoffHz": 2378.41, "linearGain": 0.7071 }], "noteSubFilters0": [{ "type": "high-pass", "cutoffHz": 297.3, "linearGain": 2 }, { "type": "low-pass", "cutoffHz": 2378.41, "linearGain": 0.7071 }], "distortion": 71, "aliases": false, "bitcrusherOctave": 6, "bitcrusherQuantization": 0, "phaserMix": 100, "phaserFreq": 19, "phaserFeedback": 61, "phaserStages": 52, "panDelay": 10, "fadeInSeconds": 0, "fadeOutTicks": 12, "harmonics": [86, 100, 100, 86, 86, 86, 86, 71, 71, 71, 71, 71, 71, 71, 71, 71, 71, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 71], "unison": "none", "stringSustain": 64, "envelopes": [{ "target": "noteFilterFreq", "envelope": "note size", "index": 1 }, { "target": "phaserFeedback", "envelope": "twang 2" }] } },
                 { name: "Phased Picked Guitar", generalMidi: false, settings: { "type": "Picked String", "eqFilter": [{ "type": "low-pass", "cutoffHz": 4756.83, "linearGain": 0.7071 }, { "type": "high-pass", "cutoffHz": 250, "linearGain": 1 }, { "type": "low-pass", "cutoffHz": 6727.17, "linearGain": 1.4142 }, { "type": "peak", "cutoffHz": 840.9, "linearGain": 0.3536 }], "eqFilterType": false, "eqSimpleCut": 10, "eqSimplePeak": 0, "envelopeSpeed": 12, "discreteEnvelope": false, "eqSubFilters0": [{ "type": "low-pass", "cutoffHz": 4756.83, "linearGain": 0.7071 }, { "type": "high-pass", "cutoffHz": 250, "linearGain": 1 }, { "type": "low-pass", "cutoffHz": 6727.17, "linearGain": 1.4142 }, { "type": "peak", "cutoffHz": 840.9, "linearGain": 0.3536 }], "effects": ["note filter", "distortion", "bitcrusher", "chorus", "echo", "phaser"], "noteFilterType": false, "noteSimpleCut": 10, "noteSimplePeak": 0, "noteFilter": [{ "type": "high-pass", "cutoffHz": 297.3, "linearGain": 2 }, { "type": "low-pass", "cutoffHz": 2378.41, "linearGain": 0.7071 }], "noteSubFilters0": [{ "type": "high-pass", "cutoffHz": 297.3, "linearGain": 2 }, { "type": "low-pass", "cutoffHz": 2378.41, "linearGain": 0.7071 }], "distortion": 29, "aliases": false, "bitcrusherOctave": 6, "bitcrusherQuantization": 0, "phaserMix": 77, "phaserFreq": 19, "phaserFeedback": 61, "phaserStages": 52, "panDelay": 10, "chorus": 43, "echoSustain": 43, "echoDelayBeats": 1, "fadeInSeconds": 0, "fadeOutTicks": 12, "harmonics": [86, 100, 100, 86, 86, 86, 86, 71, 71, 71, 71, 71, 71, 71, 71, 71, 71, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 71], "unison": "none", "stringSustain": 64, "envelopes": [{ "target": "noteFilterFreq", "envelope": "note size", "index": 1 }, { "target": "phaserMix", "envelope": "twang -1" }] } },
-                { name: "Accumula Guitar", generalMidi: false, settings: { "type": "FM6op", "eqFilter": [{ "type": "peak", "cutoffHz": 353.55, "linearGain": 0.0884 }, { "type": "peak", "cutoffHz": 16000, "linearGain": 11.3137 }, { "type": "peak", "cutoffHz": 210.22, "linearGain": 4 }, { "type": "high-pass", "cutoffHz": 62.5, "linearGain": 0.25 }], "eqFilterType": false, "eqSimpleCut": 10, "eqSimplePeak": 0, "envelopeSpeed": 4, "discreteEnvelope": false, "eqSubFilters0": [{ "type": "peak", "cutoffHz": 353.55, "linearGain": 0.0884 }, { "type": "peak", "cutoffHz": 16000, "linearGain": 11.3137 }, { "type": "peak", "cutoffHz": 210.22, "linearGain": 4 }, { "type": "high-pass", "cutoffHz": 62.5, "linearGain": 0.25 }], "effects": ["transition type", "chord type", "detune", "vibrato", "note filter", "bitcrusher", "reverb"], "transition": "interrupt", "clicklessTransition": false, "chord": "strum", "fastTwoNoteArp": false, "arpeggioSpeed": 12, "detuneCents": 12, "vibrato": "none", "vibratoDepth": 0, "vibratoDelay": 0, "vibratoSpeed": 10, "vibratoType": 0, "noteFilterType": false, "noteSimpleCut": 10, "noteSimplePeak": 0, "noteFilter": [{ "type": "peak", "cutoffHz": 19027.31, "linearGain": 8 }], "noteSubFilters0": [{ "type": "peak", "cutoffHz": 19027.31, "linearGain": 8 }], "bitcrusherOctave": 6.5, "bitcrusherQuantization": 0, "panDelay": 20, "reverb": 3, "fadeInSeconds": 0.0125, "fadeOutTicks": 96, "algorithm": "1 2 3 4 5 6", "feedbackType": "1→2→3→4→5→6", "feedbackAmplitude": 15, "operators": [{ "frequency": "1×", "amplitude": 15, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "2×", "amplitude": 10, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "4×", "amplitude": 11, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "6×", "amplitude": 8, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "8×", "amplitude": 7, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "9×", "amplitude": 8, "waveform": "sine", "pulseWidth": 5 }], "envelopes": [{ "target": "feedbackAmplitude", "envelope": "twang", "inverse": false, "perEnvelopeSpeed": 128, "perEnvelopeLowerBound": 0, "perEnvelopeUpperBound": 1 }, { "target": "noteVolume", "envelope": "punch", "inverse": false, "perEnvelopeSpeed": 0, "perEnvelopeLowerBound": 0, "perEnvelopeUpperBound": 1 }, { "target": "operatorAmplitude", "envelope": "twang", "inverse": false, "perEnvelopeSpeed": 2, "perEnvelopeLowerBound": 0, "perEnvelopeUpperBound": 1, "index": 1 }, { "target": "operatorAmplitude", "envelope": "twang", "inverse": false, "perEnvelopeSpeed": 8, "perEnvelopeLowerBound": 0, "perEnvelopeUpperBound": 1, "index": 2 }, { "target": "operatorAmplitude", "envelope": "twang", "inverse": false, "perEnvelopeSpeed": 32, "perEnvelopeLowerBound": 0, "perEnvelopeUpperBound": 1, "index": 3 }, { "target": "operatorAmplitude", "envelope": "twang", "inverse": false, "perEnvelopeSpeed": 32, "perEnvelopeLowerBound": 0, "perEnvelopeUpperBound": 1, "index": 4 }, { "target": "operatorAmplitude", "envelope": "twang", "inverse": false, "perEnvelopeSpeed": 128, "perEnvelopeLowerBound": 0, "perEnvelopeUpperBound": 1, "index": 5 }, { "target": "noteFilterFreq", "envelope": "twang", "inverse": false, "perEnvelopeSpeed": 8, "perEnvelopeLowerBound": 0, "perEnvelopeUpperBound": 1, "index": 0 }, { "target": "operatorAmplitude", "envelope": "random", "inverse": false, "perEnvelopeSpeed": 0, "perEnvelopeLowerBound": 0, "perEnvelopeUpperBound": 1, "index": 2, "steps": 4, "seed": 2, "waveform": 2 }, { "target": "operatorAmplitude", "envelope": "random", "inverse": false, "perEnvelopeSpeed": 0, "perEnvelopeLowerBound": 0.5, "perEnvelopeUpperBound": 1, "index": 4, "steps": 4, "seed": 19, "waveform": 2 }, { "target": "operatorAmplitude", "envelope": "random", "inverse": false, "perEnvelopeSpeed": 0, "perEnvelopeLowerBound": 0.6, "perEnvelopeUpperBound": 1, "index": 5, "steps": 2, "seed": 21, "waveform": 2 }, { "target": "operatorAmplitude", "envelope": "random", "inverse": false, "perEnvelopeSpeed": 0, "perEnvelopeLowerBound": 0, "perEnvelopeUpperBound": 1, "index": 1, "steps": 4, "seed": 2, "waveform": 2 }, { "target": "noteVolume", "envelope": "random", "inverse": false, "perEnvelopeSpeed": 1, "perEnvelopeLowerBound": 0.7, "perEnvelopeUpperBound": 1.6, "steps": 8, "seed": 2, "waveform": 2 }, { "target": "detune", "envelope": "random", "inverse": false, "perEnvelopeSpeed": 1, "perEnvelopeLowerBound": 0, "perEnvelopeUpperBound": 1, "steps": 5, "seed": 2, "waveform": 2 }] } },
             ]) },
         { name: "AbyssBox's Spooky Presets", presets: toNameMap([
                 { name: "Ghost House", generalMidi: false, settings: { "type": "FM", "eqFilter": [], "eqFilterType": false, "eqSimpleCut": 10, "eqSimplePeak": 0, "envelopeSpeed": 12, "discreteEnvelope": false, "eqSubFilters0": [], "effects": ["transition type", "vibrato", "bitcrusher"], "transition": "normal", "clicklessTransition": false, "vibrato": "heavy", "vibratoDepth": 0.45, "vibratoDelay": 0, "vibratoSpeed": 10, "vibratoType": 0, "bitcrusherOctave": 3.5, "bitcrusherQuantization": 43, "panDelay": 10, "fadeInSeconds": 0, "fadeOutTicks": -3, "algorithm": "1←(2 3←4)", "feedbackType": "1⟲", "feedbackAmplitude": 0, "operators": [{ "frequency": "1×", "amplitude": 15, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "1×", "amplitude": 4, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "1×", "amplitude": 6, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "1×", "amplitude": 7, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "1×", "amplitude": 0, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "1×", "amplitude": 0, "waveform": "sine", "pulseWidth": 5 }], "envelopes": [{ "target": "noteVolume", "envelope": "punch" }] } },
@@ -15510,17 +15530,43 @@ var beepbox = (function (exports) {
 	`,
         "ultrabox dark": `
 		:root {
-		/*--mod-title: #CCCCCC;*/
+		--page-margin: black;
+		--editor-background: black;
+		--secondary-text: #999;
+		--inverted-text: black;
+		--text-selection: rgba(119,68,255,0.99);
+		--box-selection-fill: rgba(255,255,255,0.2);
+		--ui-widget-background: #444;
+		--ui-widget-focus: #777;
+		--pitch-background: #444;
+		--tonic: #864;
+		--fifth-note: #468;
+		--third-note: #486;
+		--use-color-formula: false;
+		--track-editor-bg-pitch: #444;
+		--track-editor-bg-pitch-dim: #333;
+		--track-editor-bg-noise: #444;
+		--track-editor-bg-noise-dim: #333;
+		--track-editor-bg-mod: #234;
+		--track-editor-bg-mod-dim: #123;
+		--multiplicative-mod-slider: #456;
+		--overwriting-mod-slider: #654;
+		--indicator-primary: #74f;
+		--indicator-secondary: #444;
+		--select2-opt-group: #585858;
+		--input-box-outline: #333;
+		--mute-button-normal: #ffa033;
+		--mute-button-mod: #9a6bff;
+        --mod-title: #CCCCCC;
 		--loop-accent: #CCCCCC;
 		--playhead: #CCCCCC;
-		/*--primary-text: #CCCCCC;
-		--hover-preview: #CCCCCC;*/
+		--primary-text: #CCCCCC;
+		--hover-preview: #CCCCCC;
 		--link-accent: #FF8EC5;
 		--indicator-primary: #FF8EC5;
-		/*--indicator-primary: #CCCCCC;*/
-		/*--indicator-secondary: #E856B2;*/
+		--indicator-secondary: #E856B2;
 		--white-piano-key: #CCCCCC;
-		/*--black-piano-key: #444;*/
+		--black-piano-key: #444;
 		--text-selection: #932253;
 		--oscilloscope-line-L: #CCCCCC;
 		--oscilloscope-line-R: #932253;
@@ -15557,6 +15603,47 @@ var beepbox = (function (exports) {
 		--pitch8-primary-channel:   #FF60A5;
 		--pitch8-secondary-note:    #8E1C4E;
 		--pitch8-primary-note:      #FF8EC5;
+        --noise1-secondary-channel: #6F6F6F;
+		--noise1-primary-channel:   #AAAAAA;
+		--noise1-secondary-note:    #A7A7A7;
+		--noise1-primary-note:      #E0E0E0;
+		--noise2-secondary-channel: #996633;
+		--noise2-primary-channel:   #DDAA77;
+		--noise2-secondary-note:    #CC9966;
+		--noise2-primary-note:      #F0D0BB;
+		--noise3-secondary-channel: #4A6D8F;
+		--noise3-primary-channel:   #77AADD;
+		--noise3-secondary-note:    #6F9FCF;
+		--noise3-primary-note:      #BBD7FF;
+		--noise4-secondary-channel: #7A4F9A;
+		--noise4-primary-channel:   #AF82D2;
+		--noise4-secondary-note:    #9E71C1;
+		--noise4-primary-note:      #D4C1EA;
+		--noise5-secondary-channel: #607837;
+		--noise5-primary-channel:   #A2BB77;
+		--noise5-secondary-note:    #91AA66;
+		--noise5-primary-note:      #C5E2B2;
+        --mod1-secondary-channel:   #339955;
+		--mod1-primary-channel:     #77fc55;
+		--mod1-secondary-note:      #77ff8a;
+		--mod1-primary-note:        #cdffee;
+		--mod2-secondary-channel:   #993355;
+		--mod2-primary-channel:     #f04960;
+		--mod2-secondary-note:      #f057a0;
+		--mod2-primary-note:        #ffb8de;
+		--mod3-secondary-channel:   #553399;
+		--mod3-primary-channel:     #8855fc;
+		--mod3-secondary-note:      #aa64ff;
+		--mod3-primary-note:	    #f8ddff;
+		--mod4-secondary-channel:   #a86436;
+		--mod4-primary-channel:     #c8a825;
+		--mod4-secondary-note:      #e8ba46;
+		--mod4-primary-note:        #fff6d3;
+		--mod-label-primary:        #999;
+		--mod-label-secondary-text: #333;
+		--mod-label-primary-text:   black;
+		--disabled-note-primary:    #999;
+		--disabled-note-secondary:  #666;
 		}`,
         "modbox classic": `
 			:root {
@@ -21931,6 +22018,263 @@ var beepbox = (function (exports) {
 					
 				}
 			`,
+        "lemmbox dark": `
+					:root {
+					--page-margin: #020009;
+					--editor-background: #020009;
+					--hover-preview: white;
+					--playhead: white;
+					--primary-text: white;
+					--secondary-text: white;
+					--inverted-text: black;
+					--text-selection: #c2a855;
+					--box-selection-fill: rgba(255, 255, 255, 0.2);
+					--loop-accent: #fff570;
+					--link-accent: #fff570;
+					--ui-widget-background: #191721;
+					--ui-widget-focus: #2d293b;
+					--pitch-background: #443d4a;
+					--tonic: #c2a855;
+					--fifth-note: #a0cd7c;
+					--third-note: #486;
+					--white-piano-key: #bbb;
+					--black-piano-key: #444;
+					--white-piano-key-text: #131200;
+					--black-piano-key-text: #fff;
+					--use-color-formula: false;
+					--pitch-channel-limit: 10;
+					--track-editor-bg-pitch: #444;
+					--track-editor-bg-pitch-dim: #333;
+					--track-editor-bg-noise: #444;
+					--track-editor-bg-noise-dim: #333;
+					--track-editor-bg-mod: #234;
+					--track-editor-bg-mod-dim: #123;
+					--multiplicative-mod-slider: #456;
+					--overwriting-mod-slider: #654;
+					--indicator-primary: #6a38ff;
+					--indicator-secondary: #444;
+					--select2-opt-group: #585858;
+					--input-box-outline: #403b4f;
+					--mute-button-normal: #ffa033;
+					--mute-button-mod: #8066cc;
+
+					--pitch1-secondary-channel: #e64951;
+					--pitch1-primary-channel: #f0565e;
+					--pitch1-secondary-note: #f34149;
+					--pitch1-primary-note: #f99ca9;
+
+					--pitch2-secondary-channel: #de6f2f;
+					--pitch2-primary-channel: #f18e55;
+					--pitch2-secondary-note: #ef7d3b;
+					--pitch2-primary-note: #f6ad92;
+
+					--pitch3-secondary-channel: #e1d30e;
+					--pitch3-primary-channel: #faec29;
+					--pitch3-secondary-note: #d9cd23;
+					--pitch3-primary-note: #fff570;
+
+					--pitch4-secondary-channel: #78c25a;
+					--pitch4-primary-channel: #85d947;
+					--pitch4-secondary-note: #8de02d;
+					--pitch4-primary-note: #bdff70;
+
+					--pitch5-secondary-channel: #2190eb;
+					--pitch5-primary-channel: #45a5f5;
+					--pitch5-secondary-note: #399bea;
+					--pitch5-primary-note: #70bfff;
+
+					--pitch6-secondary-channel: #7e3af2;
+					--pitch6-primary-channel: #8b4df7;
+					--pitch6-secondary-note: #752fed;
+					--pitch6-primary-note: #965cfa;
+
+					--pitch7-secondary-channel: #7e05f7;
+					--pitch7-primary-channel: #922df7;
+					--pitch7-secondary-note: #7c29cf;
+					--pitch7-primary-note: #9443e6;
+
+					--pitch8-secondary-channel: #94249e;
+					--pitch8-primary-channel: #cf2cde;
+					--pitch8-secondary-note: #b326bf;
+					--pitch8-primary-note: #c53fd1;
+
+					--pitch9-secondary-channel: #c42f6b;
+					--pitch9-primary-channel: #fc5d9d;
+					--pitch9-secondary-note: #cf3b77;   
+					--pitch9-primary-note: #e36f9e;
+
+					--pitch10-secondary-channel: #d53c5e;
+					--pitch10-primary-channel: #f65a7e;
+					--pitch10-secondary-note: #e13e60;
+					--pitch10-primary-note: #ed8090;
+
+					--noise1-secondary-channel: #6F6F6F;
+					--noise1-primary-channel: #AAAAAA;
+					--noise1-secondary-note: #A7A7A7;
+					--noise1-primary-note: #E0E0E0;
+
+					--noise2-secondary-channel: #996633;
+					--noise2-primary-channel: #DDAA77;
+					--noise2-secondary-note: #CC9966;
+					--noise2-primary-note: #F0D0BB;
+
+					--noise3-secondary-channel: #4A6D8F;
+					--noise3-primary-channel: #77AADD;
+					--noise3-secondary-note: #6F9FCF;
+					--noise3-primary-note: #BBD7FF;
+
+					--noise4-secondary-channel: #7A4F9A;
+					--noise4-primary-channel: #AF82D2;
+					--noise4-secondary-note: #9E71C1;
+					--noise4-primary-note: #D4C1EA;
+
+					--noise5-secondary-channel: #607837;
+					--noise5-primary-channel: #A2BB77;
+					--noise5-secondary-note: #91AA66;
+					--noise5-primary-note: #C5E2B2;
+
+					--mod1-secondary-channel: #339955;
+					--mod1-primary-channel: #77fc55;
+					--mod1-secondary-note: #77ff8a;
+					--mod1-primary-note: #cdffee;
+
+					--mod2-secondary-channel: #993355;
+					--mod2-primary-channel: #f04960;
+					--mod2-secondary-note: #f057a0;
+					--mod2-primary-note: #ffb8de;
+
+					--mod3-secondary-channel: #553399;
+					--mod3-primary-channel: #8855fc;
+					--mod3-secondary-note: #aa64ff;
+					--mod3-primary-note: #f8ddff;
+
+					--mod4-secondary-channel: #a86436;
+					--mod4-primary-channel: #c8a825;
+					--mod4-secondary-note: #e8ba46;
+					--mod4-primary-note: #fff6d3;
+
+					--mod-label-primary: #999;
+					--mod-label-secondary-text: #333;
+					--mod-label-primary-text: black;
+					--disabled-note-primary: #999;
+					--disabled-note-secondary: #666;
+					
+					--pitch1-background: #777;
+				}
+				`,
+        "slarmoosbox": `
+		:root {
+			--page-margin: #14051a;
+			--editor-background: #14051a;
+			--playhead: rgba(255, 255, 255, 0.9);
+			--primary-text: #71eee5;
+			--secondary-text: #3abbb2;
+			--inverted-text: #13695e;
+			--box-selection-fill: #36c71c;
+			--loop-accent: #36c71c;
+			--link-accent: white;
+			--ui-widget-background: #183d05;
+			--ui-widget-focus: #247d0d;
+			--pitch-background: #2e0e51;
+			--tonic: #247d0d;
+			--fifth-note: #3abbb2;
+			--white-piano-key: #ffffff;
+			--black-piano-key: #061705;
+			--white-piano-key-text: #061705;
+			--use-color-formula: true;
+			--track-editor-bg-pitch: #09382b;
+			--track-editor-bg-pitch-dim: #14051a;
+			--track-editor-bg-noise: #40400b;
+			--track-editor-bg-noise-dim: #14051a;
+			--track-editor-bg-mod: #0a2c08;
+			--track-editor-bg-mod-dim: #14051a;
+			--multiplicative-mod-slider: #3abb22;
+			--overwriting-mod-slider: #71eee5;
+			--indicator-primary: #a773e5;
+			--indicator-secondary: #4c1c89;
+			--select2-opt-group: #183d05;
+			--input-box-outline: #18040a;
+			--mute-button-normal: #36c71c;
+			--mute-button-mod: #a773e5;
+			--mod-label-primary: #a773e5;
+			--mod-label-secondary-text: #6b29bf;
+			--mod-label-primary-text: #14051a;
+			--mod-title: #247d1d;
+			--pitch-secondary-channel-hue: 100;
+			--pitch-secondary-channel-hue-scale: 6.1;
+			--pitch-secondary-channel-sat: 100.0;
+			--pitch-secondary-channel-sat-scale: 0.15;
+			--pitch-secondary-channel-lum: 60.0;
+			--pitch-secondary-channel-lum-scale: 0.05;
+			--pitch-primary-channel-hue: 100;
+			--pitch-primary-channel-hue-scale: 6.1;
+			--pitch-primary-channel-sat: 100;
+			--pitch-primary-channel-sat-scale: 0.15;
+			--pitch-primary-channel-lum: 75.0;
+			--pitch-primary-channel-lum-scale: 0.05;
+			--pitch-secondary-note-hue: 100;
+			--pitch-secondary-note-hue-scale: 6.1;
+			--pitch-secondary-note-sat: 95.0;
+			--pitch-secondary-note-sat-scale: 0.15;
+			--pitch-secondary-note-lum: 40;
+			--pitch-secondary-note-lum-scale: 0.05;
+			--pitch-primary-note-hue: 100;
+			--pitch-primary-note-hue-scale: 6.1;
+			--pitch-primary-note-sat: 100;
+			--pitch-primary-note-sat-scale: 0.15;
+			--pitch-primary-note-lum: 85.6;
+			--pitch-primary-note-lum-scale: 0.025;
+			--noise-secondary-channel-hue: 65;
+			--noise-secondary-channel-hue-scale: 2;
+			--noise-secondary-channel-sat: 55;
+			--noise-secondary-channel-sat-scale: 0;
+			--noise-secondary-channel-lum: 42;
+			--noise-secondary-channel-lum-scale: 0;
+			--noise-primary-channel-hue: 65;
+			--noise-primary-channel-hue-scale: 2;
+			--noise-primary-channel-sat: 66;
+			--noise-primary-channel-sat-scale: 0;
+			--noise-primary-channel-lum: 63.5;
+			--noise-primary-channel-lum-scale: 0;
+			--noise-secondary-note-hue: 65;
+			--noise-secondary-note-hue-scale: 2;
+			--noise-secondary-note-sat: 66;
+			--noise-secondary-note-sat-scale: 0;
+			--noise-secondary-note-lum: 55;
+			--noise-secondary-note-lum-scale: 0;
+			--noise-primary-note-hue: 65;
+			--noise-primary-note-hue-scale: 2;
+			--noise-primary-note-sat: 70;
+			--noise-primary-note-sat-scale: 0;
+			--noise-primary-note-lum: 74;
+			--noise-primary-note-lum-scale: 0;
+			--mod-secondary-channel-hue: 192;
+			--mod-secondary-channel-hue-scale: 1.5;
+			--mod-secondary-channel-sat: 88;
+			--mod-secondary-channel-sat-scale: 0;
+			--mod-secondary-channel-lum: 50;
+			--mod-secondary-channel-lum-scale: 0;
+			--mod-primary-channel-hue: 192;
+			--mod-primary-channel-hue-scale: 1.5;
+			--mod-primary-channel-sat: 96;
+			--mod-primary-channel-sat-scale: 0;
+			--mod-primary-channel-lum: 80;
+			--mod-primary-channel-lum-scale: 0;
+			--mod-secondary-note-hue: 192;
+			--mod-secondary-note-hue-scale: 1.5;
+			--mod-secondary-note-sat: 92;
+			--mod-secondary-note-sat-scale: 0;
+			--mod-secondary-note-lum: 45;
+			--mod-secondary-note-lum-scale: 0;
+			--mod-primary-note-hue: 192;
+			--mod-primary-note-hue-scale: 1.5;
+			--mod-primary-note-sat: 96;
+			--mod-primary-note-sat-scale: 0;
+			--mod-primary-note-lum: 85;
+			--mod-primary-note-lum-scale: 0;
+			--oscilloscope-line-R: white;
+			--oscilloscope-line-L: var(--secondary-text);
+		}`,
         "wackybox": `
 			:root {
 				--page-margin: black;
@@ -26970,172 +27314,6 @@ li.select2-results__option[role=group] > strong:hover {
         return 2.0 * Math.atan(radians * 0.5);
     }
 
-    const PRIME32_1 = 2654435761;
-    const PRIME32_2 = 2246822519;
-    const PRIME32_3 = 3266489917;
-    const PRIME32_4 = 668265263;
-    const PRIME32_5 = 374761393;
-    let encoder;
-    /**
-     *
-     * @param input - byte array or string
-     * @param seed - optional seed (32-bit unsigned);
-     */
-    function xxHash32(input, seed = 0) {
-        const buffer = typeof input === 'string' ? (encoder ??= new TextEncoder()).encode(input) : input;
-        const b = buffer;
-        /*
-            Step 1. Initialize internal accumulators
-            Each accumulator gets an initial value based on optional seed input. Since the seed is optional, it can be 0.
-
-            ```
-                u32 acc1 = seed + PRIME32_1 + PRIME32_2;
-                u32 acc2 = seed + PRIME32_2;
-                u32 acc3 = seed + 0;
-                u32 acc4 = seed - PRIME32_1;
-            ```
-            Special case : input is less than 16 bytes
-            When input is too small (< 16 bytes), the algorithm will not process any stripe. Consequently, it will not
-            make use of parallel accumulators.
-
-            In which case, a simplified initialization is performed, using a single accumulator :
-
-            u32 acc  = seed + PRIME32_5;
-            The algorithm then proceeds directly to step 4.
-        */
-        let acc = (seed + PRIME32_5) & 0xffffffff;
-        let offset = 0;
-        if (b.length >= 16) {
-            const accN = [
-                (seed + PRIME32_1 + PRIME32_2) & 0xffffffff,
-                (seed + PRIME32_2) & 0xffffffff,
-                (seed + 0) & 0xffffffff,
-                (seed - PRIME32_1) & 0xffffffff,
-            ];
-            /*
-                Step 2. Process stripes
-                A stripe is a contiguous segment of 16 bytes. It is evenly divided into 4 lanes, of 4 bytes each.
-                The first lane is used to update accumulator 1, the second lane is used to update accumulator 2, and so on.
-
-                Each lane read its associated 32-bit value using little-endian convention.
-
-                For each {lane, accumulator}, the update process is called a round, and applies the following formula :
-
-                ```
-                accN = accN + (laneN * PRIME32_2);
-                accN = accN <<< 13;
-                accN = accN * PRIME32_1;
-                ```
-
-                This shuffles the bits so that any bit from input lane impacts several bits in output accumulator.
-                All operations are performed modulo 2^32.
-
-                Input is consumed one full stripe at a time. Step 2 is looped as many times as necessary to consume
-                the whole input, except the last remaining bytes which cannot form a stripe (< 16 bytes). When that
-                happens, move to step 3.
-            */
-            const b = buffer;
-            const limit = b.length - 16;
-            let lane = 0;
-            for (offset = 0; (offset & 0xfffffff0) <= limit; offset += 4) {
-                const i = offset;
-                const laneN0 = b[i + 0] + (b[i + 1] << 8);
-                const laneN1 = b[i + 2] + (b[i + 3] << 8);
-                const laneNP = laneN0 * PRIME32_2 + ((laneN1 * PRIME32_2) << 16);
-                let acc = (accN[lane] + laneNP) & 0xffffffff;
-                acc = (acc << 13) | (acc >>> 19);
-                const acc0 = acc & 0xffff;
-                const acc1 = acc >>> 16;
-                accN[lane] = (acc0 * PRIME32_1 + ((acc1 * PRIME32_1) << 16)) & 0xffffffff;
-                lane = (lane + 1) & 0x3;
-            }
-            /*
-                Step 3. Accumulator convergence
-                All 4 lane accumulators from previous steps are merged to produce a single remaining accumulator
-                of same width (32-bit). The associated formula is as follows :
-
-                ```
-                acc = (acc1 <<< 1) + (acc2 <<< 7) + (acc3 <<< 12) + (acc4 <<< 18);
-                ```
-            */
-            acc =
-                (((accN[0] << 1) | (accN[0] >>> 31)) +
-                    ((accN[1] << 7) | (accN[1] >>> 25)) +
-                    ((accN[2] << 12) | (accN[2] >>> 20)) +
-                    ((accN[3] << 18) | (accN[3] >>> 14))) &
-                    0xffffffff;
-        }
-        /*
-            Step 4. Add input length
-            The input total length is presumed known at this stage. This step is just about adding the length to
-            accumulator, so that it participates to final mixing.
-
-            ```
-            acc = acc + (u32)inputLength;
-            ```
-        */
-        acc = (acc + buffer.length) & 0xffffffff;
-        /*
-            Step 5. Consume remaining input
-            There may be up to 15 bytes remaining to consume from the input. The final stage will digest them according
-            to following pseudo-code :
-            ```
-            while (remainingLength >= 4) {
-                lane = read_32bit_little_endian(input_ptr);
-                acc = acc + lane * PRIME32_3;
-                acc = (acc <<< 17) * PRIME32_4;
-                input_ptr += 4; remainingLength -= 4;
-            }
-            ```
-            This process ensures that all input bytes are present in the final mix.
-        */
-        const limit = buffer.length - 4;
-        for (; offset <= limit; offset += 4) {
-            const i = offset;
-            const laneN0 = b[i + 0] + (b[i + 1] << 8);
-            const laneN1 = b[i + 2] + (b[i + 3] << 8);
-            const laneP = laneN0 * PRIME32_3 + ((laneN1 * PRIME32_3) << 16);
-            acc = (acc + laneP) & 0xffffffff;
-            acc = (acc << 17) | (acc >>> 15);
-            acc = ((acc & 0xffff) * PRIME32_4 + (((acc >>> 16) * PRIME32_4) << 16)) & 0xffffffff;
-        }
-        /*
-            ```
-            while (remainingLength >= 1) {
-                lane = read_byte(input_ptr);
-                acc = acc + lane * PRIME32_5;
-                acc = (acc <<< 11) * PRIME32_1;
-                input_ptr += 1; remainingLength -= 1;
-            }
-            ```
-        */
-        for (; offset < b.length; ++offset) {
-            const lane = b[offset];
-            acc = acc + lane * PRIME32_5;
-            acc = (acc << 11) | (acc >>> 21);
-            acc = ((acc & 0xffff) * PRIME32_1 + (((acc >>> 16) * PRIME32_1) << 16)) & 0xffffffff;
-        }
-        /*
-            Step 6. Final mix (avalanche)
-            The final mix ensures that all input bits have a chance to impact any bit in the output digest,
-            resulting in an unbiased distribution. This is also called avalanche effect.
-            ```
-            acc = acc xor (acc >> 15);
-            acc = acc * PRIME32_2;
-            acc = acc xor (acc >> 13);
-            acc = acc * PRIME32_3;
-            acc = acc xor (acc >> 16);
-            ```
-        */
-        acc = acc ^ (acc >>> 15);
-        acc = (((acc & 0xffff) * PRIME32_2) & 0xffffffff) + (((acc >>> 16) * PRIME32_2) << 16);
-        acc = acc ^ (acc >>> 13);
-        acc = (((acc & 0xffff) * PRIME32_3) & 0xffffffff) + (((acc >>> 16) * PRIME32_3) << 16);
-        acc = acc ^ (acc >>> 16);
-        // turn any negatives back into a positive number;
-        return acc < 0 ? acc + 4294967296 : acc;
-    }
-
     const epsilon = (1.0e-24);
     function clamp(min, max, val) {
         max = max - 1;
@@ -27555,7 +27733,7 @@ li.select2-results__option[role=group] > strong:hover {
                     else {
                         note.continuesLastPattern = false;
                     }
-                    if ((format != "ultrabox" && format != "slarmoosbox" && format != "abyssbox") && instrument.modulators[mod] == Config.modulators.dictionary["tempo"].index) {
+                    if ((format != "ultrabox" && format != "abyssbox") && instrument.modulators[mod] == Config.modulators.dictionary["tempo"].index) {
                         for (const pin of note.pins) {
                             const oldMin = 30;
                             const newMin = 1;
@@ -27822,6 +28000,50 @@ li.select2-results__option[role=group] > strong:hover {
             return wave;
         }
     }
+    class Grain {
+        constructor() {
+            this.delayLinePosition = 0;
+            this.ageInSamples = 0;
+            this.maxAgeInSamples = 0;
+            this.delay = 0;
+            this.parabolicEnvelopeAmplitude = 0;
+            this.parabolicEnvelopeSlope = 0;
+            this.parabolicEnvelopeCurve = 0;
+            this.rcbEnvelopeAmplitude = 0;
+            this.rcbEnvelopeAttackIndex = 0;
+            this.rcbEnvelopeReleaseIndex = 0;
+            this.rcbEnvelopeSustain = 0;
+        }
+        initializeParabolicEnvelope(durationInSamples, amplitude) {
+            this.parabolicEnvelopeAmplitude = 0;
+            if (durationInSamples == 0)
+                durationInSamples++;
+            const invDuration = 1.0 / durationInSamples;
+            const invDurationSquared = invDuration * invDuration;
+            this.parabolicEnvelopeSlope = 4.0 * amplitude * (invDuration - invDurationSquared);
+            this.parabolicEnvelopeCurve = -8.0 * amplitude * invDurationSquared;
+        }
+        updateParabolicEnvelope() {
+            this.parabolicEnvelopeAmplitude += this.parabolicEnvelopeSlope;
+            this.parabolicEnvelopeSlope += this.parabolicEnvelopeCurve;
+        }
+        initializeRCBEnvelope(durationInSamples, amplitude) {
+            this.rcbEnvelopeAttackIndex = Math.floor(durationInSamples / 6);
+            this.rcbEnvelopeSustain = amplitude;
+            this.rcbEnvelopeReleaseIndex = Math.floor(durationInSamples * 5 / 6);
+        }
+        updateRCBEnvelope() {
+            if (this.ageInSamples < this.rcbEnvelopeAttackIndex) {
+                this.rcbEnvelopeAmplitude = (1.0 + Math.cos(Math.PI + (Math.PI * (this.ageInSamples / this.rcbEnvelopeAttackIndex) * (this.rcbEnvelopeSustain / 2.0))));
+            }
+            else if (this.ageInSamples > this.rcbEnvelopeReleaseIndex) {
+                this.rcbEnvelopeAmplitude = (1.0 + Math.cos(Math.PI * ((this.ageInSamples - this.rcbEnvelopeReleaseIndex) / this.rcbEnvelopeAttackIndex)) * (this.rcbEnvelopeSustain / 2.0));
+            }
+        }
+        addDelay(delay) {
+            this.delay = delay;
+        }
+    }
     class FilterControlPoint {
         constructor() {
             this.freq = 0;
@@ -27992,11 +28214,11 @@ li.select2-results__option[role=group] > strong:hover {
             const resonant = (legacyResonanceSetting > 1);
             const firstOrder = (legacyResonanceSetting == 0);
             const cutoffAtMax = (legacyCutoffSetting == legacyFilterCutoffRange - 1);
-            const envDecays = (legacyEnv.type == 5 || legacyEnv.type == 6 || legacyEnv.type == 10 || legacyEnv.type == 1);
+            const envDecays = (legacyEnv.type == 3 || legacyEnv.type == 4 || legacyEnv.type == 8 || legacyEnv.type == 0);
             const standardSampleRate = 48000;
             const legacyHz = legacyFilterCutoffMaxHz * Math.pow(2.0, (legacyCutoffSetting - (legacyFilterCutoffRange - 1)) * 0.5);
             const legacyRadians = Math.min(legacyFilterMaxRadians, 2 * Math.PI * legacyHz / standardSampleRate);
-            if (legacyEnv.type == 0 && !resonant && cutoffAtMax) ;
+            if (legacyEnv.type == 1 && !resonant && cutoffAtMax) ;
             else if (firstOrder) {
                 const extraOctaves = 3.5;
                 const targetRadians = legacyRadians * Math.pow(2.0, extraOctaves);
@@ -28104,59 +28326,24 @@ li.select2-results__option[role=group] > strong:hover {
         }
     }
     class EnvelopeSettings {
-        constructor(isNoiseEnvelope) {
-            this.isNoiseEnvelope = isNoiseEnvelope;
+        constructor() {
             this.target = 0;
             this.index = 0;
             this.envelope = 0;
-            this.perEnvelopeSpeed = Config.envelopes[this.envelope].speed;
-            this.perEnvelopeLowerBound = 0;
-            this.perEnvelopeUpperBound = 1;
-            this.tempEnvelopeSpeed = null;
-            this.steps = 2;
-            this.seed = 2;
-            this.waveform = 0;
             this.reset();
         }
         reset() {
             this.target = 0;
             this.index = 0;
             this.envelope = 0;
-            this.pitchEnvelopeStart = 0;
-            this.pitchEnvelopeEnd = this.isNoiseEnvelope ? Config.drumCount - 1 : Config.maxPitch;
-            this.inverse = false;
-            this.isNoiseEnvelope = false;
-            this.perEnvelopeSpeed = Config.envelopes[this.envelope].speed;
-            this.perEnvelopeLowerBound = 0;
-            this.perEnvelopeUpperBound = 1;
-            this.tempEnvelopeSpeed = null;
-            this.steps = 2;
-            this.seed = 2;
-            this.waveform = 0;
         }
         toJsonObject() {
             const envelopeObject = {
                 "target": Config.instrumentAutomationTargets[this.target].name,
-                "envelope": Config.newEnvelopes[this.envelope].name,
-                "inverse": this.inverse,
-                "perEnvelopeSpeed": this.perEnvelopeSpeed,
-                "perEnvelopeLowerBound": this.perEnvelopeLowerBound,
-                "perEnvelopeUpperBound": this.perEnvelopeUpperBound,
+                "envelope": Config.envelopes[this.envelope].name,
             };
             if (Config.instrumentAutomationTargets[this.target].maxCount > 1) {
                 envelopeObject["index"] = this.index;
-            }
-            if (Config.newEnvelopes[this.envelope].name == "pitch") {
-                envelopeObject["pitchEnvelopeStart"] = this.pitchEnvelopeStart;
-                envelopeObject["pitchEnvelopeEnd"] = this.pitchEnvelopeEnd;
-            }
-            else if (Config.newEnvelopes[this.envelope].name == "random") {
-                envelopeObject["steps"] = this.steps;
-                envelopeObject["seed"] = this.seed;
-                envelopeObject["waveform"] = this.waveform;
-            }
-            else if (Config.newEnvelopes[this.envelope].name == "lfo") {
-                envelopeObject["waveform"] = this.waveform;
             }
             return envelopeObject;
         }
@@ -28166,45 +28353,7 @@ li.select2-results__option[role=group] > strong:hover {
             if (target == null)
                 target = Config.instrumentAutomationTargets.dictionary["noteVolume"];
             this.target = target.index;
-            let envelope = Config.envelopes.dictionary["none"];
-            let isTremolo2 = false;
-            if (format == "slarmoosbox" || format == "abyssbox") {
-                if (envelopeObject["envelope"] == "tremolo2") {
-                    envelope = Config.newEnvelopes[8];
-                    isTremolo2 = true;
-                }
-                else if (envelopeObject["envelope"] == "tremolo") {
-                    envelope = Config.newEnvelopes[8];
-                    isTremolo2 = false;
-                }
-                else {
-                    envelope = Config.newEnvelopes.dictionary[envelopeObject["envelope"]];
-                }
-            }
-            else {
-                if (Config.envelopes.dictionary[envelopeObject["envelope"]].type == 9) {
-                    envelope = Config.newEnvelopes[8];
-                    isTremolo2 = true;
-                }
-                else if (Config.newEnvelopes[Math.max(Config.envelopes.dictionary[envelopeObject["envelope"]].type - 1, 0)].index > 8) {
-                    envelope = Config.newEnvelopes[Config.envelopes.dictionary[envelopeObject["envelope"]].type - 1];
-                }
-                else {
-                    envelope = Config.newEnvelopes[Config.envelopes.dictionary[envelopeObject["envelope"]].type];
-                }
-            }
-            if (envelope == undefined) {
-                if (Config.envelopes.dictionary[envelopeObject["envelope"]].type == 9) {
-                    envelope = Config.newEnvelopes[8];
-                    isTremolo2 = true;
-                }
-                else if (Config.newEnvelopes[Math.max(Config.envelopes.dictionary[envelopeObject["envelope"]].type - 1, 0)].index > 8) {
-                    envelope = Config.newEnvelopes[Config.envelopes.dictionary[envelopeObject["envelope"]].type - 1];
-                }
-                else {
-                    envelope = Config.newEnvelopes[Config.envelopes.dictionary[envelopeObject["envelope"]].type];
-                }
-            }
+            let envelope = Config.envelopes.dictionary[envelopeObject["envelope"]];
             if (envelope == null)
                 envelope = Config.envelopes.dictionary["none"];
             this.envelope = envelope.index;
@@ -28213,65 +28362,6 @@ li.select2-results__option[role=group] > strong:hover {
             }
             else {
                 this.index = 0;
-            }
-            if (envelopeObject["pitchEnvelopeStart"] != undefined) {
-                this.pitchEnvelopeStart = clamp(0, this.isNoiseEnvelope ? Config.drumCount : Config.maxPitch + 1, envelopeObject["pitchEnvelopeStart"]);
-            }
-            else {
-                this.pitchEnvelopeStart = 0;
-            }
-            if (envelopeObject["pitchEnvelopeEnd"] != undefined) {
-                this.pitchEnvelopeEnd = clamp(0, this.isNoiseEnvelope ? Config.drumCount : Config.maxPitch + 1, envelopeObject["pitchEnvelopeEnd"]);
-            }
-            else {
-                this.pitchEnvelopeEnd = this.isNoiseEnvelope ? Config.drumCount : Config.maxPitch;
-            }
-            this.inverse = Boolean(envelopeObject["inverse"]);
-            if (envelopeObject["perEnvelopeSpeed"] != undefined) {
-                this.perEnvelopeSpeed = envelopeObject["perEnvelopeSpeed"];
-            }
-            else {
-                this.perEnvelopeSpeed = Config.envelopes.dictionary[envelopeObject["envelope"]].speed;
-            }
-            if (envelopeObject["perEnvelopeLowerBound"] != undefined) {
-                this.perEnvelopeLowerBound = clamp(Config.perEnvelopeBoundMin, Config.perEnvelopeBoundMax + 1, envelopeObject["perEnvelopeLowerBound"]);
-            }
-            else {
-                this.perEnvelopeLowerBound = 0;
-            }
-            if (envelopeObject["perEnvelopeUpperBound"] != undefined) {
-                this.perEnvelopeUpperBound = clamp(Config.perEnvelopeBoundMin, Config.perEnvelopeBoundMax + 1, envelopeObject["perEnvelopeUpperBound"]);
-            }
-            else {
-                this.perEnvelopeUpperBound = 1;
-            }
-            if (isTremolo2) {
-                if (this.inverse) {
-                    this.perEnvelopeUpperBound = Math.floor((this.perEnvelopeUpperBound / 2) * 10) / 10;
-                    this.perEnvelopeLowerBound = Math.floor((this.perEnvelopeLowerBound / 2) * 10) / 10;
-                }
-                else {
-                    this.perEnvelopeUpperBound = Math.floor((0.5 + (this.perEnvelopeUpperBound - this.perEnvelopeLowerBound) / 2) * 10) / 10;
-                    this.perEnvelopeLowerBound = 0.5;
-                }
-            }
-            if (envelopeObject["steps"] != undefined) {
-                this.steps = clamp(1, Config.randomEnvelopeStepsMax + 1, envelopeObject["steps"]);
-            }
-            else {
-                this.steps = 2;
-            }
-            if (envelopeObject["seed"] != undefined) {
-                this.seed = clamp(1, Config.randomEnvelopeSeedMax + 1, envelopeObject["seed"]);
-            }
-            else {
-                this.seed = 2;
-            }
-            if (envelopeObject["waveform"] != undefined) {
-                this.waveform = envelopeObject["waveform"];
-            }
-            else {
-                this.waveform = 0;
             }
         }
     }
@@ -28339,13 +28429,17 @@ li.select2-results__option[role=group] > strong:hover {
             this.stringSustain = 10;
             this.stringSustainType = 1;
             this.distortion = 0;
-            this.ringModulation = 0;
-            this.ringModulationHz = 0;
+            this.ringModulation = Config.ringModRange >> 1;
+            this.ringModulationHz = Config.ringModHzRange >> 1;
             this.rmWaveformIndex = 0;
-            this.rmPulseWidth = 0;
+            this.rmPulseWidth = Config.pwmOperatorWaves.length >> 1;
             this.rmHzOffset = 200;
             this.bitcrusherFreq = 0;
             this.bitcrusherQuantization = 0;
+            this.granular = 4;
+            this.grainSize = (Config.grainSizeMax - Config.grainSizeMin) / Config.grainSizeStep;
+            this.grainAmounts = Config.grainAmountsMax;
+            this.grainRange = 40;
             this.chorus = 0;
             this.reverb = 0;
             this.echoSustain = 0;
@@ -28372,11 +28466,9 @@ li.select2-results__option[role=group] > strong:hover {
             this.modInstruments = [];
             this.modulators = [];
             this.modFilterTypes = [];
-            this.modEnvelopeNumbers = [];
             this.invalidModulators = [];
             this.upperNoteLimit = Config.maxPitch;
             this.lowerNoteLimit = 0;
-            this.isNoiseInstrument = false;
             if (isModChannel) {
                 for (let mod = 0; mod < Config.modCount; mod++) {
                     this.modChannels.push(-2);
@@ -28408,7 +28500,6 @@ li.select2-results__option[role=group] > strong:hover {
                 this.customChipWaveIntegral[i] = cumulative;
             }
             this.customChipWaveIntegral[64] = 0.0;
-            this.isNoiseInstrument = isNoiseChannel;
         }
         setTypeAndReset(type, isNoiseChannel, isModChannel) {
             if (isModChannel)
@@ -28436,11 +28527,15 @@ li.select2-results__option[role=group] > strong:hover {
             this.distortion = Math.floor((Config.distortionRange - 1) * 0.75);
             this.bitcrusherFreq = Math.floor((Config.bitcrusherFreqRange - 1) * 0.5);
             this.bitcrusherQuantization = Math.floor((Config.bitcrusherQuantizationRange - 1) * 0.5);
-            this.ringModulation = 0;
-            this.ringModulationHz = 0;
+            this.ringModulation = Config.ringModRange >> 1;
+            this.ringModulationHz = Config.ringModHzRange >> 1;
             this.rmPulseWidth = 0;
             this.rmWaveformIndex = 0;
             this.rmHzOffset = 200;
+            this.granular = 4;
+            this.grainSize = (Config.grainSizeMax - Config.grainSizeMin) / Config.grainSizeStep;
+            this.grainAmounts = Config.grainAmountsMax;
+            this.grainRange = 40;
             this.phaserFreq = 0;
             this.phaserFeedback = 0;
             this.phaserStages = 2;
@@ -28466,7 +28561,6 @@ li.select2-results__option[role=group] > strong:hover {
             this.envelopeCount = 0;
             this.upperNoteLimit = Config.maxPitch;
             this.lowerNoteLimit = 0;
-            this.isNoiseInstrument = isNoiseChannel;
             switch (type) {
                 case 0:
                     this.chipWave = 2;
@@ -28568,7 +28662,6 @@ li.select2-results__option[role=group] > strong:hover {
                         this.modulators.push(Config.modulators.dictionary["none"].index);
                         this.invalidModulators[mod] = false;
                         this.modFilterTypes[mod] = 0;
-                        this.modEnvelopeNumbers[mod] = 0;
                     }
                     break;
                 case 8:
@@ -28607,17 +28700,17 @@ li.select2-results__option[role=group] > strong:hover {
                 legacyFeedbackEnv = Config.envelopes.dictionary["none"];
             const legacyFilterCutoffRange = 11;
             const cutoffAtMax = (legacyCutoffSetting == legacyFilterCutoffRange - 1);
-            if (cutoffAtMax && legacyFilterEnv.type == 4)
+            if (cutoffAtMax && legacyFilterEnv.type == 2)
                 legacyFilterEnv = Config.envelopes.dictionary["none"];
             const carrierCount = Config.algorithms[this.algorithm].carrierCount;
             let noCarriersControlledByNoteSize = true;
             let allCarriersControlledByNoteSize = true;
-            let noteSizeControlsSomethingElse = (legacyFilterEnv.type == 1) || (legacyPulseEnv.type == 1);
+            let noteSizeControlsSomethingElse = (legacyFilterEnv.type == 0) || (legacyPulseEnv.type == 0);
             if (this.type == 1 || this.type == 11) {
-                noteSizeControlsSomethingElse = noteSizeControlsSomethingElse || (legacyFeedbackEnv.type == 1);
+                noteSizeControlsSomethingElse = noteSizeControlsSomethingElse || (legacyFeedbackEnv.type == 0);
                 for (let i = 0; i < legacyOperatorEnvelopes.length; i++) {
                     if (i < carrierCount) {
-                        if (legacyOperatorEnvelopes[i].type != 1) {
+                        if (legacyOperatorEnvelopes[i].type != 0) {
                             allCarriersControlledByNoteSize = false;
                         }
                         else {
@@ -28625,20 +28718,20 @@ li.select2-results__option[role=group] > strong:hover {
                         }
                     }
                     else {
-                        noteSizeControlsSomethingElse = noteSizeControlsSomethingElse || (legacyOperatorEnvelopes[i].type == 1);
+                        noteSizeControlsSomethingElse = noteSizeControlsSomethingElse || (legacyOperatorEnvelopes[i].type == 0);
                     }
                 }
             }
             this.envelopeCount = 0;
             if (this.type == 1 || this.type == 11) {
                 if (allCarriersControlledByNoteSize && noteSizeControlsSomethingElse) {
-                    this.addEnvelope(Config.instrumentAutomationTargets.dictionary["noteVolume"].index, 0, Config.envelopes.dictionary["note size"].index, false);
+                    this.addEnvelope(Config.instrumentAutomationTargets.dictionary["noteVolume"].index, 0, Config.envelopes.dictionary["note size"].index);
                 }
                 else if (noCarriersControlledByNoteSize && !noteSizeControlsSomethingElse) {
-                    this.addEnvelope(Config.instrumentAutomationTargets.dictionary["none"].index, 0, Config.envelopes.dictionary["note size"].index, false);
+                    this.addEnvelope(Config.instrumentAutomationTargets.dictionary["none"].index, 0, Config.envelopes.dictionary["note size"].index);
                 }
             }
-            if (legacyFilterEnv.type == 0) {
+            if (legacyFilterEnv.type == 1) {
                 this.noteFilter.reset();
                 this.noteFilterType = false;
                 this.eqFilter.convertLegacySettings(legacyCutoffSetting, legacyResonanceSetting, legacyFilterEnv);
@@ -28655,25 +28748,25 @@ li.select2-results__option[role=group] > strong:hover {
                 this.noteFilterType = false;
                 this.noteFilter.convertLegacySettings(legacyCutoffSetting, legacyResonanceSetting, legacyFilterEnv);
                 this.effects |= 1 << 5;
-                this.addEnvelope(Config.instrumentAutomationTargets.dictionary["noteFilterAllFreqs"].index, 0, legacyFilterEnv.index, false);
+                this.addEnvelope(Config.instrumentAutomationTargets.dictionary["noteFilterAllFreqs"].index, 0, legacyFilterEnv.index);
                 if (forceSimpleFilter || this.noteFilterType) {
                     this.noteFilterType = true;
                     this.noteFilterSimpleCut = legacyCutoffSetting;
                     this.noteFilterSimplePeak = legacyResonanceSetting;
                 }
             }
-            if (legacyPulseEnv.type != 0) {
-                this.addEnvelope(Config.instrumentAutomationTargets.dictionary["pulseWidth"].index, 0, legacyPulseEnv.index, false);
+            if (legacyPulseEnv.type != 1) {
+                this.addEnvelope(Config.instrumentAutomationTargets.dictionary["pulseWidth"].index, 0, legacyPulseEnv.index);
             }
             for (let i = 0; i < legacyOperatorEnvelopes.length; i++) {
                 if (i < carrierCount && allCarriersControlledByNoteSize)
                     continue;
-                if (legacyOperatorEnvelopes[i].type != 0) {
-                    this.addEnvelope(Config.instrumentAutomationTargets.dictionary["operatorAmplitude"].index, i, legacyOperatorEnvelopes[i].index, false);
+                if (legacyOperatorEnvelopes[i].type != 1) {
+                    this.addEnvelope(Config.instrumentAutomationTargets.dictionary["operatorAmplitude"].index, i, legacyOperatorEnvelopes[i].index);
                 }
             }
-            if (legacyFeedbackEnv.type != 0) {
-                this.addEnvelope(Config.instrumentAutomationTargets.dictionary["feedbackAmplitude"].index, 0, legacyFeedbackEnv.index, false);
+            if (legacyFeedbackEnv.type != 1) {
+                this.addEnvelope(Config.instrumentAutomationTargets.dictionary["feedbackAmplitude"].index, 0, legacyFeedbackEnv.index);
             }
         }
         toJsonObject() {
@@ -28684,8 +28777,7 @@ li.select2-results__option[role=group] > strong:hover {
                 "eqFilterType": this.eqFilterType,
                 "eqSimpleCut": this.eqFilterSimpleCut,
                 "eqSimplePeak": this.eqFilterSimplePeak,
-                "envelopeSpeed": this.envelopeSpeed,
-                "discreteEnvelope": this.discreteEnvelope,
+                "envelopeSpeed": this.envelopeSpeed
             };
             if (this.preset != this.type) {
                 instrumentObject["preset"] = this.preset;
@@ -28744,6 +28836,12 @@ li.select2-results__option[role=group] > strong:hover {
                     if (this.noteSubFilters[i] != null)
                         instrumentObject["noteSubFilters" + i] = this.noteSubFilters[i].toJsonObject();
                 }
+            }
+            if (effectsIncludeGranular(this.effects)) {
+                instrumentObject["granular"] = this.granular;
+                instrumentObject["grainSize"] = this.grainSize;
+                instrumentObject["grainAmounts"] = this.grainAmounts;
+                instrumentObject["grainRange"] = this.grainRange;
             }
             if (effectsIncludeDistortion(this.effects)) {
                 instrumentObject["distortion"] = Math.round(100 * this.distortion / (Config.distortionRange - 1));
@@ -28913,13 +29011,11 @@ li.select2-results__option[role=group] > strong:hover {
                 instrumentObject["modInstruments"] = [];
                 instrumentObject["modSettings"] = [];
                 instrumentObject["modFilterTypes"] = [];
-                instrumentObject["modEnvelopeNumbers"] = [];
                 for (let mod = 0; mod < Config.modCount; mod++) {
                     instrumentObject["modChannels"][mod] = this.modChannels[mod];
                     instrumentObject["modInstruments"][mod] = this.modInstruments[mod];
                     instrumentObject["modSettings"][mod] = this.modulators[mod];
                     instrumentObject["modFilterTypes"][mod] = this.modFilterTypes[mod];
-                    instrumentObject["modEnvelopeNumbers"][mod] = this.modEnvelopeNumbers[mod];
                 }
             }
             else {
@@ -28947,7 +29043,7 @@ li.select2-results__option[role=group] > strong:hover {
                 this.preset = instrumentObject["preset"] >>> 0;
             }
             if (instrumentObject["volume"] != undefined) {
-                if (format == "jummbox" || format == "midbox" || format == "synthbox" || format == "goldbox" || format == "paandorasbox" || format == "ultrabox" || format == "slarmoosbox" || format == "abyssbox") {
+                if (format == "jummbox" || format == "midbox" || format == "synthbox" || format == "goldbox" || format == "paandorasbox" || format == "ultrabox" || format == "abyssbox") {
                     this.volume = clamp(-Config.volumeRange / 2, (Config.volumeRange / 2) + 1, instrumentObject["volume"] | 0);
                 }
                 else {
@@ -28957,7 +29053,12 @@ li.select2-results__option[role=group] > strong:hover {
             else {
                 this.volume = 0;
             }
-            this.envelopeSpeed = instrumentObject["envelopeSpeed"] != undefined ? clamp(0, Config.modulators.dictionary["envelope speed"].maxRawVol + 1, instrumentObject["envelopeSpeed"] | 0) : 12;
+            if (instrumentObject["envelopeSpeed"] != undefined) {
+                this.envelopeSpeed = clamp(0, Config.modulators.dictionary["envelope speed"].maxRawVol + 1, instrumentObject["envelopeSpeed"] | 0);
+            }
+            else {
+                this.envelopeSpeed = 12;
+            }
             if (instrumentObject["discreteEnvelope"] != undefined) {
                 this.discreteEnvelope = instrumentObject["discreteEnvelope"];
             }
@@ -28969,7 +29070,7 @@ li.select2-results__option[role=group] > strong:hover {
                 for (let i = 0; i < instrumentObject["effects"].length; i++) {
                     effects = effects | (1 << Config.effectNames.indexOf(instrumentObject["effects"][i]));
                 }
-                this.effects = (effects & ((1 << 16) - 1));
+                this.effects = (effects & ((1 << 17) - 1));
             }
             else {
                 const legacyEffectsNames = ["none", "reverb", "chorus", "chorus & reverb"];
@@ -29141,6 +29242,18 @@ li.select2-results__option[role=group] > strong:hover {
             else if (instrumentObject["detuneCents"] == undefined) {
                 this.detune = Config.detuneCenter;
             }
+            if (instrumentObject["granular"] != undefined) {
+                this.granular = instrumentObject["granular"];
+            }
+            if (instrumentObject["grainSize"] != undefined) {
+                this.grainSize = instrumentObject["grainSize"];
+            }
+            if (instrumentObject["grainAmounts"] != undefined) {
+                this.grainAmounts = instrumentObject["grainAmounts"];
+            }
+            if (instrumentObject["grainRange"] != undefined) {
+                this.grainRange = clamp(0, Config.grainRangeMax / Config.grainSizeStep + 1, instrumentObject["grainRange"]);
+            }
             if (instrumentObject["distortion"] != undefined) {
                 this.distortion = clamp(0, Config.distortionRange, Math.round((Config.distortionRange - 1) * (instrumentObject["distortion"] | 0) / 100));
             }
@@ -29268,13 +29381,7 @@ li.select2-results__option[role=group] > strong:hover {
                     this.chipNoise = 1;
             }
             const legacyEnvelopeNames = { "custom": "note size", "steady": "none", "pluck 1": "twang 1", "pluck 2": "twang 2", "pluck 3": "twang 3" };
-            const getEnvelope = (name) => {
-                if (legacyEnvelopeNames[name] != undefined)
-                    return Config.envelopes.dictionary[legacyEnvelopeNames[name]];
-                else {
-                    return Config.envelopes.dictionary[name];
-                }
-            };
+            const getEnvelope = (name) => (legacyEnvelopeNames[name] != undefined) ? Config.envelopes.dictionary[legacyEnvelopeNames[name]] : Config.envelopes.dictionary[name];
             if (this.type == 4) {
                 if (instrumentObject["drums"] != undefined) {
                     for (let j = 0; j < Config.drumCount; j++) {
@@ -29470,9 +29577,7 @@ li.select2-results__option[role=group] > strong:hover {
                         this.modInstruments[mod] = instrumentObject["modInstruments"][mod];
                         this.modulators[mod] = instrumentObject["modSettings"][mod];
                         if (instrumentObject["modFilterTypes"] != undefined)
-                            if (instrumentObject["modEnvelopeNumbers"] != undefined)
-                                this.modEnvelopeNumbers[mod] = instrumentObject["modEnvelopeNumbers"][mod];
-                        this.modFilterTypes[mod] = instrumentObject["modFilterTypes"][mod];
+                            this.modFilterTypes[mod] = instrumentObject["modFilterTypes"][mod];
                     }
                 }
             }
@@ -29597,39 +29702,9 @@ li.select2-results__option[role=group] > strong:hover {
                     for (let i = 0; i < envelopeArray.length; i++) {
                         if (this.envelopeCount >= Config.maxEnvelopeCount)
                             break;
-                        const tempEnvelope = new EnvelopeSettings(this.isNoiseInstrument);
+                        const tempEnvelope = new EnvelopeSettings();
                         tempEnvelope.fromJsonObject(envelopeArray[i], format);
-                        let pitchEnvelopeStart;
-                        if (instrumentObject["pitchEnvelopeStart"] != undefined && instrumentObject["pitchEnvelopeStart"] != null) {
-                            pitchEnvelopeStart = instrumentObject["pitchEnvelopeStart"];
-                        }
-                        else if (instrumentObject["pitchEnvelopeStart" + i] != undefined && instrumentObject["pitchEnvelopeStart" + i] != undefined) {
-                            pitchEnvelopeStart = instrumentObject["pitchEnvelopeStart" + i];
-                        }
-                        else {
-                            pitchEnvelopeStart = tempEnvelope.pitchEnvelopeStart;
-                        }
-                        let pitchEnvelopeEnd;
-                        if (instrumentObject["pitchEnvelopeEnd"] != undefined && instrumentObject["pitchEnvelopeEnd"] != null) {
-                            pitchEnvelopeEnd = instrumentObject["pitchEnvelopeEnd"];
-                        }
-                        else if (instrumentObject["pitchEnvelopeEnd" + i] != undefined && instrumentObject["pitchEnvelopeEnd" + i] != null) {
-                            pitchEnvelopeEnd = instrumentObject["pitchEnvelopeEnd" + i];
-                        }
-                        else {
-                            pitchEnvelopeEnd = tempEnvelope.pitchEnvelopeEnd;
-                        }
-                        let envelopeInverse;
-                        if (instrumentObject["envelopeInverse" + i] != undefined && instrumentObject["envelopeInverse" + i] != null) {
-                            envelopeInverse = instrumentObject["envelopeInverse" + i];
-                        }
-                        else if (instrumentObject["pitchEnvelopeInverse"] != undefined && instrumentObject["pitchEnvelopeInverse"] != null && Config.envelopes[tempEnvelope.envelope].name == "pitch") {
-                            envelopeInverse = instrumentObject["pitchEnvelopeInverse"];
-                        }
-                        else {
-                            envelopeInverse = tempEnvelope.inverse;
-                        }
-                        this.addEnvelope(tempEnvelope.target, tempEnvelope.index, tempEnvelope.envelope, true, pitchEnvelopeStart, pitchEnvelopeEnd, envelopeInverse, tempEnvelope.perEnvelopeSpeed, tempEnvelope.perEnvelopeLowerBound, tempEnvelope.perEnvelopeUpperBound, tempEnvelope.steps, tempEnvelope.seed, tempEnvelope.waveform);
+                        this.addEnvelope(tempEnvelope.target, tempEnvelope.index, tempEnvelope.envelope);
                     }
                 }
             }
@@ -29673,34 +29748,18 @@ li.select2-results__option[role=group] > strong:hover {
         static frequencyFromPitch(pitch) {
             return 440.0 * Math.pow(2.0, (pitch - 69.0) / 12.0);
         }
-        addEnvelope(target, index, envelope, newEnvelopes, start = 0, end = -1, inverse = false, perEnvelopeSpeed = -1, perEnvelopeLowerBound = 0, perEnvelopeUpperBound = 1, steps = 2, seed = 2, waveform = 0) {
-            end = end != -1 ? end : this.isNoiseInstrument ? Config.drumCount - 1 : Config.maxPitch;
-            perEnvelopeSpeed = perEnvelopeSpeed != -1 ? perEnvelopeSpeed : newEnvelopes ? 1 : Config.envelopes[envelope].speed;
+        addEnvelope(target, index, envelope) {
             let makeEmpty = false;
             if (!this.supportsEnvelopeTarget(target, index))
                 makeEmpty = true;
             if (this.envelopeCount >= Config.maxEnvelopeCount)
                 throw new Error();
             while (this.envelopes.length <= this.envelopeCount)
-                this.envelopes[this.envelopes.length] = new EnvelopeSettings(this.isNoiseInstrument);
+                this.envelopes[this.envelopes.length] = new EnvelopeSettings();
             const envelopeSettings = this.envelopes[this.envelopeCount];
             envelopeSettings.target = makeEmpty ? Config.instrumentAutomationTargets.dictionary["none"].index : target;
             envelopeSettings.index = makeEmpty ? 0 : index;
-            if (!newEnvelopes) {
-                envelopeSettings.envelope = clamp(0, Config.newEnvelopes.length, Config.envelopes[envelope].type);
-            }
-            else {
-                envelopeSettings.envelope = envelope;
-            }
-            envelopeSettings.pitchEnvelopeStart = start;
-            envelopeSettings.pitchEnvelopeEnd = end;
-            envelopeSettings.inverse = inverse;
-            envelopeSettings.perEnvelopeSpeed = perEnvelopeSpeed;
-            envelopeSettings.perEnvelopeLowerBound = perEnvelopeLowerBound;
-            envelopeSettings.perEnvelopeUpperBound = perEnvelopeUpperBound;
-            envelopeSettings.steps = steps;
-            envelopeSettings.seed = seed;
-            envelopeSettings.waveform = waveform;
+            envelopeSettings.envelope = envelope;
             this.envelopeCount++;
         }
         supportsEnvelopeTarget(target, index) {
@@ -30149,6 +30208,12 @@ li.select2-results__option[role=group] > strong:hover {
                     if (effectsIncludeReverb(instrument.effects)) {
                         buffer.push(base64IntToCharCode[instrument.reverb]);
                     }
+                    if (effectsIncludeGranular(instrument.effects)) {
+                        buffer.push(base64IntToCharCode[instrument.granular]);
+                        buffer.push(base64IntToCharCode[instrument.grainSize]);
+                        buffer.push(base64IntToCharCode[instrument.grainAmounts]);
+                        buffer.push(base64IntToCharCode[instrument.grainRange]);
+                    }
                     if (effectsIncludeNoteRange(instrument.effects)) {
                         buffer.push(base64IntToCharCode[instrument.upperNoteLimit >> 6], base64IntToCharCode[instrument.upperNoteLimit & 0x3f]);
                         buffer.push(base64IntToCharCode[instrument.lowerNoteLimit >> 6], base64IntToCharCode[instrument.lowerNoteLimit & 0x3f]);
@@ -30308,33 +30373,6 @@ li.select2-results__option[role=group] > strong:hover {
                             buffer.push(base64IntToCharCode[instrument.envelopes[envelopeIndex].index]);
                         }
                         buffer.push(base64IntToCharCode[instrument.envelopes[envelopeIndex].envelope]);
-                        if (Config.newEnvelopes[instrument.envelopes[envelopeIndex].envelope].name == "pitch") {
-                            if (!instrument.isNoiseInstrument) {
-                                buffer.push(base64IntToCharCode[instrument.envelopes[envelopeIndex].pitchEnvelopeStart >> 6], base64IntToCharCode[instrument.envelopes[envelopeIndex].pitchEnvelopeStart & 0x3f]);
-                                buffer.push(base64IntToCharCode[instrument.envelopes[envelopeIndex].pitchEnvelopeEnd >> 6], base64IntToCharCode[instrument.envelopes[envelopeIndex].pitchEnvelopeEnd & 0x3f]);
-                            }
-                            else {
-                                buffer.push(base64IntToCharCode[instrument.envelopes[envelopeIndex].pitchEnvelopeStart]);
-                                buffer.push(base64IntToCharCode[instrument.envelopes[envelopeIndex].pitchEnvelopeEnd]);
-                            }
-                        }
-                        else if (Config.newEnvelopes[instrument.envelopes[envelopeIndex].envelope].name == "random") {
-                            buffer.push(base64IntToCharCode[instrument.envelopes[envelopeIndex].steps]);
-                            buffer.push(base64IntToCharCode[instrument.envelopes[envelopeIndex].seed]);
-                            buffer.push(base64IntToCharCode[instrument.envelopes[envelopeIndex].waveform]);
-                        }
-                        else if (Config.newEnvelopes[instrument.envelopes[envelopeIndex].envelope].name == "lfo") {
-                            buffer.push(base64IntToCharCode[instrument.envelopes[envelopeIndex].waveform]);
-                            if (instrument.envelopes[envelopeIndex].waveform == 5 || instrument.envelopes[envelopeIndex].waveform == 6) {
-                                buffer.push(base64IntToCharCode[instrument.envelopes[envelopeIndex].steps]);
-                            }
-                        }
-                        buffer.push(base64IntToCharCode[(+instrument.envelopes[envelopeIndex].inverse)] ? base64IntToCharCode[(+instrument.envelopes[envelopeIndex].inverse)] : base64IntToCharCode[0]);
-                        if (Config.newEnvelopes[instrument.envelopes[envelopeIndex].envelope].name != "pitch" && Config.newEnvelopes[instrument.envelopes[envelopeIndex].envelope].name != "note size" && Config.newEnvelopes[instrument.envelopes[envelopeIndex].envelope].name != "punch" && Config.newEnvelopes[instrument.envelopes[envelopeIndex].envelope].name != "none") {
-                            buffer.push(base64IntToCharCode[Config.perEnvelopeSpeedToIndices[instrument.envelopes[envelopeIndex].perEnvelopeSpeed]]);
-                        }
-                        buffer.push(base64IntToCharCode[instrument.envelopes[envelopeIndex].perEnvelopeLowerBound * 10]);
-                        buffer.push(base64IntToCharCode[instrument.envelopes[envelopeIndex].perEnvelopeUpperBound * 10]);
                     }
                 }
             }
@@ -30368,7 +30406,6 @@ li.select2-results__option[role=group] > strong:hover {
                             const modInstrument = instrument.modInstruments[mod];
                             const modSetting = instrument.modulators[mod];
                             const modFilter = instrument.modFilterTypes[mod];
-                            const modEnvelope = instrument.modEnvelopeNumbers[mod];
                             let status = Config.modulators[modSetting].forSong ? 2 : 0;
                             if (modSetting == Config.modulators.dictionary["none"].index)
                                 status = 3;
@@ -30382,9 +30419,6 @@ li.select2-results__option[role=group] > strong:hover {
                             }
                             if (Config.modulators[instrument.modulators[mod]].name == "eq filter" || Config.modulators[instrument.modulators[mod]].name == "note filter") {
                                 bits.write(6, modFilter);
-                            }
-                            if (Config.modulators[instrument.modulators[mod]].name == "individual envelope speed") {
-                                bits.write(6, modEnvelope);
                             }
                         }
                     }
@@ -30581,7 +30615,6 @@ li.select2-results__option[role=group] > strong:hover {
             let fromGoldBox = false;
             let fromUltraBox = false;
             let fromAbyssBox = false;
-            let fromSlarmoosBox = false;
             if (variantTest == 0x6A) {
                 fromJummBox = true;
                 charIndex++;
@@ -30592,10 +30625,6 @@ li.select2-results__option[role=group] > strong:hover {
             }
             else if (variantTest == 0x75) {
                 fromUltraBox = true;
-                charIndex++;
-            }
-            else if (variantTest == 0x73) {
-                fromSlarmoosBox = true;
                 charIndex++;
             }
             else if (variantTest == 0x61) {
@@ -30614,8 +30643,6 @@ li.select2-results__option[role=group] > strong:hover {
                 return;
             if (fromUltraBox && (version == -1 || version > Song._latestUltraBoxVersion || version < Song._oldestUltraBoxVersion))
                 return;
-            if (fromSlarmoosBox && (version == -1 || version > Song._latestSlarmoosBoxVersion || version < Song._oldestSlarmoosBoxVersion))
-                return;
             if (fromAbyssBox && (version == -1 || version > Song._latestAbyssBoxVersion || version < Song._oldestAbyssBoxVersion))
                 return;
             const beforeTwo = version < 2;
@@ -30629,7 +30656,7 @@ li.select2-results__option[role=group] > strong:hover {
             this.initToDefault((fromBeepBox && beforeNine) || ((fromJummBox && beforeFive) || (beforeFour && fromGoldBox)));
             const forceSimpleFilter = (fromBeepBox && beforeNine || fromJummBox && beforeFive);
             let willLoadLegacySamplesForOldSongs = false;
-            if (fromUltraBox || fromGoldBox || fromAbyssBox || fromSlarmoosBox) {
+            if (fromUltraBox || fromGoldBox || fromAbyssBox) {
                 compressed = compressed.replaceAll("%7C", "|");
                 var compressed_array = compressed.split("|");
                 compressed = compressed_array.shift();
@@ -30937,7 +30964,7 @@ li.select2-results__option[role=group] > strong:hover {
                         break;
                     case 114:
                         {
-                            if (!fromUltraBox && !fromAbyssBox && !fromSlarmoosBox) {
+                            if (!fromUltraBox && !fromAbyssBox) {
                                 let newRhythm = base64CharCodeToInt[compressed.charCodeAt(charIndex++)];
                                 this.rhythm = clamp(0, Config.rhythms.length, newRhythm + 2);
                                 if (fromJummBox && beforeThree || fromBeepBox) {
@@ -31077,10 +31104,10 @@ li.select2-results__option[role=group] > strong:hover {
                             else {
                                 const instrument = this.channels[instrumentChannelIterator].instruments[instrumentIndexIterator];
                                 if (instrument.type == 2) {
-                                    instrument.chipWave = clamp(0, Config.chipWaves.length, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
+                                    instrument.chipNoise = clamp(0, Config.chipNoiseLength, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
                                 }
                                 else {
-                                    if (fromUltraBox || fromAbyssBox || fromSlarmoosBox) {
+                                    if (fromUltraBox || fromAbyssBox) {
                                         if ((fromUltraBox && beforeSix) || (fromAbyssBox && beforeThree)) {
                                             const chipWaveReal = base64CharCodeToInt[compressed.charCodeAt(charIndex++)];
                                             const chipWaveCounter = base64CharCodeToInt[compressed.charCodeAt(charIndex++)];
@@ -31174,7 +31201,7 @@ li.select2-results__option[role=group] > strong:hover {
                                 let typeCheck = base64CharCodeToInt[compressed.charCodeAt(charIndex++)];
                                 if (fromBeepBox || typeCheck == 0) {
                                     instrument.eqFilterType = false;
-                                    if (fromJummBox || fromGoldBox || fromUltraBox || fromAbyssBox || fromSlarmoosBox)
+                                    if (fromJummBox || fromGoldBox || fromUltraBox || fromAbyssBox)
                                         typeCheck = base64CharCodeToInt[compressed.charCodeAt(charIndex++)];
                                     const originalControlPointCount = typeCheck;
                                     instrument.eqFilter.controlPointCount = clamp(0, Config.filterMaxPoints + 1, originalControlPointCount);
@@ -31191,7 +31218,7 @@ li.select2-results__option[role=group] > strong:hover {
                                         charIndex += 3;
                                     }
                                     instrument.eqSubFilters[0] = instrument.eqFilter;
-                                    if ((fromJummBox && !beforeFive) || (fromGoldBox && !beforeFour) || fromUltraBox || fromAbyssBox || fromSlarmoosBox) {
+                                    if ((fromJummBox && !beforeFive) || (fromGoldBox && !beforeFour) || fromUltraBox || fromAbyssBox) {
                                         let usingSubFilterBitfield = (base64CharCodeToInt[compressed.charCodeAt(charIndex++)] << 6) | (base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
                                         for (let j = 0; j < Config.filterMorphCount - 1; j++) {
                                             if (usingSubFilterBitfield & (1 << j)) {
@@ -31225,7 +31252,7 @@ li.select2-results__option[role=group] > strong:hover {
                         break;
                     case 121:
                         {
-                            if (fromUltraBox || fromAbyssBox || fromSlarmoosBox) {
+                            if (fromUltraBox || fromAbyssBox) {
                                 if (fromUltraBox && beforeThree) {
                                     const sampleLoopInfoEncodedLength = decode32BitNumber(compressed, charIndex);
                                     charIndex += 6;
@@ -31295,7 +31322,7 @@ li.select2-results__option[role=group] > strong:hover {
                                 if (instrument.type == 4) {
                                     for (let i = 0; i < Config.drumCount; i++) {
                                         let aa = base64CharCodeToInt[compressed.charCodeAt(charIndex++)];
-                                        if ((beforeTwo && fromGoldBox) || (!fromGoldBox && !fromUltraBox && !fromAbyssBox && !fromSlarmoosBox))
+                                        if ((beforeTwo && fromGoldBox) || (!fromGoldBox && !fromUltraBox && !fromAbyssBox))
                                             aa = pregoldToEnvelope[aa];
                                         instrument.drumsetEnvelopes[i] = Song._envelopeFromLegacyIndex(aa).index;
                                     }
@@ -31303,7 +31330,7 @@ li.select2-results__option[role=group] > strong:hover {
                                 else {
                                     const legacySettings = legacySettingsCache[instrumentChannelIterator][instrumentIndexIterator];
                                     let aa = base64CharCodeToInt[compressed.charCodeAt(charIndex++)];
-                                    if ((beforeTwo && fromGoldBox) || (!fromGoldBox && !fromUltraBox && !fromAbyssBox && !fromSlarmoosBox))
+                                    if ((beforeTwo && fromGoldBox) || (!fromGoldBox && !fromUltraBox && !fromAbyssBox))
                                         aa = pregoldToEnvelope[aa];
                                     legacySettings.filterEnvelope = Song._envelopeFromLegacyIndex(aa);
                                     instrument.convertLegacySettings(legacySettings, forceSimpleFilter);
@@ -31312,7 +31339,7 @@ li.select2-results__option[role=group] > strong:hover {
                             else {
                                 for (let i = 0; i < Config.drumCount; i++) {
                                     let aa = base64CharCodeToInt[compressed.charCodeAt(charIndex++)];
-                                    if ((beforeTwo && fromGoldBox) || (!fromGoldBox && !fromUltraBox && !fromAbyssBox && !fromSlarmoosBox))
+                                    if ((beforeTwo && fromGoldBox) || (!fromGoldBox && !fromUltraBox && !fromAbyssBox))
                                         aa = pregoldToEnvelope[aa];
                                     instrument.drumsetEnvelopes[i] = clamp(0, Config.envelopes.length, aa);
                                 }
@@ -31337,12 +31364,12 @@ li.select2-results__option[role=group] > strong:hover {
                                 const pregoldToEnvelope = [0, 1, 2, 4, 5, 6, 8, 9, 10, 12, 13, 14, 16, 17, 18, 19, 20, 21, 23, 24, 25, 27, 28, 29, 32, 33, 34, 31, 11];
                                 const legacySettings = legacySettingsCache[instrumentChannelIterator][instrumentIndexIterator];
                                 let aa = base64CharCodeToInt[compressed.charCodeAt(charIndex++)];
-                                if ((beforeTwo && fromGoldBox) || (!fromGoldBox && !fromUltraBox && !fromAbyssBox && !fromSlarmoosBox))
+                                if ((beforeTwo && fromGoldBox) || (!fromGoldBox && !fromUltraBox && !fromAbyssBox))
                                     aa = pregoldToEnvelope[aa];
                                 legacySettings.pulseEnvelope = Song._envelopeFromLegacyIndex(aa);
                                 instrument.convertLegacySettings(legacySettings, forceSimpleFilter);
                             }
-                            if ((fromUltraBox && !beforeFour) || fromAbyssBox || fromSlarmoosBox) {
+                            if ((fromUltraBox && !beforeFour) || fromAbyssBox) {
                                 instrument.decimalOffset = clamp(0, 99 + 1, (base64CharCodeToInt[compressed.charCodeAt(charIndex++)] << 6) + base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
                             }
                         }
@@ -31393,7 +31420,7 @@ li.select2-results__option[role=group] > strong:hover {
                                         }
                                     }
                                 }
-                                else if ((beforeFour && !fromGoldBox && !fromUltraBox && !fromAbyssBox && !fromSlarmoosBox) || fromBeepBox) {
+                                else if ((beforeFour && !fromGoldBox && !fromUltraBox && !fromAbyssBox) || fromBeepBox) {
                                     const settings = legacySettings[clamp(0, legacySettings.length, base64CharCodeToInt[compressed.charCodeAt(charIndex++)])];
                                     const instrument = this.channels[instrumentChannelIterator].instruments[instrumentIndexIterator];
                                     instrument.fadeIn = Synth.secondsToFadeInSetting(settings.fadeInSeconds);
@@ -31439,7 +31466,7 @@ li.select2-results__option[role=group] > strong:hover {
                                         const instrument = this.channels[channelIndex].instruments[0];
                                         const legacySettings = legacySettingsCache[channelIndex][0];
                                         instrument.vibrato = legacyEffects[effect];
-                                        if (legacySettings.filterEnvelope == undefined || legacySettings.filterEnvelope.type == 0) {
+                                        if (legacySettings.filterEnvelope == undefined || legacySettings.filterEnvelope.type == 1) {
                                             legacySettings.filterEnvelope = Config.envelopes.dictionary[legacyEnvelopes[effect]];
                                             instrument.convertLegacySettings(legacySettings, forceSimpleFilter);
                                         }
@@ -31456,7 +31483,7 @@ li.select2-results__option[role=group] > strong:hover {
                                                 const instrument = this.channels[channelIndex].instruments[i];
                                                 const legacySettings = legacySettingsCache[channelIndex][i];
                                                 instrument.vibrato = legacyEffects[effect];
-                                                if (legacySettings.filterEnvelope == undefined || legacySettings.filterEnvelope.type == 0) {
+                                                if (legacySettings.filterEnvelope == undefined || legacySettings.filterEnvelope.type == 1) {
                                                     legacySettings.filterEnvelope = Config.envelopes.dictionary[legacyEnvelopes[effect]];
                                                     instrument.convertLegacySettings(legacySettings, forceSimpleFilter);
                                                 }
@@ -31477,7 +31504,7 @@ li.select2-results__option[role=group] > strong:hover {
                                         const instrument = this.channels[instrumentChannelIterator].instruments[instrumentIndexIterator];
                                         const legacySettings = legacySettingsCache[instrumentChannelIterator][instrumentIndexIterator];
                                         instrument.vibrato = legacyEffects[effect];
-                                        if (legacySettings.filterEnvelope == undefined || legacySettings.filterEnvelope.type == 0) {
+                                        if (legacySettings.filterEnvelope == undefined || legacySettings.filterEnvelope.type == 1) {
                                             legacySettings.filterEnvelope = Config.envelopes.dictionary[legacyEnvelopes[effect]];
                                             instrument.convertLegacySettings(legacySettings, forceSimpleFilter);
                                         }
@@ -31572,7 +31599,7 @@ li.select2-results__option[role=group] > strong:hover {
                                 this.channels[instrumentChannelIterator].instruments[instrumentIndexIterator].unison = clamp(0, Config.unisons.length + 1, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
                             }
                             const instrument = this.channels[instrumentChannelIterator].instruments[instrumentIndexIterator];
-                            if (((fromUltraBox && !beforeFour) || fromAbyssBox || fromSlarmoosBox) && (instrument.unison == Config.unisons.length)) {
+                            if (((fromUltraBox && !beforeFour) || fromAbyssBox) && (instrument.unison == Config.unisons.length)) {
                                 instrument.unisonVoices = base64CharCodeToInt[compressed.charCodeAt(charIndex++)];
                                 const unisonSpreadNegative = base64CharCodeToInt[compressed.charCodeAt(charIndex++)];
                                 const unisonSpread = base64CharCodeToInt[compressed.charCodeAt(charIndex++)] + ((base64CharCodeToInt[compressed.charCodeAt(charIndex++)] + (base64CharCodeToInt[compressed.charCodeAt(charIndex++)] * 63)) * 63);
@@ -31594,7 +31621,9 @@ li.select2-results__option[role=group] > strong:hover {
                                 instrument.unisonSign = unisonSign / 1000;
                                 if (unisonSignNegative == 0)
                                     instrument.unisonSign *= -1;
-                                instrument.unisonBuzzes = base64CharCodeToInt[compressed.charCodeAt(charIndex++)] ? true : false;
+                                if ((fromUltraBox && !beforeSix) || (fromAbyssBox && !beforeThree)) {
+                                    instrument.unisonBuzzes = base64CharCodeToInt[compressed.charCodeAt(charIndex++)] ? true : false;
+                                }
                             }
                             else {
                                 instrument.unisonVoices = Config.unisons[instrument.unison].voices;
@@ -31621,7 +31650,7 @@ li.select2-results__option[role=group] > strong:hover {
                         {
                             const instrument = this.channels[instrumentChannelIterator].instruments[instrumentIndexIterator];
                             if ((beforeNine && fromBeepBox) || ((fromJummBox && beforeFive) || (beforeFour && fromGoldBox))) {
-                                instrument.effects = (base64CharCodeToInt[compressed.charCodeAt(charIndex++)] & ((1 << 16) - 1));
+                                instrument.effects = (base64CharCodeToInt[compressed.charCodeAt(charIndex++)] & ((1 << 17) - 1));
                                 if (legacyGlobalReverb == 0 && !((fromJummBox && beforeFive) || (beforeFour && fromGoldBox))) {
                                     instrument.effects &= ~(1 << 0);
                                 }
@@ -31674,7 +31703,7 @@ li.select2-results__option[role=group] > strong:hover {
                                             charIndex += 3;
                                         }
                                         instrument.noteSubFilters[0] = instrument.noteFilter;
-                                        if ((fromJummBox && !beforeFive) || (fromGoldBox) || (fromUltraBox) || (fromAbyssBox) || fromSlarmoosBox) {
+                                        if ((fromJummBox && !beforeFive) || (fromGoldBox) || (fromUltraBox) || (fromAbyssBox)) {
                                             let usingSubFilterBitfield = (base64CharCodeToInt[compressed.charCodeAt(charIndex++)] << 6) | (base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
                                             for (let j = 0; j < Config.filterMorphCount - 1; j++) {
                                                 if (usingSubFilterBitfield & (1 << j)) {
@@ -31751,7 +31780,7 @@ li.select2-results__option[role=group] > strong:hover {
                                 }
                                 if (effectsIncludeDistortion(instrument.effects)) {
                                     instrument.distortion = clamp(0, Config.distortionRange, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
-                                    if ((fromJummBox && !beforeFive) || fromGoldBox || fromUltraBox || fromAbyssBox || fromSlarmoosBox)
+                                    if ((fromJummBox && !beforeFive) || fromGoldBox || fromUltraBox || fromAbyssBox)
                                         instrument.aliases = base64CharCodeToInt[compressed.charCodeAt(charIndex++)] ? true : false;
                                 }
                                 if (effectsIncludeRM(instrument.effects)) {
@@ -31786,7 +31815,7 @@ li.select2-results__option[role=group] > strong:hover {
                                     else {
                                         instrument.pan = clamp(0, Config.panMax + 1, (base64CharCodeToInt[compressed.charCodeAt(charIndex++)] << 6) + base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
                                     }
-                                    if ((fromJummBox && !beforeTwo) || fromGoldBox || fromUltraBox || fromAbyssBox || fromSlarmoosBox)
+                                    if ((fromJummBox && !beforeTwo) || fromGoldBox || fromUltraBox || fromAbyssBox)
                                         instrument.panDelay = base64CharCodeToInt[compressed.charCodeAt(charIndex++)];
                                 }
                                 if (effectsIncludeChorus(instrument.effects)) {
@@ -31809,12 +31838,18 @@ li.select2-results__option[role=group] > strong:hover {
                                         instrument.reverb = clamp(0, Config.reverbRange, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
                                     }
                                 }
+                                if (effectsIncludeGranular(instrument.effects)) {
+                                    instrument.granular = base64CharCodeToInt[compressed.charCodeAt(charIndex++)];
+                                    instrument.grainSize = base64CharCodeToInt[compressed.charCodeAt(charIndex++)];
+                                    instrument.grainAmounts = base64CharCodeToInt[compressed.charCodeAt(charIndex++)];
+                                    instrument.grainRange = base64CharCodeToInt[compressed.charCodeAt(charIndex++)];
+                                }
                                 if (effectsIncludeNoteRange(instrument.effects)) {
                                     instrument.upperNoteLimit = (base64CharCodeToInt[compressed.charCodeAt(charIndex++)] << 6) + base64CharCodeToInt[compressed.charCodeAt(charIndex++)];
                                     instrument.lowerNoteLimit = (base64CharCodeToInt[compressed.charCodeAt(charIndex++)] << 6) + base64CharCodeToInt[compressed.charCodeAt(charIndex++)];
                                 }
                             }
-                            instrument.effects &= (1 << 16) - 1;
+                            instrument.effects &= (1 << 17) - 1;
                         }
                         break;
                     case 118:
@@ -31854,7 +31889,7 @@ li.select2-results__option[role=group] > strong:hover {
                             else if ((fromJummBox && beforeFive) || (beforeFour && fromGoldBox)) {
                                 const instrument = this.channels[instrumentChannelIterator].instruments[instrumentIndexIterator];
                                 instrument.pan = clamp(0, Config.panMax + 1, (base64CharCodeToInt[compressed.charCodeAt(charIndex++)] << 6) + base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
-                                if (fromJummBox && !beforeThree || fromGoldBox || fromUltraBox || fromAbyssBox || fromSlarmoosBox) {
+                                if (fromJummBox && !beforeThree || fromGoldBox || fromUltraBox || fromAbyssBox) {
                                     instrument.panDelay = base64CharCodeToInt[compressed.charCodeAt(charIndex++)];
                                 }
                             }
@@ -31914,7 +31949,7 @@ li.select2-results__option[role=group] > strong:hover {
                         {
                             for (let channel = 0; channel < this.getChannelCount(); channel++) {
                                 var channelNameLength;
-                                if (beforeFour && !fromGoldBox && !fromUltraBox && !fromAbyssBox && !fromSlarmoosBox)
+                                if (beforeFour && !fromGoldBox && !fromUltraBox && !fromAbyssBox)
                                     channelNameLength = base64CharCodeToInt[compressed.charCodeAt(charIndex++)];
                                 else
                                     channelNameLength = ((base64CharCodeToInt[compressed.charCodeAt(charIndex++)] << 6) + base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
@@ -32039,7 +32074,7 @@ li.select2-results__option[role=group] > strong:hover {
                                 const instrument = this.channels[instrumentChannelIterator].instruments[instrumentIndexIterator];
                                 const legacySettings = legacySettingsCache[instrumentChannelIterator][instrumentIndexIterator];
                                 let aa = base64CharCodeToInt[compressed.charCodeAt(charIndex++)];
-                                if ((beforeTwo && fromGoldBox) || (!fromGoldBox && !fromUltraBox && !fromAbyssBox && !fromSlarmoosBox))
+                                if ((beforeTwo && fromGoldBox) || (!fromGoldBox && !fromUltraBox && !fromAbyssBox))
                                     aa = pregoldToEnvelope[aa];
                                 legacySettings.feedbackEnvelope = Song._envelopeFromLegacyIndex(base64CharCodeToInt[aa]);
                                 instrument.convertLegacySettings(legacySettings, forceSimpleFilter);
@@ -32055,7 +32090,7 @@ li.select2-results__option[role=group] > strong:hover {
                                     instrument.operators[o].frequency = freqToGold3[clamp(0, freqToGold3.length, base64CharCodeToInt[compressed.charCodeAt(charIndex++)])];
                                 }
                             }
-                            else if (!fromGoldBox && !fromUltraBox && !fromAbyssBox && !fromSlarmoosBox) {
+                            else if (!fromGoldBox && !fromUltraBox && !fromAbyssBox) {
                                 const freqToUltraBox = [4, 5, 6, 7, 8, 10, 12, 13, 14, 15, 16, 18, 20, 23, 27, 2, 1, 9, 17, 19, 21, 23, 0, 3];
                                 for (let o = 0; o < (instrument.type == 11 ? 6 : Config.operatorCount); o++) {
                                     instrument.operators[o].frequency = freqToUltraBox[clamp(0, freqToUltraBox.length, base64CharCodeToInt[compressed.charCodeAt(charIndex++)])];
@@ -32080,29 +32115,6 @@ li.select2-results__option[role=group] > strong:hover {
                         {
                             const pregoldToEnvelope = [0, 1, 2, 4, 5, 6, 8, 9, 10, 12, 13, 14, 16, 17, 18, 19, 20, 21, 23, 24, 25, 27, 28, 29, 32, 33, 34, 31, 11];
                             const jummToUltraEnvelope = [0, 1, 2, 4, 5, 6, 8, 9, 10, 12, 13, 14, 16, 17, 18, 19, 20, 21, 23, 24, 25, 58, 59, 60];
-                            const oldToNewEnvelope = [
-                                0,
-                                1,
-                                4,
-                                5, 5, 5, 5,
-                                6, 6, 6, 6,
-                                7, 7, 7, 7,
-                                8, 8, 8, 8,
-                                9, 9, 9,
-                                10, 10, 10, 10,
-                                11, 11, 11, 11,
-                                12, 12, 12, 12, 12,
-                                13, 13, 13, 13, 13,
-                                11, 11, 11,
-                                8, 8, 8,
-                                9, 9, 9,
-                                8, 8, 8,
-                                9, 9, 9,
-                                8,
-                                9,
-                                8,
-                                14, 14, 14
-                            ];
                             const instrument = this.channels[instrumentChannelIterator].instruments[instrumentIndexIterator];
                             if ((beforeNine && fromBeepBox) || (beforeFive && fromJummBox) || (beforeFour && fromGoldBox)) {
                                 const legacySettings = legacySettingsCache[instrumentChannelIterator][instrumentIndexIterator];
@@ -32119,7 +32131,7 @@ li.select2-results__option[role=group] > strong:hover {
                             }
                             else {
                                 const envelopeCount = clamp(0, Config.maxEnvelopeCount + 1, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
-                                if ((fromJummBox && !beforeSix) || (fromUltraBox && !beforeFive) || (fromAbyssBox) || fromSlarmoosBox) {
+                                if ((fromJummBox && !beforeSix) || (fromUltraBox && !beforeFive) || (fromAbyssBox)) {
                                     instrument.envelopeSpeed = clamp(0, Config.modulators.dictionary["envelope speed"].maxRawVol + 1, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
                                     instrument.discreteEnvelope = (base64CharCodeToInt[compressed.charCodeAt(charIndex++)]) ? true : false;
                                 }
@@ -32133,74 +32145,10 @@ li.select2-results__option[role=group] > strong:hover {
                                     let envTypeIndex = base64CharCodeToInt[compressed.charCodeAt(charIndex++)];
                                     if ((beforeTwo && fromGoldBox) || (fromBeepBox))
                                         envTypeIndex = pregoldToEnvelope[envTypeIndex];
-                                    let perEnvelopeSpeed = 1;
-                                    if ((!fromAbyssBox && !fromSlarmoosBox) || (fromAbyssBox && beforeThree)) {
-                                        perEnvelopeSpeed = Config.envelopes[envTypeIndex].speed;
-                                        envTypeIndex = oldToNewEnvelope[envTypeIndex];
-                                    }
-                                    let isTremolo2 = false;
-                                    if (((!fromAbyssBox && !fromSlarmoosBox) || (fromAbyssBox && beforeThree)) && envTypeIndex == 9) {
-                                        isTremolo2 = true;
-                                        envTypeIndex--;
-                                    }
-                                    else if (((!fromAbyssBox && !fromSlarmoosBox) || (fromAbyssBox && beforeThree)) && envTypeIndex > 9) {
-                                        envTypeIndex--;
-                                    }
-                                    const envelope = clamp(0, Config.newEnvelopes.length, envTypeIndex);
-                                    let pitchEnvelopeStart = 0;
-                                    let pitchEnvelopeEnd = Config.maxPitch;
-                                    let envelopeInverse = false;
-                                    perEnvelopeSpeed = ((fromAbyssBox && !beforeThree) || fromSlarmoosBox) ? Config.newEnvelopes[envelope].speed : perEnvelopeSpeed;
-                                    let perEnvelopeLowerBound = 0;
-                                    let perEnvelopeUpperBound = 1;
-                                    let steps = 2;
-                                    let seed = 2;
-                                    let waveform = 0;
-                                    if ((fromAbyssBox && !beforeThree) || fromSlarmoosBox) {
-                                        if (Config.newEnvelopes[envelope].name == "lfo") {
-                                            waveform = clamp(0, 7, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
-                                            if (waveform == 5 || waveform == 6) {
-                                                steps = clamp(1, Config.randomEnvelopeStepsMax + 1, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
-                                            }
-                                        }
-                                        else if (Config.newEnvelopes[envelope].name == "random") {
-                                            steps = clamp(1, Config.randomEnvelopeStepsMax + 1, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
-                                            seed = clamp(1, Config.randomEnvelopeSeedMax + 1, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
-                                            waveform = clamp(0, 4, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
-                                        }
-                                        if (Config.newEnvelopes[envelope].name == "pitch") {
-                                            if (!instrument.isNoiseInstrument) {
-                                                let pitchEnvelopeCompact = base64CharCodeToInt[compressed.charCodeAt(charIndex++)];
-                                                pitchEnvelopeStart = clamp(0, Config.maxPitch, pitchEnvelopeCompact * 64 + base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
-                                                pitchEnvelopeCompact = base64CharCodeToInt[compressed.charCodeAt(charIndex++)];
-                                                pitchEnvelopeEnd = clamp(0, Config.maxPitch, pitchEnvelopeCompact * 64 + base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
-                                            }
-                                            else {
-                                                pitchEnvelopeStart = clamp(0, Config.drumCount - 1, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
-                                                pitchEnvelopeEnd = clamp(0, Config.drumCount - 1, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
-                                            }
-                                        }
-                                        envelopeInverse = base64CharCodeToInt[compressed.charCodeAt(charIndex++)] == 1 ? true : false;
-                                        if (Config.newEnvelopes[envelope].name != "pitch" && Config.newEnvelopes[envelope].name != "note size" && Config.newEnvelopes[envelope].name != "punch" && Config.newEnvelopes[envelope].name != "none") {
-                                            perEnvelopeSpeed = Config.perEnvelopeSpeedIndices[base64CharCodeToInt[compressed.charCodeAt(charIndex++)]];
-                                        }
-                                        perEnvelopeLowerBound = base64CharCodeToInt[compressed.charCodeAt(charIndex++)] / 10;
-                                        perEnvelopeUpperBound = base64CharCodeToInt[compressed.charCodeAt(charIndex++)] / 10;
-                                    }
-                                    if ((!fromAbyssBox && !fromSlarmoosBox) || (fromAbyssBox && beforeThree)) {
-                                        if (isTremolo2) {
-                                            waveform = 0;
-                                            if (envelopeInverse) {
-                                                perEnvelopeUpperBound = Math.floor((perEnvelopeUpperBound / 2) * 10) / 10;
-                                                perEnvelopeLowerBound = Math.floor((perEnvelopeLowerBound / 2) * 10) / 10;
-                                            }
-                                            else {
-                                                perEnvelopeUpperBound = Math.floor((0.5 + (perEnvelopeUpperBound - perEnvelopeLowerBound) / 2) * 10) / 10;
-                                                perEnvelopeLowerBound = 0.5;
-                                            }
-                                        }
-                                    }
-                                    instrument.addEnvelope(target, index, envelope, true, pitchEnvelopeStart, pitchEnvelopeEnd, envelopeInverse, perEnvelopeSpeed, perEnvelopeLowerBound, perEnvelopeUpperBound, steps, seed, waveform);
+                                    if (fromJummBox)
+                                        envTypeIndex = jummToUltraEnvelope[envTypeIndex];
+                                    const envelope = clamp(0, Config.envelopes.length, envTypeIndex);
+                                    instrument.addEnvelope(target, index, envelope);
                                 }
                             }
                         }
@@ -32291,7 +32239,7 @@ li.select2-results__option[role=group] > strong:hover {
                                 }
                             }
                             else {
-                                if (fromUltraBox || fromAbyssBox || fromSlarmoosBox) {
+                                if (fromUltraBox || fromAbyssBox) {
                                     const instrument = this.channels[instrumentChannelIterator].instruments[instrumentIndexIterator];
                                     instrument.decimalOffset = clamp(0, 50 + 1, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
                                 }
@@ -32404,9 +32352,6 @@ li.select2-results__option[role=group] > strong:hover {
                                             if (!jumfive && (Config.modulators[instrument.modulators[mod]].name == "eq filter" || Config.modulators[instrument.modulators[mod]].name == "note filter")) {
                                                 instrument.modFilterTypes[mod] = bits.read(6);
                                             }
-                                            if (Config.modulators[instrument.modulators[mod]].name == "individual envelope speed") {
-                                                instrument.modEnvelopeNumbers[mod] = bits.read(6);
-                                            }
                                             if (jumfive && instrument.modChannels[mod] >= 0) {
                                                 let forNoteFilter = effectsIncludeNoteFilter(this.channels[instrument.modChannels[mod]].instruments[instrument.modInstruments[mod]].effects);
                                                 if (instrument.modulators[mod] == 7) {
@@ -32435,7 +32380,7 @@ li.select2-results__option[role=group] > strong:hover {
                                                     songReverbIndex = mod;
                                                 }
                                             }
-                                            if (jumfive && Config.modulators[instrument.modulators[mod]].associatedEffect != 16) {
+                                            if (jumfive && Config.modulators[instrument.modulators[mod]].associatedEffect != 17) {
                                                 this.channels[instrument.modChannels[mod]].instruments[instrument.modInstruments[mod]].effects |= 1 << Config.modulators[instrument.modulators[mod]].associatedEffect;
                                             }
                                         }
@@ -32663,7 +32608,7 @@ li.select2-results__option[role=group] > strong:hover {
                                                     note.continuesLastPattern = (bits.read(1) == 1);
                                                 }
                                                 else {
-                                                    if ((beforeFour && !fromUltraBox && !fromAbyssBox && !fromSlarmoosBox) || fromBeepBox) {
+                                                    if ((beforeFour && !fromUltraBox && !fromAbyssBox) || fromBeepBox) {
                                                         note.continuesLastPattern = false;
                                                     }
                                                     else {
@@ -32763,6 +32708,7 @@ li.select2-results__option[role=group] > strong:hover {
             const chipWaveIndex = Config.chipWaves.length;
             let urlSliced = url;
             let customSampleRate = 44100;
+            let sampleName = "";
             let isCustomPercussive = false;
             let customRootKey = 60;
             let presetIsUsingAdvancedLoopControls = false;
@@ -32783,6 +32729,9 @@ li.select2-results__option[role=group] > strong:hover {
                         const optionData = rawOption.slice(1, rawOption.length);
                         if (optionCode === "s") {
                             customSampleRate = clamp(8000, 96000 + 1, parseFloatWithDefault(optionData, 44100));
+                        }
+                        else if (optionCode === "n") {
+                            sampleName = optionData;
                         }
                         else if (optionCode === "r") {
                             customRootKey = parseFloatWithDefault(optionData, 60);
@@ -32894,6 +32843,8 @@ li.select2-results__option[role=group] > strong:hover {
                 const namedOptions = [];
                 if (customSampleRate !== 44100)
                     namedOptions.push("s" + customSampleRate);
+                if ((sampleName != "") && (sampleName != null))
+                    namedOptions.push("n" + sampleName);
                 if (customRootKey !== 60)
                     namedOptions.push("r" + customRootKey);
                 if (isCustomPercussive)
@@ -32915,11 +32866,16 @@ li.select2-results__option[role=group] > strong:hover {
                 }
                 customSampleUrls[customSampleUrlIndex] = urlWithNamedOptions;
                 let name;
-                if (OFFLINE) {
-                    name = decodeURIComponent(parsedUrl.replace(/^([^\/]*\/)+/, ""));
+                if (sampleName != "") {
+                    name = decodeURIComponent(sampleName);
                 }
                 else {
-                    name = decodeURIComponent(parsedUrl.pathname.replace(/^([^\/]*\/)+/, ""));
+                    if (OFFLINE) {
+                        name = decodeURIComponent(parsedUrl.replace(/^([^\/]*\/)+/, ""));
+                    }
+                    else {
+                        name = decodeURIComponent(parsedUrl.pathname.replace(/^([^\/]*\/)+/, ""));
+                    }
                 }
                 const expression = 1.0;
                 Config.chipWaves[chipWaveIndex] = {
@@ -33668,8 +33624,6 @@ li.select2-results__option[role=group] > strong:hover {
     Song._latestGoldBoxVersion = 4;
     Song._oldestUltraBoxVersion = 1;
     Song._latestUltraBoxVersion = 6;
-    Song._oldestSlarmoosBoxVersion = 1;
-    Song._latestSlarmoosBoxVersion = 4;
     Song._oldestAbyssBoxVersion = 1;
     Song._latestAbyssBoxVersion = 3;
     Song._variant = 0x61;
@@ -33845,9 +33799,9 @@ li.select2-results__option[role=group] > strong:hover {
     }
     class EnvelopeComputer {
         constructor() {
-            this.noteSecondsStart = [];
+            this.noteSecondsStart = 0.0;
             this.noteSecondsStartUnscaled = 0.0;
-            this.noteSecondsEnd = [];
+            this.noteSecondsEnd = 0.0;
             this.noteSecondsEndUnscaled = 0.0;
             this.noteTicksStart = 0.0;
             this.noteTicksEnd = 0.0;
@@ -33856,16 +33810,13 @@ li.select2-results__option[role=group] > strong:hover {
             this.prevNoteSize = Config.noteSizeMax;
             this.nextNoteSize = Config.noteSizeMax;
             this._noteSizeFinal = Config.noteSizeMax;
-            this.prevNoteSecondsStart = [];
+            this.prevNoteSecondsStart = 0.0;
             this.prevNoteSecondsStartUnscaled = 0.0;
-            this.prevNoteSecondsEnd = [];
+            this.prevNoteSecondsEnd = 0.0;
             this.prevNoteSecondsEndUnscaled = 0.0;
             this.prevNoteTicksStart = 0.0;
             this.prevNoteTicksEnd = 0.0;
             this._prevNoteSizeFinal = Config.noteSizeMax;
-            this.tickTimeEnd = [];
-            this.drumsetFilterEnvelopeStart = 0.0;
-            this.drumsetFilterEnvelopeEnd = 0.0;
             this.prevSlideStart = false;
             this.prevSlideEnd = false;
             this.nextSlideStart = false;
@@ -33874,13 +33825,12 @@ li.select2-results__option[role=group] > strong:hover {
             this.prevSlideRatioEnd = 0.0;
             this.nextSlideRatioStart = 0.0;
             this.nextSlideRatioEnd = 0.0;
-            this.startPinTickAbsolute = null;
             this.envelopeStarts = [];
             this.envelopeEnds = [];
             this._modifiedEnvelopeIndices = [];
             this._modifiedEnvelopeCount = 0;
             this.lowpassCutoffDecayVolumeCompensation = 1.0;
-            const length = 56;
+            const length = 60;
             for (let i = 0; i < length; i++) {
                 this.envelopeStarts[i] = 1.0;
                 this.envelopeEnds[i] = 1.0;
@@ -33888,34 +33838,28 @@ li.select2-results__option[role=group] > strong:hover {
             this.reset();
         }
         reset() {
-            for (let envelopeIndex = 0; envelopeIndex < Config.maxEnvelopeCount + 1; envelopeIndex++) {
-                this.noteSecondsEnd[envelopeIndex] = 0.0;
-                this.prevNoteSecondsEnd[envelopeIndex] = 0.0;
-            }
+            this.noteSecondsEnd = 0.0;
             this.noteSecondsEndUnscaled = 0.0;
             this.noteTicksEnd = 0.0;
             this._noteSizeFinal = Config.noteSizeMax;
+            this.prevNoteSecondsEnd = 0.0;
             this.prevNoteSecondsEndUnscaled = 0.0;
             this.prevNoteTicksEnd = 0.0;
             this._prevNoteSizeFinal = Config.noteSizeMax;
             this._modifiedEnvelopeCount = 0;
-            this.drumsetFilterEnvelopeStart = 0.0;
-            this.drumsetFilterEnvelopeEnd = 0.0;
-            this.startPinTickAbsolute = null;
         }
-        computeEnvelopes(instrument, currentPart, tickTimeStart, tickTimeStartReal, secondsPerTick, tone, timeScale, instrumentState, synth) {
+        computeEnvelopes(instrument, currentPart, tickTimeStart, tickTimeStartReal, secondsPerTick, tone, timeScale, song, instrumentState) {
             const secondsPerTickUnscaled = secondsPerTick;
+            secondsPerTick *= timeScale;
             const transition = instrument.getTransition();
             if (tone != null && tone.atNoteStart && !transition.continues && !tone.forceContinueAtStart) {
+                this.prevNoteSecondsEnd = this.noteSecondsEnd;
                 this.prevNoteSecondsEndUnscaled = this.noteSecondsEndUnscaled;
                 this.prevNoteTicksEnd = this.noteTicksEnd;
                 this._prevNoteSizeFinal = this._noteSizeFinal;
+                this.noteSecondsEnd = 0.0;
                 this.noteSecondsEndUnscaled = 0.0;
                 this.noteTicksEnd = 0.0;
-                for (let envelopeIndex = 0; envelopeIndex < Config.maxEnvelopeCount + 1; envelopeIndex++) {
-                    this.prevNoteSecondsEnd[envelopeIndex] = this.noteSecondsEnd[envelopeIndex];
-                    this.noteSecondsEnd[envelopeIndex] = 0.0;
-                }
             }
             if (tone != null) {
                 if (tone.note != null) {
@@ -33925,23 +33869,23 @@ li.select2-results__option[role=group] > strong:hover {
                     this._noteSizeFinal = Config.noteSizeMax;
                 }
             }
-            const tickTimeEnd = [];
+            const tickTimeEnd = tickTimeStart + timeScale;
             const tickTimeEndReal = tickTimeStartReal + 1.0;
-            const noteSecondsStart = [];
+            const noteSecondsStart = this.noteSecondsEnd;
             const noteSecondsStartUnscaled = this.noteSecondsEndUnscaled;
-            const noteSecondsEnd = [];
+            const noteSecondsEnd = noteSecondsStart + secondsPerTick;
             const noteSecondsEndUnscaled = noteSecondsStartUnscaled + secondsPerTickUnscaled;
             const noteTicksStart = this.noteTicksEnd;
             const noteTicksEnd = noteTicksStart + 1.0;
-            const prevNoteSecondsStart = [];
-            const prevNoteSecondsEnd = [];
+            const prevNoteSecondsStart = this.prevNoteSecondsEnd;
             const prevNoteSecondsStartUnscaled = this.prevNoteSecondsEndUnscaled;
+            const prevNoteSecondsEnd = prevNoteSecondsStart + secondsPerTick;
             const prevNoteSecondsEndUnscaled = prevNoteSecondsStartUnscaled + secondsPerTickUnscaled;
             const prevNoteTicksStart = this.prevNoteTicksEnd;
             const prevNoteTicksEnd = prevNoteTicksStart + 1.0;
             const beatsPerTick = 1.0 / (Config.ticksPerPart * Config.partsPerBeat);
-            const beatTimeStart = [];
-            const beatTimeEnd = [];
+            const beatTimeStart = beatsPerTick * tickTimeStart;
+            const beatTimeEnd = beatsPerTick * tickTimeEnd;
             let noteSizeStart = this._noteSizeFinal;
             let noteSizeEnd = this._noteSizeFinal;
             let prevNoteSize = this._prevNoteSizeFinal;
@@ -33954,15 +33898,11 @@ li.select2-results__option[role=group] > strong:hover {
             let prevSlideRatioEnd = 0.0;
             let nextSlideRatioStart = 0.0;
             let nextSlideRatioEnd = 0.0;
-            if (tone == null)
-                this.startPinTickAbsolute = null;
             if (tone != null && tone.note != null && !tone.passedEndOfNote) {
                 const endPinIndex = tone.note.getEndPinIndex(currentPart);
                 const startPin = tone.note.pins[endPinIndex - 1];
                 const endPin = tone.note.pins[endPinIndex];
                 const startPinTick = (tone.note.start + startPin.time) * Config.ticksPerPart;
-                if (this.startPinTickAbsolute == null || (!(transition.continues || transition.slides)) && tone.passedEndOfNote)
-                    this.startPinTickAbsolute = startPinTick + synth.computeTicksSinceStart(true);
                 const endPinTick = (tone.note.start + endPin.time) * Config.ticksPerPart;
                 const ratioStart = (tickTimeStartReal - startPinTick) / (endPinTick - startPinTick);
                 const ratioEnd = (tickTimeEndReal - startPinTick) / (endPinTick - startPinTick);
@@ -34003,80 +33943,41 @@ li.select2-results__option[role=group] > strong:hover {
                 let automationTarget;
                 let targetIndex;
                 let envelope;
-                let inverse = false;
-                let perEnvelopeSpeed = 1;
-                let globalEnvelopeSpeed = 1;
-                let envelopeSpeed = perEnvelopeSpeed * globalEnvelopeSpeed;
-                let perEnvelopeLowerBound = 0;
-                let perEnvelopeUpperBound = 1;
-                let timeSinceStart = 0;
-                let steps = 2;
-                let seed = 2;
-                let waveform = 0;
-                let startPinTickAbsolute = this.startPinTickAbsolute || 0.0;
                 if (envelopeIndex == instrument.envelopeCount) {
                     if (usedNoteSize)
                         break;
                     automationTarget = Config.instrumentAutomationTargets.dictionary["noteVolume"];
                     targetIndex = 0;
-                    envelope = Config.newEnvelopes.dictionary["note size"];
+                    envelope = Config.envelopes.dictionary["note size"];
                 }
                 else {
                     let envelopeSettings = instrument.envelopes[envelopeIndex];
                     automationTarget = Config.instrumentAutomationTargets[envelopeSettings.target];
                     targetIndex = envelopeSettings.index;
-                    envelope = Config.newEnvelopes[envelopeSettings.envelope];
-                    inverse = instrument.envelopes[envelopeIndex].inverse;
-                    perEnvelopeSpeed = instrument.envelopes[envelopeIndex].perEnvelopeSpeed;
-                    globalEnvelopeSpeed = Math.pow(instrument.envelopeSpeed, 2) / 144;
-                    envelopeSpeed = perEnvelopeSpeed == 0 || globalEnvelopeSpeed == 0 ? perEnvelopeSpeed + globalEnvelopeSpeed : perEnvelopeSpeed * globalEnvelopeSpeed;
-                    const boundsCorrect = instrument.envelopes[envelopeIndex].perEnvelopeLowerBound <= instrument.envelopes[envelopeIndex].perEnvelopeUpperBound;
-                    perEnvelopeLowerBound = boundsCorrect ? instrument.envelopes[envelopeIndex].perEnvelopeLowerBound : 0;
-                    perEnvelopeUpperBound = boundsCorrect ? instrument.envelopes[envelopeIndex].perEnvelopeUpperBound : 1;
-                    timeSinceStart = synth.computeTicksSinceStart();
-                    steps = instrument.envelopes[envelopeIndex].steps;
-                    seed = instrument.envelopes[envelopeIndex].seed;
-                    if (instrument.envelopes[envelopeIndex].waveform >= (envelope.name == "lfo" ? 7 : 4)) {
-                        instrument.envelopes[envelopeIndex].waveform = 0;
-                    }
-                    waveform = instrument.envelopes[envelopeIndex].waveform;
-                    if (!timeScale[envelopeIndex])
-                        timeScale[envelopeIndex] = 0;
-                    const secondsPerTickScaled = secondsPerTick * timeScale[envelopeIndex];
-                    if (!tickTimeStart[envelopeIndex])
-                        tickTimeStart[envelopeIndex] = 0;
-                    tickTimeEnd[envelopeIndex] = tickTimeStart[envelopeIndex] ? tickTimeStart[envelopeIndex] + timeScale[envelopeIndex] : timeScale[envelopeIndex];
-                    noteSecondsStart[envelopeIndex] = this.noteSecondsEnd[envelopeIndex] ? this.noteSecondsEnd[envelopeIndex] : 0;
-                    prevNoteSecondsStart[envelopeIndex] = this.prevNoteSecondsEnd[envelopeIndex] ? this.prevNoteSecondsEnd[envelopeIndex] : 0;
-                    noteSecondsEnd[envelopeIndex] = noteSecondsStart[envelopeIndex] ? noteSecondsStart[envelopeIndex] + secondsPerTickScaled : secondsPerTickScaled;
-                    prevNoteSecondsEnd[envelopeIndex] = prevNoteSecondsStart[envelopeIndex] ? prevNoteSecondsStart[envelopeIndex] + secondsPerTickScaled : secondsPerTickScaled;
-                    beatTimeStart[envelopeIndex] = tickTimeStart[envelopeIndex] ? beatsPerTick * tickTimeStart[envelopeIndex] : beatsPerTick;
-                    beatTimeEnd[envelopeIndex] = tickTimeEnd[envelopeIndex] ? beatsPerTick * tickTimeEnd[envelopeIndex] : beatsPerTick;
-                    if (envelope.type == 1)
+                    envelope = Config.envelopes[envelopeSettings.envelope];
+                    if (envelope.type == 0)
                         usedNoteSize = true;
                 }
-                const defaultPitch = this.getPitchValue(instrument, tone, instrumentState, false);
-                const pitch = this.computePitchEnvelope(instrument, envelopeIndex, this.getPitchValue(instrument, tone, instrumentState, true));
                 if (automationTarget.computeIndex != null) {
                     const computeIndex = automationTarget.computeIndex + targetIndex;
-                    let envelopeStart = EnvelopeComputer.computeEnvelope(envelope, envelopeSpeed, noteSecondsStartUnscaled, noteSecondsStart[envelopeIndex], beatTimeStart[envelopeIndex], timeSinceStart, noteSizeStart, pitch, inverse, perEnvelopeLowerBound, perEnvelopeUpperBound, false, steps, seed, waveform, defaultPitch, startPinTickAbsolute);
+                    let envelopeStart = EnvelopeComputer.computeEnvelope(envelope, noteSecondsStart, beatTimeStart, noteSizeStart);
                     if (prevSlideStart) {
-                        const other = EnvelopeComputer.computeEnvelope(envelope, envelopeSpeed, prevNoteSecondsStartUnscaled, prevNoteSecondsStart[envelopeIndex], beatTimeStart[envelopeIndex], timeSinceStart, prevNoteSize, pitch, inverse, perEnvelopeLowerBound, perEnvelopeUpperBound, false, steps, seed, waveform, defaultPitch, startPinTickAbsolute);
+                        const other = EnvelopeComputer.computeEnvelope(envelope, prevNoteSecondsStart, beatTimeStart, prevNoteSize);
                         envelopeStart += (other - envelopeStart) * prevSlideRatioStart;
                     }
                     if (nextSlideStart) {
-                        const other = EnvelopeComputer.computeEnvelope(envelope, envelopeSpeed, 0.0, 0.0, beatTimeStart[envelopeIndex], timeSinceStart, nextNoteSize, pitch, inverse, perEnvelopeLowerBound, perEnvelopeUpperBound, false, steps, seed, waveform, defaultPitch, startPinTickAbsolute);
+                        const other = EnvelopeComputer.computeEnvelope(envelope, 0.0, beatTimeStart, nextNoteSize);
                         envelopeStart += (other - envelopeStart) * nextSlideRatioStart;
                     }
                     let envelopeEnd = envelopeStart;
                     if (instrument.discreteEnvelope == false) {
-                        envelopeEnd = EnvelopeComputer.computeEnvelope(envelope, envelopeSpeed, noteSecondsEndUnscaled, noteSecondsEnd[envelopeIndex], beatTimeEnd[envelopeIndex], timeSinceStart, noteSizeEnd, pitch, inverse, perEnvelopeLowerBound, perEnvelopeUpperBound, false, steps, seed, waveform, defaultPitch, startPinTickAbsolute);
+                        envelopeEnd = EnvelopeComputer.computeEnvelope(envelope, noteSecondsEnd, beatTimeEnd, noteSizeEnd);
                         if (prevSlideEnd) {
-                            const other = EnvelopeComputer.computeEnvelope(envelope, envelopeSpeed, prevNoteSecondsEndUnscaled, prevNoteSecondsEnd[envelopeIndex], beatTimeEnd[envelopeIndex], timeSinceStart, prevNoteSize, pitch, inverse, perEnvelopeLowerBound, perEnvelopeUpperBound, false, steps, seed, waveform, defaultPitch, startPinTickAbsolute);
+                            const other = EnvelopeComputer.computeEnvelope(envelope, prevNoteSecondsEnd, beatTimeEnd, prevNoteSize);
                             envelopeEnd += (other - envelopeEnd) * prevSlideRatioEnd;
                         }
                         if (nextSlideEnd) {
-                            const other = EnvelopeComputer.computeEnvelope(envelope, envelopeSpeed, 0.0, 0.0, beatTimeEnd[envelopeIndex], timeSinceStart, nextNoteSize, pitch, inverse, perEnvelopeLowerBound, perEnvelopeUpperBound, false, steps, seed, waveform, defaultPitch, startPinTickAbsolute);
+                            const other = EnvelopeComputer.computeEnvelope(envelope, 0.0, beatTimeEnd, nextNoteSize);
                             envelopeEnd += (other - envelopeEnd) * nextSlideRatioEnd;
                         }
                     }
@@ -34086,25 +33987,23 @@ li.select2-results__option[role=group] > strong:hover {
                     if (automationTarget.isFilter) {
                         const filterSettings = (instrument.tmpNoteFilterStart != null) ? instrument.tmpNoteFilterStart : instrument.noteFilter;
                         if (filterSettings.controlPointCount > targetIndex && filterSettings.controlPoints[targetIndex].type == 0) {
-                            lowpassCutoffDecayVolumeCompensation = Math.max(lowpassCutoffDecayVolumeCompensation, EnvelopeComputer.getLowpassCutoffDecayVolumeCompensation(envelope, perEnvelopeSpeed));
+                            lowpassCutoffDecayVolumeCompensation = Math.max(lowpassCutoffDecayVolumeCompensation, EnvelopeComputer.getLowpassCutoffDecayVolumeCompensation(envelope));
                         }
                     }
                 }
             }
+            this.noteSecondsStart = noteSecondsStart;
             this.noteSecondsStartUnscaled = noteSecondsStartUnscaled;
+            this.noteSecondsEnd = noteSecondsEnd;
             this.noteSecondsEndUnscaled = noteSecondsEndUnscaled;
             this.noteTicksStart = noteTicksStart;
             this.noteTicksEnd = noteTicksEnd;
+            this.prevNoteSecondsStart = prevNoteSecondsStart;
             this.prevNoteSecondsStartUnscaled = prevNoteSecondsStartUnscaled;
+            this.prevNoteSecondsEnd = prevNoteSecondsEnd;
             this.prevNoteSecondsEndUnscaled = prevNoteSecondsEndUnscaled;
             this.prevNoteTicksStart = prevNoteTicksStart;
             this.prevNoteTicksEnd = prevNoteTicksEnd;
-            for (let envelopeIndex = 0; envelopeIndex < Config.maxEnvelopeCount + 1; envelopeIndex++) {
-                this.noteSecondsStart[envelopeIndex] = noteSecondsStart[envelopeIndex];
-                this.noteSecondsEnd[envelopeIndex] = noteSecondsEnd[envelopeIndex];
-                this.prevNoteSecondsStart[envelopeIndex] = prevNoteSecondsStart[envelopeIndex];
-                this.prevNoteSecondsEnd[envelopeIndex] = prevNoteSecondsEnd[envelopeIndex];
-            }
             this.prevNoteSize = prevNoteSize;
             this.nextNoteSize = nextNoteSize;
             this.noteSizeStart = noteSizeStart;
@@ -34127,306 +34026,44 @@ li.select2-results__option[role=group] > strong:hover {
             }
             this._modifiedEnvelopeCount = 0;
         }
-        static computeEnvelope(envelope, perEnvelopeSpeed, unspedTime, time, beats, timeSinceStart, noteSize, pitch, inverse, perEnvelopeLowerBound, perEnvelopeUpperBound, isDrumset = false, steps, seed, waveform, defaultPitch, notePinStart) {
-            const envelopeSpeed = isDrumset ? envelope.speed : 1;
-            const boundAdjust = (perEnvelopeUpperBound - perEnvelopeLowerBound);
+        static computeEnvelope(envelope, time, beats, noteSize) {
             switch (envelope.type) {
-                case 0: return perEnvelopeUpperBound;
-                case 1:
-                    if (inverse) {
-                        return perEnvelopeUpperBound - boundAdjust * Synth.noteSizeToVolumeMult(noteSize);
-                    }
-                    else {
-                        return boundAdjust * Synth.noteSizeToVolumeMult(noteSize) + perEnvelopeLowerBound;
-                    }
-                case 2:
-                    return pitch;
+                case 0: return Synth.noteSizeToVolumeMult(noteSize);
+                case 1: return 1.0;
+                case 4: return 1.0 / (1.0 + time * envelope.speed);
+                case 5: return 1.0 - 1.0 / (1.0 + time * envelope.speed);
+                case 6: return 0.5 - Math.cos(beats * 2.0 * Math.PI * envelope.speed) * 0.5;
+                case 7: return 0.75 - Math.cos(beats * 2.0 * Math.PI * envelope.speed) * 0.25;
+                case 2: return Math.max(1.0, 2.0 - time * 10.0);
                 case 3:
-                    const hashMax = 0xffffffff;
-                    const step = steps;
-                    switch (waveform) {
-                        case 0:
-                            if (step <= 1)
-                                return 1;
-                            const timeHash = xxHash32((perEnvelopeSpeed == 0 ? 0 : Math.floor((timeSinceStart * perEnvelopeSpeed) / (256))) + "", seed);
-                            if (inverse) {
-                                return perEnvelopeUpperBound - boundAdjust * (step / (step - 1)) * Math.floor(timeHash * step / (hashMax + 1)) / step;
-                            }
-                            else {
-                                return boundAdjust * (step / (step - 1)) * Math.floor(timeHash * (step) / (hashMax + 1)) / step + perEnvelopeLowerBound;
-                            }
-                        case 1:
-                            const pitchHash = xxHash32(defaultPitch + "", seed);
-                            if (inverse) {
-                                return perEnvelopeUpperBound - boundAdjust * pitchHash / (hashMax + 1);
-                            }
-                            else {
-                                return boundAdjust * pitchHash / (hashMax + 1) + perEnvelopeLowerBound;
-                            }
-                        case 2:
-                            if (step <= 1)
-                                return 1;
-                            const noteHash = xxHash32(notePinStart + "", seed);
-                            if (inverse) {
-                                return perEnvelopeUpperBound - boundAdjust * (step / (step - 1)) * Math.floor(noteHash * step / (hashMax + 1)) / step;
-                            }
-                            else {
-                                return boundAdjust * (step / (step - 1)) * Math.floor(noteHash * (step) / (hashMax + 1)) / step + perEnvelopeLowerBound;
-                            }
-                        case 3:
-                            const timeHashA = xxHash32((perEnvelopeSpeed == 0 ? 0 : Math.floor((timeSinceStart * perEnvelopeSpeed) / (256))) + "", seed);
-                            const timeHashB = xxHash32((perEnvelopeSpeed == 0 ? 0 : Math.floor((timeSinceStart * perEnvelopeSpeed + 256) / (256))) + "", seed);
-                            const weightedAverage = timeHashA * (1 - ((timeSinceStart * perEnvelopeSpeed) / (256)) % 1) + timeHashB * (((timeSinceStart * perEnvelopeSpeed) / (256)) % 1);
-                            if (inverse) {
-                                return perEnvelopeUpperBound - boundAdjust * weightedAverage / (hashMax + 1);
-                            }
-                            else {
-                                return boundAdjust * weightedAverage / (hashMax + 1) + perEnvelopeLowerBound;
-                            }
-                        default: throw new Error("Unrecognized operator envelope waveform type: " + waveform);
-                    }
-                case 6:
-                    if (inverse) {
-                        return perEnvelopeUpperBound - boundAdjust * (1.0 / (1.0 + time * envelopeSpeed));
-                    }
-                    else {
-                        return boundAdjust / (1.0 + time * envelopeSpeed) + perEnvelopeLowerBound;
-                    }
-                case 7:
-                    if (inverse) {
-                        return boundAdjust / (1.0 + time * envelopeSpeed) + perEnvelopeLowerBound;
-                    }
-                    else {
-                        return perEnvelopeUpperBound - boundAdjust / (1.0 + time * envelopeSpeed);
-                    }
-                case 8:
-                    switch (waveform) {
-                        case 0:
-                            if (inverse) {
-                                return (perEnvelopeUpperBound / 2) + boundAdjust * Math.cos(beats * 2.0 * Math.PI * envelopeSpeed) * 0.5 + (perEnvelopeLowerBound / 2);
-                            }
-                            else {
-                                return (perEnvelopeUpperBound / 2) - boundAdjust * Math.cos(beats * 2.0 * Math.PI * envelopeSpeed) * 0.5 + (perEnvelopeLowerBound / 2);
-                            }
-                        case 1:
-                            if (inverse) {
-                                return (Math.cos(beats * 2.0 * Math.PI * envelopeSpeed) < 0) ? perEnvelopeUpperBound : perEnvelopeLowerBound;
-                            }
-                            else {
-                                return (Math.cos(beats * 2.0 * Math.PI * envelopeSpeed) < 0) ? perEnvelopeLowerBound : perEnvelopeUpperBound;
-                            }
-                        case 2:
-                            if (inverse) {
-                                return (perEnvelopeUpperBound / 2) - (boundAdjust / Math.PI) * Math.asin(Math.sin((Math.PI / 2) + beats * Math.PI * 2.0 * envelopeSpeed)) + (perEnvelopeLowerBound / 2);
-                            }
-                            else {
-                                return (perEnvelopeUpperBound / 2) + (boundAdjust / Math.PI) * Math.asin(Math.sin((Math.PI / 2) + beats * Math.PI * 2.0 * envelopeSpeed)) + (perEnvelopeLowerBound / 2);
-                            }
-                        case 3:
-                            if (inverse) {
-                                return perEnvelopeUpperBound - (beats * envelopeSpeed) % 1 * boundAdjust;
-                            }
-                            else {
-                                return (beats * envelopeSpeed) % 1 * boundAdjust + perEnvelopeLowerBound;
-                            }
-                        case 4:
-                            let trap = 0;
-                            if (inverse) {
-                                trap = (perEnvelopeUpperBound / 2) - (boundAdjust * 2 / Math.PI) * Math.asin(Math.sin((Math.PI / 2) + beats * Math.PI * 2.0 * envelopeSpeed)) + (perEnvelopeLowerBound / 2);
-                            }
-                            else {
-                                trap = (perEnvelopeUpperBound / 2) + (boundAdjust * 2 / Math.PI) * Math.asin(Math.sin((Math.PI / 2) + beats * Math.PI * 2.0 * envelopeSpeed)) + (perEnvelopeLowerBound / 2);
-                            }
-                            return Math.max(perEnvelopeLowerBound, Math.min(perEnvelopeUpperBound, trap));
-                        case 5:
-                            if (steps <= 1)
-                                return 1;
-                            let saw = (beats * envelopeSpeed) % 1;
-                            if (inverse) {
-                                return perEnvelopeUpperBound - Math.floor(saw * steps) * boundAdjust / (steps - 1);
-                            }
-                            else {
-                                return Math.floor(saw * steps) * boundAdjust / (steps - 1) + perEnvelopeLowerBound;
-                            }
-                        case 6:
-                            if (steps <= 1)
-                                return 1;
-                            let tri = 0.5 + (inverse ? -1 : 1) * (1 / Math.PI) * Math.asin(Math.sin((Math.PI / 2) + beats * Math.PI * 2.0 * envelopeSpeed));
-                            return Math.round(tri * (steps - 1)) * boundAdjust / (steps - 1) + perEnvelopeLowerBound;
-                        default: throw new Error("Unrecognized operator envelope waveform type: " + waveform);
-                    }
+                    const attack = 0.25 / Math.sqrt(envelope.speed);
+                    return time < attack ? time / attack : 1.0 / (1.0 + (time - attack) * envelope.speed);
+                case 8: return Math.pow(2, -envelope.speed * time);
+                case 13: return 1.0 * +(time < (0.25 / Math.sqrt(envelope.speed)));
                 case 9:
-                    if (inverse) {
-                        return (perEnvelopeUpperBound / 4) + boundAdjust * Math.cos(beats * 2.0 * Math.PI * envelopeSpeed) * 0.25 + (perEnvelopeLowerBound / 4);
-                    }
-                    else {
-                        return 0.5 + (perEnvelopeUpperBound / 4) - boundAdjust * Math.cos(beats * 2.0 * Math.PI * envelopeSpeed) * 0.25 - (perEnvelopeLowerBound / 4);
-                    }
-                case 4:
-                    if (inverse) {
-                        return Math.max(0, perEnvelopeUpperBound + 1.0 - Math.max(1.0 - perEnvelopeLowerBound, 1.0 - perEnvelopeUpperBound - unspedTime * perEnvelopeSpeed * 10.0));
-                    }
-                    else {
-                        return Math.max(1.0 + perEnvelopeLowerBound, 1.0 + perEnvelopeUpperBound - unspedTime * perEnvelopeSpeed * 10.0);
-                    }
-                case 5:
-                    const attack = 0.25 / Math.sqrt(envelopeSpeed * perEnvelopeSpeed);
-                    if (inverse) {
-                        return perEnvelopeUpperBound - boundAdjust * (unspedTime < attack ? unspedTime / attack : 1.0 / (1.0 + (unspedTime - attack) * envelopeSpeed * perEnvelopeSpeed));
-                    }
-                    else {
-                        return boundAdjust * (unspedTime < attack ? unspedTime / attack : 1.0 / (1.0 + (unspedTime - attack) * envelopeSpeed * perEnvelopeSpeed)) + perEnvelopeLowerBound;
-                    }
-                case 10:
-                    if (inverse) {
-                        return perEnvelopeUpperBound - boundAdjust * Math.pow(2, -envelopeSpeed * time);
-                    }
-                    else {
-                        return boundAdjust * Math.pow(2, -envelopeSpeed * time) + perEnvelopeLowerBound;
-                    }
-                case 14:
-                    if (inverse) {
-                        return perEnvelopeUpperBound - boundAdjust * +(unspedTime < (0.25 / Math.sqrt(envelopeSpeed * perEnvelopeSpeed)));
-                    }
-                    else {
-                        return boundAdjust * +(unspedTime < (0.25 / Math.sqrt(envelopeSpeed * perEnvelopeSpeed))) + perEnvelopeLowerBound;
-                    }
-                case 11: {
-                    let temp = 0.5 - Math.cos(beats * envelopeSpeed) * 0.5;
-                    temp = 1.0 / (1.0 + time * (envelopeSpeed - (temp / (1.5 / envelopeSpeed))));
+                    let temp = 0.5 - Math.cos(beats * envelope.speed) * 0.5;
+                    temp = 1.0 / (1.0 + time * (envelope.speed - (temp / (1.5 / envelope.speed))));
                     temp = temp > 0.0 ? temp : 0.0;
-                    if (inverse) {
-                        return perEnvelopeUpperBound - boundAdjust * temp;
-                    }
-                    else {
-                        return boundAdjust * temp + perEnvelopeLowerBound;
-                    }
+                    return temp;
+                case 11: {
+                    let lin = (1.0 - (time / (16 / envelope.speed)));
+                    lin = lin > 0.0 ? lin : 0.0;
+                    return lin;
                 }
                 case 12: {
-                    let lin = (1.0 - (time / (16 / envelopeSpeed)));
-                    lin = lin > 0.0 ? lin : 0.0;
-                    if (inverse) {
-                        return perEnvelopeUpperBound - boundAdjust * lin;
-                    }
-                    else {
-                        return boundAdjust * lin + perEnvelopeLowerBound;
-                    }
-                }
-                case 13: {
-                    let lin = (time / (16 / envelopeSpeed));
+                    let lin = (time / (16 / envelope.speed));
                     lin = lin < 1.0 ? lin : 1.0;
-                    if (inverse) {
-                        return perEnvelopeUpperBound - boundAdjust * lin;
-                    }
-                    else {
-                        return boundAdjust * lin + perEnvelopeLowerBound;
-                    }
-                }
-                case 15: {
-                    if (inverse) {
-                        return Math.min(Math.max(perEnvelopeLowerBound, perEnvelopeUpperBound - boundAdjust * Math.sqrt(Math.max(1.0 - envelopeSpeed * time / 2, 0))), perEnvelopeUpperBound);
-                    }
-                    else {
-                        return Math.max(perEnvelopeLowerBound, boundAdjust * Math.sqrt(Math.max(1.0 - envelopeSpeed * time / 2, 0)) + perEnvelopeLowerBound);
-                    }
+                    return lin;
                 }
                 default: throw new Error("Unrecognized operator envelope type.");
             }
         }
-        getPitchValue(instrument, tone, instrumentState, calculateBends = true) {
-            if (tone && tone.pitchCount >= 1) {
-                const chord = instrument.getChord();
-                const arpeggiates = chord.arpeggiates;
-                const arpeggio = Math.floor(instrumentState.arpTime / Config.ticksPerArpeggio);
-                const tonePitch = tone.pitches[arpeggiates ? getArpeggioPitchIndex(tone.pitchCount, instrument.fastTwoNoteArp, arpeggio) : 0];
-                if (calculateBends) {
-                    return tone.lastInterval != tonePitch ? tonePitch + tone.lastInterval : tonePitch;
-                }
-                else {
-                    return tonePitch;
-                }
-            }
-            return 0;
-        }
-        computePitchEnvelope(instrument, index, pitch = 0) {
-            let startNote = 0;
-            let endNote = Config.maxPitch;
-            let inverse = false;
-            let envelopeLowerBound = 0;
-            let envelopeUpperBound = 1;
-            if (instrument.isNoiseInstrument) {
-                endNote = Config.drumCount - 1;
-            }
-            if (index < instrument.envelopeCount && index !== -2) {
-                startNote = instrument.envelopes[index].pitchEnvelopeStart;
-                endNote = instrument.envelopes[index].pitchEnvelopeEnd;
-                inverse = instrument.envelopes[index].inverse;
-                envelopeLowerBound = instrument.envelopes[index].perEnvelopeLowerBound;
-                envelopeUpperBound = instrument.envelopes[index].perEnvelopeUpperBound;
-            }
-            if (startNote > endNote) {
-                startNote = 0;
-                endNote = instrument.isNoiseInstrument ? Config.drumCount - 1 : Config.maxPitch;
-            }
-            const range = endNote - startNote + 1;
-            if (!inverse) {
-                if (pitch <= startNote) {
-                    return envelopeLowerBound;
-                }
-                else if (pitch >= endNote) {
-                    return envelopeUpperBound;
-                }
-                else {
-                    return (pitch - startNote) * (envelopeUpperBound - envelopeLowerBound) / range + envelopeLowerBound;
-                }
-            }
-            else {
-                if (pitch <= startNote) {
-                    return envelopeUpperBound;
-                }
-                else if (pitch >= endNote) {
-                    return envelopeLowerBound;
-                }
-                else {
-                    return envelopeUpperBound - (pitch - startNote) * (envelopeUpperBound - envelopeLowerBound) / range;
-                }
-            }
-        }
-        static getLowpassCutoffDecayVolumeCompensation(envelope, perEnvelopeSpeed = 1) {
-            if (envelope.type == 10)
-                return 1.25 + 0.025 * perEnvelopeSpeed;
-            if (envelope.type == 6)
-                return 1.0 + 0.02 * perEnvelopeSpeed;
+        static getLowpassCutoffDecayVolumeCompensation(envelope) {
+            if (envelope.type == 8)
+                return 1.25 + 0.025 * envelope.speed;
+            if (envelope.type == 4)
+                return 1.0 + 0.02 * envelope.speed;
             return 1.0;
-        }
-        computeDrumsetEnvelopes(instrument, drumsetFilterEnvelope, beatsPerPart, partTimeStart, partTimeEnd) {
-            const pitch = 1;
-            function computeDrumsetEnvelope(unspedTime, time, beats, noteSize) {
-                return EnvelopeComputer.computeEnvelope(drumsetFilterEnvelope, 1, unspedTime, time, beats, 0, noteSize, pitch, false, 0, 1, true, 2, 2, 0, pitch, 0);
-            }
-            let drumsetFilterEnvelopeStart = computeDrumsetEnvelope(this.noteSecondsStartUnscaled, this.noteSecondsStartUnscaled, beatsPerPart * partTimeStart, this.noteSizeStart);
-            if (this.prevSlideStart) {
-                const other = computeDrumsetEnvelope(this.prevNoteSecondsStartUnscaled, this.prevNoteSecondsStartUnscaled, beatsPerPart * partTimeStart, this.prevNoteSize);
-                drumsetFilterEnvelopeStart += (other - drumsetFilterEnvelopeStart) * this.prevSlideRatioStart;
-            }
-            if (this.nextSlideStart) {
-                const other = computeDrumsetEnvelope(0.0, 0.0, beatsPerPart * partTimeStart, this.nextNoteSize);
-                drumsetFilterEnvelopeStart += (other - drumsetFilterEnvelopeStart) * this.nextSlideRatioStart;
-            }
-            let drumsetFilterEnvelopeEnd = drumsetFilterEnvelopeStart;
-            if (instrument.discreteEnvelope == false) {
-                drumsetFilterEnvelopeEnd = computeDrumsetEnvelope(this.noteSecondsEndUnscaled, this.noteSecondsEndUnscaled, beatsPerPart * partTimeEnd, this.noteSizeEnd);
-                if (this.prevSlideEnd) {
-                    const other = computeDrumsetEnvelope(this.prevNoteSecondsEndUnscaled, this.prevNoteSecondsEndUnscaled, beatsPerPart * partTimeEnd, this.prevNoteSize);
-                    drumsetFilterEnvelopeEnd += (other - drumsetFilterEnvelopeEnd) * this.prevSlideRatioEnd;
-                }
-                if (this.nextSlideEnd) {
-                    const other = computeDrumsetEnvelope(0.0, 0.0, beatsPerPart * partTimeEnd, this.nextNoteSize);
-                    drumsetFilterEnvelopeEnd += (other - drumsetFilterEnvelopeEnd) * this.nextSlideRatioEnd;
-                }
-            }
-            this.drumsetFilterEnvelopeStart = drumsetFilterEnvelopeStart;
-            this.drumsetFilterEnvelopeEnd = drumsetFilterEnvelopeEnd;
         }
     }
     class Tone {
@@ -34577,13 +34214,21 @@ li.select2-results__option[role=group] > strong:hover {
             this.arpTime = 0;
             this.vibratoTime = 0;
             this.nextVibratoTime = 0;
-            this.envelopeTime = [];
+            this.envelopeTime = 0;
             this.eqFilterVolume = 1.0;
             this.eqFilterVolumeDelta = 0.0;
             this.mixVolume = 1.0;
             this.mixVolumeDelta = 0.0;
             this.delayInputMult = 0.0;
             this.delayInputMultDelta = 0.0;
+            this.granularMix = 1.0;
+            this.granularMixDelta = 0.0;
+            this.granularDelayLine = null;
+            this.granularDelayLineIndex = 0;
+            this.granularMaximumDelayTimeInSeconds = 1;
+            this.usesRandomGrainLocation = true;
+            this.granularDelayLineDirty = false;
+            this.computeGrains = true;
             this.distortion = 0.0;
             this.distortionDelta = 0.0;
             this.distortionDrive = 0.0;
@@ -34684,6 +34329,12 @@ li.select2-results__option[role=group] > strong:hover {
             for (let i = 0; i < Config.drumCount; i++) {
                 this.drumsetSpectrumWaves[i] = new SpectrumWaveState();
             }
+            this.granularGrains = [];
+            this.granularMaximumGrains = 256;
+            for (let i = 0; i < this.granularMaximumGrains; i++) {
+                this.granularGrains.push(new Grain());
+            }
+            this.granularGrainsLength = 0;
         }
         allocateNecessaryBuffers(synth, instrument, samplesPerTick) {
             if (effectsIncludePanning(instrument.effects)) {
@@ -34729,6 +34380,25 @@ li.select2-results__option[role=group] > strong:hover {
                 if (this.phaserSamples == null) {
                     this.phaserSamples = new Float32Array(Config.phaserMaxStages);
                     this.phaserPrevInputs = new Float32Array(Config.phaserMaxStages);
+                }
+            }
+            if (effectsIncludeGranular(instrument.effects)) {
+                const granularDelayLineSizeInMilliseconds = 2500;
+                const granularDelayLineSizeInSeconds = granularDelayLineSizeInMilliseconds / 1000;
+                this.granularMaximumDelayTimeInSeconds = granularDelayLineSizeInSeconds;
+                const granularDelayLineSizeInSamples = Synth.fittingPowerOfTwo(Math.floor(granularDelayLineSizeInSeconds * synth.samplesPerSecond));
+                if (this.granularDelayLine == null || this.granularDelayLine.length != granularDelayLineSizeInSamples) {
+                    this.granularDelayLine = new Float32Array(granularDelayLineSizeInSamples);
+                    this.granularDelayLineIndex = 0;
+                }
+                const oldGrainsLength = this.granularGrains.length;
+                if (this.granularMaximumGrains > oldGrainsLength) {
+                    for (let i = oldGrainsLength; i < this.granularMaximumGrains + 1; i++) {
+                        this.granularGrains.push(new Grain());
+                    }
+                }
+                if (this.granularMaximumGrains < this.granularGrainsLength) {
+                    this.granularGrainsLength = Math.round(this.granularMaximumGrains);
                 }
             }
         }
@@ -34784,8 +34454,7 @@ li.select2-results__option[role=group] > strong:hover {
             this.vibratoTime = 0;
             this.nextVibratoTime = 0;
             this.arpTime = 0;
-            for (let envelopeIndex = 0; envelopeIndex < Config.maxEnvelopeCount + 1; envelopeIndex++)
-                this.envelopeTime[envelopeIndex] = 0;
+            this.envelopeTime = 0;
             this.envelopeComputer.reset();
             if (this.chorusDelayLineDirty) {
                 for (let i = 0; i < this.chorusDelayLineL.length; i++)
@@ -34803,6 +34472,10 @@ li.select2-results__option[role=group] > strong:hover {
                 for (let i = 0; i < this.reverbDelayLine.length; i++)
                     this.reverbDelayLine[i] = 0.0;
             }
+            if (this.granularDelayLineDirty) {
+                for (let i = 0; i < this.granularDelayLine.length; i++)
+                    this.granularDelayLine[i] = 0.0;
+            }
             this.chorusPhase = 0.0;
             this.ringModPhase = 0.0;
         }
@@ -34817,6 +34490,12 @@ li.select2-results__option[role=group] > strong:hover {
             this.effects = instrument.effects;
             this.aliases = instrument.aliases;
             this.invertWave = instrument.invertWave;
+            const usesInvertWave = effectsIncludeInvertWave(this.effects);
+            if (usesInvertWave) {
+                if (synth.isModActive(Config.modulators.dictionary["invert wave"].index, channelIndex, instrumentIndex)) {
+                    this.invertWave = Boolean(Math.floor(synth.getModValue(Config.modulators.dictionary["invert wave"].index, channelIndex, instrumentIndex, false)));
+                }
+            }
             this.volumeScale = 1.0;
             this.allocateNecessaryBuffers(synth, instrument, samplesPerTick);
             const samplesPerSecond = synth.samplesPerSecond;
@@ -34825,10 +34504,6 @@ li.select2-results__option[role=group] > strong:hover {
             const tickTimeStart = ticksIntoBar;
             const secondsPerTick = samplesPerTick / synth.samplesPerSecond;
             const currentPart = synth.getCurrentPart();
-            const envelopeSpeeds = [];
-            for (let i = 0; i < Config.maxEnvelopeCount; i++) {
-                envelopeSpeeds[i] = 0;
-            }
             let useEnvelopeSpeed = Config.arpSpeedScale[instrument.envelopeSpeed];
             if (synth.isModActive(Config.modulators.dictionary["envelope speed"].index, channelIndex, instrumentIndex)) {
                 useEnvelopeSpeed = Math.max(0, Math.min(Config.arpSpeedScale.length - 1, synth.getModValue(Config.modulators.dictionary["envelope speed"].index, channelIndex, instrumentIndex, false)));
@@ -34836,17 +34511,10 @@ li.select2-results__option[role=group] > strong:hover {
                     useEnvelopeSpeed = Config.arpSpeedScale[useEnvelopeSpeed];
                 }
                 else {
-                    useEnvelopeSpeed = ((1 - (useEnvelopeSpeed % 1)) * Config.arpSpeedScale[Math.floor(useEnvelopeSpeed)] + (useEnvelopeSpeed % 1) * Config.arpSpeedScale[Math.ceil(useEnvelopeSpeed)]);
+                    useEnvelopeSpeed = (1 - (useEnvelopeSpeed % 1)) * Config.arpSpeedScale[Math.floor(useEnvelopeSpeed)] + (useEnvelopeSpeed % 1) * Config.arpSpeedScale[Math.ceil(useEnvelopeSpeed)];
                 }
             }
-            for (let envelopeIndex = 0; envelopeIndex < instrument.envelopeCount; envelopeIndex++) {
-                let perEnvelopeSpeed = instrument.envelopes[envelopeIndex].perEnvelopeSpeed;
-                if (synth.isModActive(Config.modulators.dictionary["individual envelope speed"].index, channelIndex, instrumentIndex) && instrument.envelopes[envelopeIndex].tempEnvelopeSpeed != null) {
-                    perEnvelopeSpeed = instrument.envelopes[envelopeIndex].tempEnvelopeSpeed;
-                }
-                envelopeSpeeds[envelopeIndex] = useEnvelopeSpeed * perEnvelopeSpeed;
-            }
-            this.envelopeComputer.computeEnvelopes(instrument, currentPart, this.envelopeTime, tickTimeStart, secondsPerTick, tone, envelopeSpeeds, this, synth);
+            this.envelopeComputer.computeEnvelopes(instrument, currentPart, this.envelopeTime, tickTimeStart, secondsPerTick, tone, useEnvelopeSpeed, synth.song, this);
             const envelopeStarts = this.envelopeComputer.envelopeStarts;
             const envelopeEnds = this.envelopeComputer.envelopeEnds;
             const usesDistortion = effectsIncludeDistortion(this.effects);
@@ -34857,11 +34525,70 @@ li.select2-results__option[role=group] > strong:hover {
             const usesReverb = effectsIncludeReverb(this.effects);
             const usesRingModulation = effectsIncludeRM(this.effects);
             const usesPhaser = effectsIncludePhaser(this.effects);
+            const usesGranular = effectsIncludeGranular(this.effects);
+            let granularChance = 0;
+            if (usesGranular) {
+                granularChance = (instrument.grainAmounts + 1);
+                this.granularMaximumGrains = instrument.grainAmounts;
+                if (synth.isModActive(Config.modulators.dictionary["grain freq"].index, channelIndex, instrumentIndex)) {
+                    this.granularMaximumGrains = synth.getModValue(Config.modulators.dictionary["grain freq"].index, channelIndex, instrumentIndex, false);
+                    granularChance = (synth.getModValue(Config.modulators.dictionary["grain freq"].index, channelIndex, instrumentIndex, false) + 1);
+                }
+                this.granularMaximumGrains = Math.floor(Math.pow(2, this.granularMaximumGrains * envelopeStarts[49]));
+                granularChance = granularChance * envelopeStarts[49];
+            }
+            this.allocateNecessaryBuffers(synth, instrument, samplesPerTick);
+            if (usesGranular) {
+                this.granularMix = instrument.granular / Config.granularRange;
+                this.computeGrains = true;
+                let granularMixEnd = this.granularMix;
+                if (synth.isModActive(Config.modulators.dictionary["granular"].index, channelIndex, instrumentIndex)) {
+                    this.granularMix = synth.getModValue(Config.modulators.dictionary["granular"].index, channelIndex, instrumentIndex, false) / Config.granularRange;
+                    granularMixEnd = synth.getModValue(Config.modulators.dictionary["granular"].index, channelIndex, instrumentIndex, true) / Config.granularRange;
+                }
+                this.granularMix *= envelopeStarts[48];
+                granularMixEnd *= envelopeEnds[48];
+                this.granularMixDelta = (granularMixEnd - this.granularMix) / roundedSamplesPerTick;
+                for (let iterations = 0; iterations < Math.ceil(Math.random() * Math.random() * 10); iterations++) {
+                    if (this.granularGrainsLength < this.granularMaximumGrains && Math.random() <= granularChance) {
+                        let granularMinGrainSizeInMilliseconds = instrument.grainSize;
+                        if (synth.isModActive(Config.modulators.dictionary["grain size"].index, channelIndex, instrumentIndex)) {
+                            granularMinGrainSizeInMilliseconds = synth.getModValue(Config.modulators.dictionary["grain size"].index, channelIndex, instrumentIndex, false);
+                        }
+                        granularMinGrainSizeInMilliseconds *= envelopeStarts[50];
+                        let grainRange = instrument.grainRange;
+                        if (synth.isModActive(Config.modulators.dictionary["grain range"].index, channelIndex, instrumentIndex)) {
+                            grainRange = synth.getModValue(Config.modulators.dictionary["grain range"].index, channelIndex, instrumentIndex, false);
+                        }
+                        grainRange *= envelopeStarts[51];
+                        const granularMaxGrainSizeInMilliseconds = granularMinGrainSizeInMilliseconds + grainRange;
+                        const granularGrainSizeInMilliseconds = granularMinGrainSizeInMilliseconds + (granularMaxGrainSizeInMilliseconds - granularMinGrainSizeInMilliseconds) * Math.random();
+                        const granularGrainSizeInSeconds = granularGrainSizeInMilliseconds / 1000.0;
+                        const granularGrainSizeInSamples = Math.floor(granularGrainSizeInSeconds * samplesPerSecond);
+                        const granularDelayLineLength = this.granularDelayLine.length;
+                        const grainIndex = this.granularGrainsLength;
+                        this.granularGrainsLength++;
+                        const grain = this.granularGrains[grainIndex];
+                        grain.ageInSamples = 0;
+                        grain.maxAgeInSamples = granularGrainSizeInSamples;
+                        const minDelayTimeInSeconds = 0.02;
+                        const maxDelayTimeInSeconds = 2.4;
+                        grain.delayLinePosition = this.usesRandomGrainLocation ? (minDelayTimeInSeconds + (maxDelayTimeInSeconds - minDelayTimeInSeconds) * Math.random() * Math.random() * samplesPerSecond) % (granularDelayLineLength - 1) : minDelayTimeInSeconds;
+                        if (Config.granularEnvelopeType == 0) {
+                            grain.initializeParabolicEnvelope(grain.maxAgeInSamples, 1.0);
+                        }
+                        else if (Config.granularEnvelopeType == 1) {
+                            grain.initializeRCBEnvelope(grain.maxAgeInSamples, 1.0);
+                        }
+                        grain.addDelay(Math.random() * samplesPerTick * 4);
+                    }
+                }
+            }
             if (usesDistortion) {
                 let useDistortionStart = instrument.distortion;
                 let useDistortionEnd = instrument.distortion;
-                let useDistortionEnvelopeStart = envelopeStarts[48];
-                let useDistortionEnvelopeEnd = envelopeEnds[48];
+                let useDistortionEnvelopeStart = envelopeStarts[52];
+                let useDistortionEnvelopeEnd = envelopeEnds[52];
                 if (synth.isModActive(Config.modulators.dictionary["distortion"].index, channelIndex, instrumentIndex)) {
                     useDistortionStart = synth.getModValue(Config.modulators.dictionary["distortion"].index, channelIndex, instrumentIndex, false);
                     useDistortionEnd = synth.getModValue(Config.modulators.dictionary["distortion"].index, channelIndex, instrumentIndex, true);
@@ -34884,16 +34611,16 @@ li.select2-results__option[role=group] > strong:hover {
             if (usesBitcrusher) {
                 let freqSettingStart = instrument.bitcrusherFreq;
                 let freqSettingEnd = instrument.bitcrusherFreq;
-                let freqSettingEnvelopeStart = envelopeStarts[50];
-                let freqSettingEnvelopeEnd = envelopeEnds[50];
+                let freqSettingEnvelopeStart = envelopeStarts[54];
+                let freqSettingEnvelopeEnd = envelopeEnds[54];
                 if (synth.isModActive(Config.modulators.dictionary["freq crush"].index, channelIndex, instrumentIndex)) {
                     freqSettingStart = synth.getModValue(Config.modulators.dictionary["freq crush"].index, channelIndex, instrumentIndex, false);
                     freqSettingEnd = synth.getModValue(Config.modulators.dictionary["freq crush"].index, channelIndex, instrumentIndex, true);
                 }
                 let quantizationSettingStart = instrument.bitcrusherQuantization;
                 let quantizationSettingEnd = instrument.bitcrusherQuantization;
-                let quantizationSettingEnvelopeStart = envelopeStarts[49];
-                let quantizationSettingEnvelopeEnd = envelopeEnds[49];
+                let quantizationSettingEnvelopeStart = envelopeStarts[53];
+                let quantizationSettingEnvelopeEnd = envelopeEnds[53];
                 if (synth.isModActive(Config.modulators.dictionary["bit crush"].index, channelIndex, instrumentIndex)) {
                     quantizationSettingStart = synth.getModValue(Config.modulators.dictionary["bit crush"].index, channelIndex, instrumentIndex, false);
                     quantizationSettingEnd = synth.getModValue(Config.modulators.dictionary["bit crush"].index, channelIndex, instrumentIndex, true);
@@ -35004,8 +34731,8 @@ li.select2-results__option[role=group] > strong:hover {
             let delayInputMultStart = 1.0;
             let delayInputMultEnd = 1.0;
             if (usesPanning) {
-                const panEnvelopeStart = envelopeStarts[54] * 2.0 - 1.0;
-                const panEnvelopeEnd = envelopeEnds[54] * 2.0 - 1.0;
+                const panEnvelopeStart = envelopeStarts[58] * 2.0 - 1.0;
+                const panEnvelopeEnd = envelopeEnds[58] * 2.0 - 1.0;
                 let usePanStart = instrument.pan;
                 let usePanEnd = instrument.pan;
                 if (synth.isModActive(Config.modulators.dictionary["pan"].index, channelIndex, instrumentIndex)) {
@@ -35045,8 +34772,8 @@ li.select2-results__option[role=group] > strong:hover {
                 this.panningOffsetDeltaR = (delayEndR - delayStartR) / roundedSamplesPerTick;
             }
             if (usesChorus) {
-                const chorusEnvelopeStart = envelopeStarts[51];
-                const chorusEnvelopeEnd = envelopeEnds[51];
+                const chorusEnvelopeStart = envelopeStarts[55];
+                const chorusEnvelopeEnd = envelopeEnds[55];
                 let useChorusStart = instrument.chorus;
                 let useChorusEnd = instrument.chorus;
                 if (synth.isModActive(Config.modulators.dictionary["chorus"].index, channelIndex, instrumentIndex)) {
@@ -35106,8 +34833,8 @@ li.select2-results__option[role=group] > strong:hover {
             let maxEchoMult = 0.0;
             let averageEchoDelaySeconds = 0.0;
             if (usesEcho) {
-                const echoSustainEnvelopeStart = envelopeStarts[52];
-                const echoSustainEnvelopeEnd = envelopeEnds[52];
+                const echoSustainEnvelopeStart = envelopeStarts[56];
+                const echoSustainEnvelopeEnd = envelopeEnds[56];
                 let useEchoSustainStart = instrument.echoSustain;
                 let useEchoSustainEnd = instrument.echoSustain;
                 if (synth.isModActive(Config.modulators.dictionary["echo"].index, channelIndex, instrumentIndex)) {
@@ -35205,8 +34932,8 @@ li.select2-results__option[role=group] > strong:hover {
                 this.phaserStagesDelta = (phaserStagesEnd - phaserStagesStart) / roundedSamplesPerTick;
             }
             if (usesReverb) {
-                const reverbEnvelopeStart = envelopeStarts[53];
-                const reverbEnvelopeEnd = envelopeEnds[53];
+                const reverbEnvelopeStart = envelopeStarts[57];
+                const reverbEnvelopeEnd = envelopeEnds[57];
                 let useReverbStart = instrument.reverb;
                 let useReverbEnd = instrument.reverb;
                 if (synth.isModActive(Config.modulators.dictionary["reverb"].index, channelIndex, instrumentIndex)) {
@@ -35261,6 +34988,9 @@ li.select2-results__option[role=group] > strong:hover {
                     const reverbDuration = halfLife * halfLifeMult;
                     delayDuration += reverbDuration;
                 }
+                if (usesGranular) {
+                    this.computeGrains = false;
+                }
                 const secondsInTick = samplesPerTick / samplesPerSecond;
                 const progressInTick = secondsInTick / delayDuration;
                 const progressAtEndOfTick = this.attentuationProgress + progressInTick;
@@ -35284,6 +35014,8 @@ li.select2-results__option[role=group] > strong:hover {
                     totalDelaySamples += this.echoDelayLineL.length;
                 if (usesReverb)
                     totalDelaySamples += Config.reverbDelayBufferSize;
+                if (usesGranular)
+                    totalDelaySamples += this.granularMaximumDelayTimeInSeconds;
                 this.flushedSamples += roundedSamplesPerTick;
                 if (this.flushedSamples >= totalDelaySamples) {
                     this.deactivateAfterThisTick = true;
@@ -35409,8 +35141,7 @@ li.select2-results__option[role=group] > strong:hover {
                         Synth.getInstrumentSynthFunction(instrument);
                         instrumentState.vibratoTime = 0;
                         instrumentState.nextVibratoTime = 0;
-                        for (let envelopeIndex = 0; envelopeIndex < Config.maxEnvelopeCount + 1; envelopeIndex++)
-                            instrumentState.envelopeTime[envelopeIndex] = 0;
+                        instrumentState.envelopeTime = 0;
                         instrumentState.arpTime = 0;
                         instrumentState.updateWaves(instrument, this.samplesPerSecond);
                         instrumentState.allocateNecessaryBuffers(this, instrument, samplesPerTick);
@@ -35597,7 +35328,7 @@ li.select2-results__option[role=group] > strong:hover {
                     if (tgtInstrument == null)
                         continue;
                     const str = Config.modulators[instrument.modulators[mod]].name;
-                    if (!((Config.modulators[instrument.modulators[mod]].associatedEffect != 16 && !(tgtInstrument.effects & (1 << Config.modulators[instrument.modulators[mod]].associatedEffect)))
+                    if (!((Config.modulators[instrument.modulators[mod]].associatedEffect != 17 && !(tgtInstrument.effects & (1 << Config.modulators[instrument.modulators[mod]].associatedEffect)))
                         || ((tgtInstrument.type != 1 && tgtInstrument.type != 11) && (str == "fm slider 1" || str == "fm slider 2" || str == "fm slider 3" || str == "fm slider 4" || str == "fm feedback"))
                         || tgtInstrument.type != 11 && (str == "fm slider 5" || str == "fm slider 6")
                         || ((tgtInstrument.type != 6 && tgtInstrument.type != 8) && (str == "pulse width" || str == "decimal offset"))
@@ -36465,47 +36196,10 @@ li.select2-results__option[role=group] > strong:hover {
                             instrumentState.tonesAddedInThisTick = false;
                         }
                     }
-                    const ticksIntoBar = this.getTicksIntoBar();
-                    const tickTimeStart = ticksIntoBar;
-                    const secondsPerTick = samplesPerTick / this.samplesPerSecond;
-                    const currentPart = this.getCurrentPart();
                     for (let channel = 0; channel < this.song.pitchChannelCount + this.song.noiseChannelCount; channel++) {
                         for (let instrumentIdx = 0; instrumentIdx < this.song.channels[channel].instruments.length; instrumentIdx++) {
                             let instrument = this.song.channels[channel].instruments[instrumentIdx];
                             let instrumentState = this.channels[channel].instruments[instrumentIdx];
-                            const envelopeComputer = instrumentState.envelopeComputer;
-                            const envelopeSpeeds = [];
-                            for (let i = 0; i < Config.maxEnvelopeCount; i++) {
-                                envelopeSpeeds[i] = 0;
-                            }
-                            for (let envelopeIndex = 0; envelopeIndex < instrument.envelopeCount; envelopeIndex++) {
-                                let useEnvelopeSpeed = instrument.envelopeSpeed;
-                                let perEnvelopeSpeed = instrument.envelopes[envelopeIndex].perEnvelopeSpeed;
-                                if (this.isModActive(Config.modulators.dictionary["individual envelope speed"].index, channel, instrumentIdx) && instrument.envelopes[envelopeIndex].tempEnvelopeSpeed != null) {
-                                    perEnvelopeSpeed = instrument.envelopes[envelopeIndex].tempEnvelopeSpeed;
-                                }
-                                if (this.isModActive(Config.modulators.dictionary["envelope speed"].index, channel, instrumentIdx)) {
-                                    useEnvelopeSpeed = Math.max(0, Math.min(Config.arpSpeedScale.length - 1, this.getModValue(Config.modulators.dictionary["envelope speed"].index, channel, instrumentIdx, false)));
-                                    if (Number.isInteger(useEnvelopeSpeed)) {
-                                        instrumentState.envelopeTime[envelopeIndex] += Config.arpSpeedScale[useEnvelopeSpeed] * perEnvelopeSpeed;
-                                    }
-                                    else {
-                                        instrumentState.envelopeTime[envelopeIndex] += ((1 - (useEnvelopeSpeed % 1)) * Config.arpSpeedScale[Math.floor(useEnvelopeSpeed)] + (useEnvelopeSpeed % 1) * Config.arpSpeedScale[Math.ceil(useEnvelopeSpeed)]) * perEnvelopeSpeed;
-                                    }
-                                }
-                                else {
-                                    instrumentState.envelopeTime[envelopeIndex] += Config.arpSpeedScale[useEnvelopeSpeed] * perEnvelopeSpeed;
-                                }
-                            }
-                            let tone = new Tone;
-                            if (instrumentState.activeTones.count() > 0) {
-                                tone = instrumentState.activeTones.peakBack();
-                            }
-                            else {
-                                tone = new Tone;
-                            }
-                            envelopeComputer.computeEnvelopes(instrument, currentPart, instrumentState.envelopeTime, tickTimeStart, secondsPerTick, tone, envelopeSpeeds, instrumentState, this);
-                            const envelopeStarts = envelopeComputer.envelopeStarts;
                             let useArpeggioSpeed = instrument.arpeggioSpeed;
                             if (this.isModActive(Config.modulators.dictionary["arp speed"].index, channel, instrumentIdx)) {
                                 useArpeggioSpeed = clamp(0, Config.arpSpeedScale.length, this.getModValue(Config.modulators.dictionary["arp speed"].index, channel, instrumentIdx, false));
@@ -36517,16 +36211,21 @@ li.select2-results__option[role=group] > strong:hover {
                                 }
                             }
                             else {
-                                const envelopeStart = envelopeStarts[55];
-                                useArpeggioSpeed = clamp(0, Config.arpSpeedScale.length, envelopeStart * useArpeggioSpeed);
-                                if (Number.isInteger(useArpeggioSpeed)) {
-                                    instrumentState.arpTime += Config.arpSpeedScale[useArpeggioSpeed];
+                                instrumentState.arpTime += Config.arpSpeedScale[useArpeggioSpeed];
+                            }
+                            let useEnvelopeSpeed = instrument.envelopeSpeed;
+                            if (this.isModActive(Config.modulators.dictionary["envelope speed"].index, channel, instrumentIdx)) {
+                                useEnvelopeSpeed = Math.max(0, Math.min(Config.arpSpeedScale.length - 1, this.getModValue(Config.modulators.dictionary["envelope speed"].index, channel, instrumentIdx, false)));
+                                if (Number.isInteger(useEnvelopeSpeed)) {
+                                    instrumentState.envelopeTime += Config.arpSpeedScale[useEnvelopeSpeed];
                                 }
                                 else {
-                                    instrumentState.arpTime += (1 - (useArpeggioSpeed % 1)) * Config.arpSpeedScale[Math.floor(useArpeggioSpeed)] + (useArpeggioSpeed % 1) * Config.arpSpeedScale[Math.ceil(useArpeggioSpeed)];
+                                    instrumentState.envelopeTime += (1 - (useEnvelopeSpeed % 1)) * Config.arpSpeedScale[Math.floor(useEnvelopeSpeed)] + (useEnvelopeSpeed % 1) * Config.arpSpeedScale[Math.ceil(useEnvelopeSpeed)];
                                 }
                             }
-                            envelopeComputer.clearEnvelopes();
+                            else {
+                                instrumentState.envelopeTime += Config.arpSpeedScale[useEnvelopeSpeed];
+                            }
                         }
                     }
                     for (let channel = 0; channel < this.song.pitchChannelCount + this.song.noiseChannelCount; channel++) {
@@ -36601,9 +36300,7 @@ li.select2-results__option[role=group] > strong:hover {
                         const instrument = this.song.channels[channelIndex].instruments[instrumentIndex];
                         instrumentState.nextVibratoTime = (instrumentState.nextVibratoTime % (Config.vibratoTypes[instrument.vibratoType].period / (Config.ticksPerPart * samplesPerTick / this.samplesPerSecond)));
                         instrumentState.arpTime = (instrumentState.arpTime % (2520 * Config.ticksPerArpeggio));
-                        for (let envelopeIndex = 0; envelopeIndex < instrument.envelopeCount; envelopeIndex++) {
-                            instrumentState.envelopeTime[envelopeIndex] = (instrumentState.envelopeTime[envelopeIndex] % (Config.partsPerBeat * Config.ticksPerPart * this.song.beatsPerBar));
-                        }
+                        instrumentState.envelopeTime = (instrumentState.envelopeTime % (Config.partsPerBeat * Config.ticksPerPart * this.song.beatsPerBar));
                     }
                 }
                 for (let setting = 0; setting < Config.modulators.length; setting++) {
@@ -37464,28 +37161,17 @@ li.select2-results__option[role=group] > strong:hover {
                 instrument.tmpNoteFilterStart = noteFilterSettingsStart;
             }
             const envelopeComputer = tone.envelopeComputer;
-            const envelopeSpeeds = [];
-            for (let i = 0; i < Config.maxEnvelopeCount; i++) {
-                envelopeSpeeds[i] = 0;
-            }
-            for (let envelopeIndex = 0; envelopeIndex < instrument.envelopeCount; envelopeIndex++) {
-                let perEnvelopeSpeed = instrument.envelopes[envelopeIndex].perEnvelopeSpeed;
-                if (this.isModActive(Config.modulators.dictionary["individual envelope speed"].index, channelIndex, tone.instrumentIndex) && instrument.envelopes[envelopeIndex].tempEnvelopeSpeed != null) {
-                    perEnvelopeSpeed = instrument.envelopes[envelopeIndex].tempEnvelopeSpeed;
+            let useEnvelopeSpeed = Config.arpSpeedScale[instrument.envelopeSpeed];
+            if (this.isModActive(Config.modulators.dictionary["envelope speed"].index, channelIndex, tone.instrumentIndex)) {
+                useEnvelopeSpeed = Math.max(0, Math.min(Config.arpSpeedScale.length - 1, this.getModValue(Config.modulators.dictionary["envelope speed"].index, channelIndex, tone.instrumentIndex, false)));
+                if (Number.isInteger(useEnvelopeSpeed)) {
+                    useEnvelopeSpeed = Config.arpSpeedScale[useEnvelopeSpeed];
                 }
-                let useEnvelopeSpeed = Config.arpSpeedScale[instrument.envelopeSpeed] * perEnvelopeSpeed;
-                if (this.isModActive(Config.modulators.dictionary["envelope speed"].index, channelIndex, tone.instrumentIndex)) {
-                    useEnvelopeSpeed = Math.max(0, Math.min(Config.arpSpeedScale.length - 1, this.getModValue(Config.modulators.dictionary["envelope speed"].index, channelIndex, tone.instrumentIndex, false)));
-                    if (Number.isInteger(useEnvelopeSpeed)) {
-                        useEnvelopeSpeed = Config.arpSpeedScale[useEnvelopeSpeed] * perEnvelopeSpeed;
-                    }
-                    else {
-                        useEnvelopeSpeed = (1 - (useEnvelopeSpeed % 1)) * Config.arpSpeedScale[Math.floor(useEnvelopeSpeed)] + (useEnvelopeSpeed % 1) * Config.arpSpeedScale[Math.ceil(useEnvelopeSpeed)] * perEnvelopeSpeed;
-                    }
+                else {
+                    useEnvelopeSpeed = (1 - (useEnvelopeSpeed % 1)) * Config.arpSpeedScale[Math.floor(useEnvelopeSpeed)] + (useEnvelopeSpeed % 1) * Config.arpSpeedScale[Math.ceil(useEnvelopeSpeed)];
                 }
-                envelopeSpeeds[envelopeIndex] = useEnvelopeSpeed;
             }
-            envelopeComputer.computeEnvelopes(instrument, currentPart, instrumentState.envelopeTime, Config.ticksPerPart * partTimeStart, samplesPerTick / this.samplesPerSecond, tone, envelopeSpeeds, instrumentState, this);
+            envelopeComputer.computeEnvelopes(instrument, currentPart, instrumentState.envelopeTime, Config.ticksPerPart * partTimeStart, samplesPerTick / this.samplesPerSecond, tone, useEnvelopeSpeed, this.song, instrumentState);
             const envelopeStarts = tone.envelopeComputer.envelopeStarts;
             const envelopeEnds = tone.envelopeComputer.envelopeEnds;
             instrument.noteFilter = tmpNoteFilter;
@@ -37524,7 +37210,7 @@ li.select2-results__option[role=group] > strong:hover {
                     }
                 }
             }
-            if (effectsIncludePitchShift(instrument.effects) || this.isModActive(Config.modulators.dictionary["song pitch shift"].index, channelIndex, tone.instrumentIndex)) {
+            if (effectsIncludePitchShift(instrument.effects)) {
                 let pitchShift = Config.justIntonationSemitones[instrument.pitchShift] / intervalScale;
                 let pitchShiftScalarStart = 1.0;
                 let pitchShiftScalarEnd = 1.0;
@@ -37533,15 +37219,20 @@ li.select2-results__option[role=group] > strong:hover {
                     pitchShiftScalarStart = (this.getModValue(Config.modulators.dictionary["pitch shift"].index, channelIndex, tone.instrumentIndex, false)) / (Config.pitchShiftCenter);
                     pitchShiftScalarEnd = (this.getModValue(Config.modulators.dictionary["pitch shift"].index, channelIndex, tone.instrumentIndex, true)) / (Config.pitchShiftCenter);
                 }
-                if (this.isModActive(Config.modulators.dictionary["song pitch shift"].index, channelIndex, tone.instrumentIndex)) {
-                    pitchShift = Config.justIntonationSemitones[Config.justIntonationSemitones.length - 1];
-                    pitchShiftScalarStart = clamp((-Config.pitchShiftRange * 2) + 1, Config.pitchShiftRange - 1, (pitchShiftScalarStart + this.getModValue(Config.modulators.dictionary["song pitch shift"].index, undefined, undefined, true)) - 1) / (Config.pitchShiftCenter);
-                    pitchShiftScalarEnd = clamp((-Config.pitchShiftRange * 2) + 1, Config.pitchShiftRange - 1, (pitchShiftScalarEnd + this.getModValue(Config.modulators.dictionary["song pitch shift"].index, undefined, undefined, true)) - 1) / (Config.pitchShiftCenter);
-                }
                 const envelopeStart = envelopeStarts[18];
                 const envelopeEnd = envelopeEnds[18];
                 intervalStart += pitchShift * envelopeStart * pitchShiftScalarStart;
                 intervalEnd += pitchShift * envelopeEnd * pitchShiftScalarEnd;
+            }
+            if (this.isModActive(Config.modulators.dictionary["song pitch shift"].index, channelIndex, tone.instrumentIndex)) {
+                let pitchShiftScalarStart = 0.0;
+                let pitchShiftScalarEnd = 0.0;
+                if (this.isModActive(Config.modulators.dictionary["song pitch shift"].index, channelIndex, tone.instrumentIndex)) {
+                    pitchShiftScalarStart = clamp((-Config.pitchShiftRange * 2) + 1, Config.pitchShiftRange - 1, (pitchShiftScalarStart + this.getModValue(Config.modulators.dictionary["song pitch shift"].index, undefined, undefined, true)));
+                    pitchShiftScalarEnd = clamp((-Config.pitchShiftRange * 2) + 1, Config.pitchShiftRange - 1, (pitchShiftScalarEnd + this.getModValue(Config.modulators.dictionary["song pitch shift"].index, undefined, undefined, true)));
+                }
+                intervalStart += pitchShiftScalarStart;
+                intervalEnd += pitchShiftScalarEnd;
             }
             if (effectsIncludeDetune(instrument.effects) || this.isModActive(Config.modulators.dictionary["song detune"].index, channelIndex, tone.instrumentIndex)) {
                 const envelopeStart = envelopeStarts[19];
@@ -37666,12 +37357,29 @@ li.select2-results__option[role=group] > strong:hover {
                 }
             }
             if (instrument.type == 4) {
-                const drumsetEnvelopeComputer = tone.envelopeComputer;
                 const drumsetFilterEnvelope = instrument.getDrumsetEnvelope(tone.drumsetPitch);
                 noteFilterExpression *= EnvelopeComputer.getLowpassCutoffDecayVolumeCompensation(drumsetFilterEnvelope);
-                drumsetEnvelopeComputer.computeDrumsetEnvelopes(instrument, drumsetFilterEnvelope, beatsPerPart, partTimeStart, partTimeEnd);
-                const drumsetFilterEnvelopeStart = drumsetEnvelopeComputer.drumsetFilterEnvelopeStart;
-                const drumsetFilterEnvelopeEnd = drumsetEnvelopeComputer.drumsetFilterEnvelopeEnd;
+                let drumsetFilterEnvelopeStart = EnvelopeComputer.computeEnvelope(drumsetFilterEnvelope, envelopeComputer.noteSecondsStart, beatsPerPart * partTimeStart, envelopeComputer.noteSizeStart);
+                if (envelopeComputer.prevSlideStart) {
+                    const other = EnvelopeComputer.computeEnvelope(drumsetFilterEnvelope, envelopeComputer.prevNoteSecondsStart, beatsPerPart * partTimeStart, envelopeComputer.prevNoteSize);
+                    drumsetFilterEnvelopeStart += (other - drumsetFilterEnvelopeStart) * envelopeComputer.prevSlideRatioStart;
+                }
+                if (envelopeComputer.nextSlideStart) {
+                    const other = EnvelopeComputer.computeEnvelope(drumsetFilterEnvelope, 0.0, beatsPerPart * partTimeStart, envelopeComputer.nextNoteSize);
+                    drumsetFilterEnvelopeStart += (other - drumsetFilterEnvelopeStart) * envelopeComputer.nextSlideRatioStart;
+                }
+                let drumsetFilterEnvelopeEnd = drumsetFilterEnvelopeStart;
+                if (instrument.discreteEnvelope == false) {
+                    drumsetFilterEnvelopeEnd = EnvelopeComputer.computeEnvelope(drumsetFilterEnvelope, envelopeComputer.noteSecondsEnd, beatsPerPart * partTimeEnd, envelopeComputer.noteSizeEnd);
+                    if (envelopeComputer.prevSlideEnd) {
+                        const other = EnvelopeComputer.computeEnvelope(drumsetFilterEnvelope, envelopeComputer.prevNoteSecondsEnd, beatsPerPart * partTimeEnd, envelopeComputer.prevNoteSize);
+                        drumsetFilterEnvelopeEnd += (other - drumsetFilterEnvelopeEnd) * envelopeComputer.prevSlideRatioEnd;
+                    }
+                    if (envelopeComputer.nextSlideEnd) {
+                        const other = EnvelopeComputer.computeEnvelope(drumsetFilterEnvelope, 0.0, beatsPerPart * partTimeEnd, envelopeComputer.nextNoteSize);
+                        drumsetFilterEnvelopeEnd += (other - drumsetFilterEnvelopeEnd) * envelopeComputer.nextSlideRatioEnd;
+                    }
+                }
                 const point = this.tempDrumSetControlPoint;
                 point.type = 0;
                 point.gain = FilterControlPoint.getRoundedSettingValueFromLinearGain(0.5);
@@ -38811,6 +38519,7 @@ li.select2-results__option[role=group] > strong:hover {
             const usesRingModulation = effectsIncludeRM(instrumentState.effects);
             const usesPhaser = effectsIncludePhaser(instrumentState.effects);
             const usesInvertWave = effectsIncludeInvertWave(instrumentState.effects) && instrumentState.invertWave;
+            const usesGranular = effectsIncludeGranular(instrumentState.effects);
             let signature = 0;
             if (usesDistortion)
                 signature = signature | 1;
@@ -38841,10 +38550,13 @@ li.select2-results__option[role=group] > strong:hover {
             signature = signature << 1;
             if (usesInvertWave)
                 signature = signature | 1;
+            signature = signature << 1;
+            if (usesGranular)
+                signature = signature | 1;
             let effectsFunction = Synth.effectsFunctionCache[signature];
             if (effectsFunction == undefined) {
                 let effectsSource = "return (synth, outputDataL, outputDataR, bufferIndex, runLength, instrumentState) => {";
-                const usesDelays = usesChorus || usesReverb || usesEcho;
+                const usesDelays = usesChorus || usesReverb || usesEcho || usesGranular;
                 effectsSource += `
 				const tempMonoInstrumentSampleBuffer = synth.tempMonoInstrumentSampleBuffer;
 				
@@ -38859,6 +38571,22 @@ li.select2-results__option[role=group] > strong:hover {
                 if (usesInvertWave) {
                     effectsSource += `
                 let isInverted = +instrumentState.invertWave;
+                `;
+                }
+                if (usesGranular) {
+                    effectsSource += `
+                let granularWet = instrumentState.granularMix;
+                const granularMixDelta = instrumentState.granularMixDelta;
+                let granularDry = 1.0 - granularWet; 
+                const granularDelayLine = instrumentState.granularDelayLine;
+                const granularGrains = instrumentState.granularGrains;
+                let granularGrainCount = instrumentState.granularGrainsLength;
+                const granularDelayLineLength = granularDelayLine.length;
+                const granularDelayLineMask = granularDelayLineLength - 1;
+                let granularDelayLineIndex = instrumentState.granularDelayLineIndex;
+                const usesRandomGrainLocation = instrumentState.usesRandomGrainLocation;
+                const computeGrains = instrumentState.computeGrains;
+                instrumentState.granularDelayLineDirty = true;
                 `;
                 }
                 if (usesDistortion) {
@@ -39065,6 +38793,81 @@ li.select2-results__option[role=group] > strong:hover {
                 if (usesInvertWave) {
                     effectsSource += `
                     sample = sample*-1;
+                `;
+                }
+                if (usesGranular) {
+                    effectsSource += `
+                let granularOutput = 0;
+                for (let grainIndex = 0; grainIndex < granularGrainCount; grainIndex++) {
+                    const grain = granularGrains[grainIndex];
+                    if(computeGrains) {
+                        if(grain.delay > 0) {
+                            grain.delay--;
+                        } else {
+                            const grainDelayLinePosition = grain.delayLinePosition;
+                            const grainDelayLinePositionInt = grainDelayLinePosition | 0;
+                            // const grainDelayLinePositionT = grainDelayLinePosition - grainDelayLinePositionInt;
+                            let grainAgeInSamples = grain.ageInSamples;
+                            const grainMaxAgeInSamples = grain.maxAgeInSamples;
+                            // const grainSample0 = granularDelayLine[((granularDelayLineIndex + (granularDelayLineLength - grainDelayLinePositionInt))    ) & granularDelayLineMask];
+                            // const grainSample1 = granularDelayLine[((granularDelayLineIndex + (granularDelayLineLength - grainDelayLinePositionInt)) + 1) & granularDelayLineMask];
+                            // let grainSample = grainSample0 + (grainSample1 - grainSample0) * grainDelayLinePositionT; // Linear interpolation (@TODO: sounds quite bad?)
+                            let grainSample = granularDelayLine[((granularDelayLineIndex + (granularDelayLineLength - grainDelayLinePositionInt))    ) & granularDelayLineMask]; // No interpolation
+                            `;
+                    if (Config.granularEnvelopeType == 0) {
+                        effectsSource += `
+                                const grainEnvelope = grain.parabolicEnvelopeAmplitude;
+                                `;
+                    }
+                    else if (Config.granularEnvelopeType == 1) {
+                        effectsSource += `
+                                const grainEnvelope = grain.rcbEnvelopeAmplitude;
+                                `;
+                    }
+                    effectsSource += `
+                            grainSample *= grainEnvelope;
+                            granularOutput += grainSample;
+                            if (grainAgeInSamples > grainMaxAgeInSamples) {
+                                if (granularGrainCount > 0) {
+                                    // Faster equivalent of .pop, ignoring the order in the array.
+                                    const lastGrainIndex = granularGrainCount - 1;
+                                    const lastGrain = granularGrains[lastGrainIndex];
+                                    granularGrains[grainIndex] = lastGrain;
+                                    granularGrains[lastGrainIndex] = grain;
+                                    granularGrainCount--;
+                                    grainIndex--;
+                                    // ^ Dangerous, since this could end up causing an infinite loop,
+                                    // but should be okay in this case.
+                                }
+                            } else {
+                                grainAgeInSamples++;
+                            `;
+                    if (Config.granularEnvelopeType == 0) {
+                        effectsSource += `
+                                    grain.parabolicEnvelopeAmplitude += grain.parabolicEnvelopeSlope;
+                                    grain.parabolicEnvelopeSlope += grain.parabolicEnvelopeCurve;
+                                    `;
+                    }
+                    else if (Config.granularEnvelopeType == 1) {
+                        effectsSource += `
+                                    grain.updateRCBEnvelope();
+                                    `;
+                    }
+                    effectsSource += `
+                                grain.ageInSamples = grainAgeInSamples;
+                                // if(usesRandomGrainLocation) {
+                                //     grain.delayLine -= grainPitchShift;
+                                // }
+                            }
+                        }
+                    }
+                }
+                granularWet += granularMixDelta;
+                granularDry -= granularMixDelta;
+                granularOutput *= Config.granularOutputLoudnessCompensation;
+                granularDelayLine[granularDelayLineIndex] = sample;
+                granularDelayLineIndex = (granularDelayLineIndex + 1) & granularDelayLineMask;
+                sample = sample * granularDry + granularOutput * granularWet;
                 `;
                 }
                 if (usesDistortion) {
@@ -39314,6 +39117,13 @@ li.select2-results__option[role=group] > strong:hover {
                     effectsSource += `
 				
 				instrumentState.delayInputMult = delayInputMult;`;
+                }
+                if (usesGranular) {
+                    effectsSource += `
+                    instrumentState.granularMix = granularWet;
+                    instrumentState.granularGrainsLength = granularGrainCount;
+                    instrumentState.granularDelayLineIndex = granularDelayLineIndex;
+                `;
                 }
                 if (usesDistortion) {
                     effectsSource += `
@@ -39919,18 +39729,6 @@ li.select2-results__option[role=group] > strong:hover {
                         }
                     }
                 }
-                else if (setting == Config.modulators.dictionary["individual envelope speed"].index) {
-                    const tgtInstrument = synth.song.channels[instrument.modChannels[mod]].instruments[usedInstruments[instrumentIndex]];
-                    let envelopeTarget = instrument.modEnvelopeNumbers[mod];
-                    let speed = tone.expression + tone.expressionDelta;
-                    if (Number.isInteger(speed)) {
-                        tgtInstrument.envelopes[envelopeTarget].tempEnvelopeSpeed = Config.perEnvelopeSpeedIndices[speed];
-                    }
-                    else {
-                        speed = (1 - (speed % 1)) * Config.perEnvelopeSpeedIndices[Math.floor(speed)] + (speed % 1) * Config.perEnvelopeSpeedIndices[Math.ceil(speed)];
-                        tgtInstrument.envelopes[envelopeTarget].tempEnvelopeSpeed = speed;
-                    }
-                }
             }
         }
         static findRandomZeroCrossing(wave, waveLength) {
@@ -40094,16 +39892,6 @@ li.select2-results__option[role=group] > strong:hover {
                 input1 = output1;
             }
             return sample;
-        }
-        computeTicksSinceStart(ofBar = false) {
-            var _a, _b;
-            const beatsPerBar = ((_a = this.song) === null || _a === void 0 ? void 0 : _a.beatsPerBar) ? (_b = this.song) === null || _b === void 0 ? void 0 : _b.beatsPerBar : 8;
-            if (ofBar) {
-                return Config.ticksPerPart * Config.partsPerBeat * beatsPerBar * this.bar;
-            }
-            else {
-                return this.tick + Config.ticksPerPart * (this.part + Config.partsPerBeat * (this.beat + beatsPerBar * this.bar));
-            }
         }
     }
     Synth.tempFilterStartCoefficients = new FilterCoefficients();
@@ -40974,17 +40762,20 @@ li.select2-results__option[role=group] > strong:hover {
                     instrument.pitchShift = selectCurvedDistribution(0, Config.pitchShiftRange - 1, Config.pitchShiftCenter, 2);
                     if (instrument.pitchShift != Config.pitchShiftCenter) {
                         instrument.effects |= 1 << 7;
-                        instrument.addEnvelope(Config.instrumentAutomationTargets.dictionary["pitchShift"].index, 0, Config.newEnvelopes.dictionary[selectWeightedRandom([
-                            { item: "note size", weight: 1 },
-                            { item: "random", weight: 2 },
-                            { item: "flare", weight: 2 },
-                            { item: "twang", weight: 16 },
-                            { item: "swell", weight: 2 },
-                            { item: "lfo", weight: 1 },
-                            { item: "decay", weight: 4 },
-                            { item: "blip", weight: 8 },
-                            { item: "fall", weight: 2 },
-                        ])].index, true, 0, -1, selectWeightedRandom([{ item: false, weight: 8 }, { item: true, weight: 1 }]), Config.perEnvelopeSpeedIndices[selectCurvedDistribution(1, 63, 50, 13)]);
+                        instrument.addEnvelope(Config.instrumentAutomationTargets.dictionary["pitchShift"].index, 0, Config.envelopes.dictionary[selectWeightedRandom([
+                            { item: "flare 1", weight: 2 },
+                            { item: "flare 2", weight: 1 },
+                            { item: "flare 3", weight: 1 },
+                            { item: "twang 1", weight: 16 },
+                            { item: "twang 2", weight: 8 },
+                            { item: "twang 3", weight: 4 },
+                            { item: "tremolo1", weight: 1 },
+                            { item: "tremolo2", weight: 1 },
+                            { item: "tremolo3", weight: 1 },
+                            { item: "decay 1", weight: 4 },
+                            { item: "decay 2", weight: 2 },
+                            { item: "decay 3", weight: 1 },
+                        ])].index);
                     }
                 }
                 if (Math.random() < 0.1) {
@@ -41002,19 +40793,34 @@ li.select2-results__option[role=group] > strong:hover {
                     applyFilterPoints(instrument.noteFilter, [
                         new PotentialFilterPoint(1.0, 0, midFreq, maxFreq, 8000.0, -1),
                     ]);
-                    instrument.addEnvelope(Config.instrumentAutomationTargets.dictionary["noteFilterAllFreqs"].index, 0, Config.newEnvelopes.dictionary[selectWeightedRandom([
-                        { item: "note size", weight: 2 },
-                        { item: "pitch", weight: 2 },
+                    instrument.addEnvelope(Config.instrumentAutomationTargets.dictionary["noteFilterAllFreqs"].index, 0, Config.envelopes.dictionary[selectWeightedRandom([
                         { item: "punch", weight: 4 },
-                        { item: "flare", weight: 4 },
-                        { item: "twang", weight: 16 },
-                        { item: "swell", weight: 4 },
-                        { item: "lfo", weight: 8 },
-                        { item: "decay", weight: 8 },
-                        { item: "wibble", weight: 4 },
-                        { item: "linear", weight: 4 },
-                        { item: "fall", weight: 4 },
-                    ])].index, true, 0, -1, selectWeightedRandom([{ item: false, weight: 8 }, { item: true, weight: 1 }]), Config.perEnvelopeSpeedIndices[selectCurvedDistribution(1, 63, 30, 30)]);
+                        { item: "flare 1", weight: 2 },
+                        { item: "flare 2", weight: 2 },
+                        { item: "flare 3", weight: 2 },
+                        { item: "twang 1", weight: 8 },
+                        { item: "twang 2", weight: 8 },
+                        { item: "twang 3", weight: 8 },
+                        { item: "swell 1", weight: 2 },
+                        { item: "swell 2", weight: 2 },
+                        { item: "swell 3", weight: 1 },
+                        { item: "tremolo1", weight: 1 },
+                        { item: "tremolo2", weight: 1 },
+                        { item: "tremolo3", weight: 1 },
+                        { item: "tremolo4", weight: 1 },
+                        { item: "tremolo5", weight: 1 },
+                        { item: "tremolo6", weight: 1 },
+                        { item: "decay 1", weight: 4 },
+                        { item: "decay 2", weight: 4 },
+                        { item: "decay 3", weight: 4 },
+                        { item: "wibble 1", weight: 2 },
+                        { item: "wibble 2", weight: 2 },
+                        { item: "wibble 3", weight: 2 },
+                        { item: "linear 1", weight: 2 },
+                        { item: "linear 2", weight: 2 },
+                        { item: "linear 3", weight: 2 },
+                        { item: "linear-1", weight: 1 },
+                    ])].index);
                 }
                 if (Math.random() < 0.1) {
                     instrument.effects |= 1 << 3;
@@ -41067,17 +40873,26 @@ li.select2-results__option[role=group] > strong:hover {
                         { item: "FART", weight: 1 },
                     ])].index;
                     if (instrument.unison != Config.unisons.dictionary["none"].index && Math.random() > 0.4)
-                        instrument.addEnvelope(Config.instrumentAutomationTargets.dictionary["unison"].index, 0, Config.newEnvelopes.dictionary[selectWeightedRandom([
-                            { item: "note size", weight: 2 },
-                            { item: "pitch", weight: 2 },
-                            { item: "twang", weight: 6 },
-                            { item: "swell", weight: 1 },
-                            { item: "decay", weight: 6 },
-                            { item: "wibble", weight: 4 },
-                            { item: "linear", weight: 6 },
-                            { item: "rise", weight: 2 },
-                            { item: "fall", weight: 2 },
-                        ])].index, true, 0, -1, selectWeightedRandom([{ item: false, weight: 8 }, { item: true, weight: 1 }]), Config.perEnvelopeSpeedIndices[selectCurvedDistribution(1, 63, 57, 6)]);
+                        instrument.addEnvelope(Config.instrumentAutomationTargets.dictionary["unison"].index, 0, Config.envelopes.dictionary[selectWeightedRandom([
+                            { item: "twang -1", weight: 3 },
+                            { item: "twang 1", weight: 3 },
+                            { item: "twang 2", weight: 2 },
+                            { item: "swell 1", weight: 1 },
+                            { item: "decay -1", weight: 3 },
+                            { item: "decay 1", weight: 3 },
+                            { item: "decay 2", weight: 2 },
+                            { item: "wibble-1", weight: 2 },
+                            { item: "wibble 1", weight: 2 },
+                            { item: "wibble 2", weight: 1 },
+                            { item: "wibble 3", weight: 1 },
+                            { item: "linear-2", weight: 2 },
+                            { item: "linear-1", weight: 2 },
+                            { item: "linear 1", weight: 2 },
+                            { item: "linear 2", weight: 1 },
+                            { item: "linear 3", weight: 1 },
+                            { item: "rise 1", weight: 1 },
+                            { item: "rise 2", weight: 1 },
+                        ])].index);
                 }
                 function normalize(harmonics) {
                     let max = 0;
@@ -41221,17 +41036,19 @@ li.select2-results__option[role=group] > strong:hover {
                     instrument.pitchShift = selectCurvedDistribution(0, Config.pitchShiftRange - 1, Config.pitchShiftCenter, 1);
                     if (instrument.pitchShift != Config.pitchShiftCenter) {
                         instrument.effects |= 1 << 7;
-                        instrument.addEnvelope(Config.instrumentAutomationTargets.dictionary["pitchShift"].index, 0, Config.newEnvelopes.dictionary[selectWeightedRandom([
-                            { item: "note size", weight: 2 },
-                            { item: "pitch", weight: 2 },
-                            { item: "random", weight: 3 },
-                            { item: "flare", weight: 4 },
-                            { item: "twang", weight: 20 },
-                            { item: "decay", weight: 6 },
-                            { item: "linear", weight: 1 },
-                            { item: "blip", weight: 10 },
-                            { item: "fall", weight: 2 },
-                        ])].index, true, 0, -1, selectWeightedRandom([{ item: false, weight: 8 }, { item: true, weight: 1 }]), Config.perEnvelopeSpeedIndices[selectCurvedDistribution(1, 63, 50, 13)]);
+                        instrument.addEnvelope(Config.instrumentAutomationTargets.dictionary["pitchShift"].index, 0, Config.envelopes.dictionary[selectWeightedRandom([
+                            { item: "flare 1", weight: 2 },
+                            { item: "flare 2", weight: 1 },
+                            { item: "flare 3", weight: 1 },
+                            { item: "twang 1", weight: 16 },
+                            { item: "twang 2", weight: 8 },
+                            { item: "twang 3", weight: 4 },
+                            { item: "decay 1", weight: 4 },
+                            { item: "decay 2", weight: 2 },
+                            { item: "decay 3", weight: 1 },
+                            { item: "linear 1", weight: 1 },
+                            { item: "linear 2", weight: 1 },
+                        ])].index);
                     }
                 }
                 if (Math.random() < 0.25) {
@@ -41247,29 +41064,6 @@ li.select2-results__option[role=group] > strong:hover {
                 if (Math.random() < 0.1) {
                     instrument.effects |= 1 << 3;
                     instrument.distortion = selectCurvedDistribution(1, Config.distortionRange - 1, Config.distortionRange - 1, 2);
-                    if (Math.random() < 0.3) {
-                        let envelopeLowerBound = selectCurvedDistribution(0, 20, 8, 5) / 10;
-                        let envelopeUpperBound = selectCurvedDistribution(0, 20, 8, 5) / 10;
-                        if (envelopeLowerBound >= envelopeUpperBound) {
-                            envelopeLowerBound = 0;
-                            envelopeUpperBound = 1;
-                        }
-                        instrument.addEnvelope(Config.instrumentAutomationTargets.dictionary["distortion"].index, 0, Config.newEnvelopes.dictionary[selectWeightedRandom([
-                            { item: "note size", weight: 3 },
-                            { item: "pitch", weight: 4 },
-                            { item: "random", weight: 1 },
-                            { item: "punch", weight: 2 },
-                            { item: "flare", weight: 3 },
-                            { item: "twang", weight: 10 },
-                            { item: "swell", weight: 8 },
-                            { item: "lfo", weight: 7 },
-                            { item: "decay", weight: 5 },
-                            { item: "wibble", weight: 5 },
-                            { item: "linear", weight: 4 },
-                            { item: "rise", weight: 8 },
-                            { item: "fall", weight: 2 },
-                        ])].index, true, 0, -1, selectWeightedRandom([{ item: false, weight: 8 }, { item: true, weight: 1 }]), Config.perEnvelopeSpeedIndices[selectCurvedDistribution(1, 63, 45, 20)], envelopeLowerBound, envelopeUpperBound, selectCurvedDistribution(2, 16, 2, 6), selectCurvedDistribution(1, 64, 32, 31), selectWeightedRandom([{ item: 0, weight: 2 }, { item: 2, weight: 5 }]));
-                    }
                 }
                 if (effectsIncludeDistortion(instrument.effects) && Math.random() < 0.8) {
                     instrument.effects |= 1 << 5;
@@ -41284,102 +41078,55 @@ li.select2-results__option[role=group] > strong:hover {
                     applyFilterPoints(instrument.noteFilter, [
                         new PotentialFilterPoint(1.0, 0, midFreq, maxFreq, 8000.0, -1),
                     ]);
-                    let envelopeLowerBound = selectCurvedDistribution(0, 20, 8, 5) / 10;
-                    let envelopeUpperBound = selectCurvedDistribution(0, 20, 8, 5) / 10;
-                    if (envelopeLowerBound >= envelopeUpperBound) {
-                        envelopeLowerBound = 0;
-                        envelopeUpperBound = 1;
-                    }
-                    instrument.addEnvelope(Config.instrumentAutomationTargets.dictionary["noteFilterAllFreqs"].index, 0, Config.newEnvelopes.dictionary[selectWeightedRandom([
-                        { item: "note size", weight: 2 },
-                        { item: "pitch", weight: 2 },
+                    instrument.addEnvelope(Config.instrumentAutomationTargets.dictionary["noteFilterAllFreqs"].index, 0, Config.envelopes.dictionary[selectWeightedRandom([
                         { item: "punch", weight: 6 },
-                        { item: "flare", weight: 3 },
-                        { item: "twang", weight: 7 },
-                        { item: "swell", weight: 8 },
-                        { item: "lfo", weight: 12 },
-                        { item: "decay", weight: 3 },
-                        { item: "wibble", weight: 5 },
-                        { item: "linear", weight: 4 },
-                        { item: "rise", weight: 8 },
-                        { item: "fall", weight: 2 },
-                    ])].index, true, 0, -1, selectWeightedRandom([{ item: false, weight: 8 }, { item: true, weight: 1 }]), Config.perEnvelopeSpeedIndices[selectCurvedDistribution(1, 63, 30, 30)], envelopeLowerBound, envelopeUpperBound, 2, 2, selectWeightedRandom([{ item: 0, weight: 8 }, { item: 2, weight: 4 }, { item: 3, weight: 2 }, { item: 1, weight: 1 }]));
+                        { item: "flare -1", weight: 1 },
+                        { item: "flare 1", weight: 2 },
+                        { item: "flare 2", weight: 4 },
+                        { item: "flare 3", weight: 2 },
+                        { item: "twang -1", weight: 1 },
+                        { item: "twang 1", weight: 2 },
+                        { item: "twang 2", weight: 4 },
+                        { item: "twang 3", weight: 4 },
+                        { item: "swell -1", weight: 4 },
+                        { item: "swell 1", weight: 4 },
+                        { item: "swell 2", weight: 2 },
+                        { item: "swell 3", weight: 1 },
+                        { item: "tremolo0", weight: 1 },
+                        { item: "tremolo1", weight: 1 },
+                        { item: "tremolo2", weight: 1 },
+                        { item: "tremolo3", weight: 1 },
+                        { item: "tremolo4", weight: 1 },
+                        { item: "tremolo5", weight: 1 },
+                        { item: "tremolo6", weight: 1 },
+                        { item: "decay -1", weight: 1 },
+                        { item: "decay 1", weight: 1 },
+                        { item: "decay 2", weight: 2 },
+                        { item: "decay 3", weight: 2 },
+                        { item: "wibble-1", weight: 2 },
+                        { item: "wibble 1", weight: 4 },
+                        { item: "wibble 2", weight: 4 },
+                        { item: "wibble 3", weight: 4 },
+                        { item: "linear-2", weight: 1 },
+                        { item: "linear-1", weight: 1 },
+                        { item: "linear 1", weight: 2 },
+                        { item: "linear 2", weight: 3 },
+                        { item: "linear 3", weight: 2 },
+                        { item: "rise -2", weight: 4 },
+                        { item: "rise -1", weight: 4 },
+                        { item: "rise 1", weight: 3 },
+                        { item: "rise 2", weight: 2 },
+                        { item: "rise 3", weight: 1 },
+                    ])].index);
                 }
                 if (Math.random() < 0.1) {
                     instrument.effects |= 1 << 4;
                     instrument.bitcrusherFreq = selectCurvedDistribution(0, Config.bitcrusherFreqRange - 1, 0, 2);
                     instrument.bitcrusherQuantization = selectCurvedDistribution(0, Config.bitcrusherQuantizationRange - 1, Config.bitcrusherQuantizationRange >> 1, 2);
-                    let envelopeLowerBound = selectCurvedDistribution(0, 20, 8, 5) / 10;
-                    let envelopeUpperBound = selectCurvedDistribution(0, 20, 8, 5) / 10;
-                    if (envelopeLowerBound >= envelopeUpperBound) {
-                        envelopeLowerBound = 0;
-                        envelopeUpperBound = 1;
-                    }
-                    if (Math.random() < 0.3) {
-                        instrument.addEnvelope(Config.instrumentAutomationTargets.dictionary["bitcrusherFrequency"].index, 0, Config.newEnvelopes.dictionary[selectWeightedRandom([
-                            { item: "note size", weight: 4 },
-                            { item: "pitch", weight: 3 },
-                            { item: "random", weight: 12 },
-                            { item: "flare", weight: 3 },
-                            { item: "twang", weight: 7 },
-                            { item: "swell", weight: 4 },
-                            { item: "lfo", weight: 12 },
-                            { item: "decay", weight: 2 },
-                            { item: "wibble", weight: 1 },
-                            { item: "linear", weight: 6 },
-                            { item: "rise", weight: 5 },
-                            { item: "blip", weight: 12 },
-                            { item: "fall", weight: 2 },
-                        ])].index, true, 0, -1, selectWeightedRandom([{ item: false, weight: 8 }, { item: true, weight: 1 }]), Config.perEnvelopeSpeedIndices[selectCurvedDistribution(1, 63, 20, 34)], envelopeLowerBound, envelopeUpperBound, selectCurvedDistribution(2, 16, 2, 6), selectCurvedDistribution(1, 64, 32, 31), selectWeightedRandom([{ item: 0, weight: 3 }, { item: 2, weight: 1 }]));
-                    }
-                    if (Math.random() < 0.5) {
-                        instrument.addEnvelope(Config.instrumentAutomationTargets.dictionary["bitcrusherQuantization"].index, 0, Config.newEnvelopes.dictionary[selectWeightedRandom([
-                            { item: "note size", weight: 8 },
-                            { item: "pitch", weight: 3 },
-                            { item: "random", weight: 12 },
-                            { item: "flare", weight: 3 },
-                            { item: "twang", weight: 7 },
-                            { item: "swell", weight: 4 },
-                            { item: "lfo", weight: 12 },
-                            { item: "decay", weight: 2 },
-                            { item: "wibble", weight: 1 },
-                            { item: "linear", weight: 6 },
-                            { item: "rise", weight: 5 },
-                            { item: "blip", weight: 12 },
-                            { item: "fall", weight: 2 },
-                        ])].index, true, 0, -1, selectWeightedRandom([{ item: false, weight: 8 }, { item: true, weight: 1 }]), Config.perEnvelopeSpeedIndices[selectCurvedDistribution(1, 63, 20, 34)], envelopeLowerBound, envelopeUpperBound, selectCurvedDistribution(2, 16, 2, 6), selectCurvedDistribution(1, 64, 32, 31), selectWeightedRandom([{ item: 0, weight: 3 }, { item: 2, weight: 1 }]));
-                    }
-                    else if (type == 3) {
-                        instrument.addEnvelope(Config.instrumentAutomationTargets.dictionary["noteVolume"].index, 0, Config.newEnvelopes.dictionary["note size"].index, true);
-                        instrument.addEnvelope(Config.instrumentAutomationTargets.dictionary["bitcrusherQuantization"].index, 0, Config.newEnvelopes.dictionary["note size"].index, true);
-                    }
                 }
                 if (Math.random() < 0.1) {
                     instrument.effects |= 1 << 1;
                     instrument.chorus = selectCurvedDistribution(1, Config.chorusRange - 1, Config.chorusRange - 1, 1);
-                    if (Math.random() < 0.1) {
-                        let envelopeLowerBound = selectCurvedDistribution(0, 20, 8, 5) / 10;
-                        let envelopeUpperBound = selectCurvedDistribution(0, 20, 8, 5) / 10;
-                        if (envelopeLowerBound >= envelopeUpperBound) {
-                            envelopeLowerBound = 0;
-                            envelopeUpperBound = 1;
-                        }
-                        instrument.addEnvelope(Config.instrumentAutomationTargets.dictionary["chorus"].index, 0, Config.newEnvelopes.dictionary[selectWeightedRandom([
-                            { item: "note size", weight: 3 },
-                            { item: "pitch", weight: 4 },
-                            { item: "random", weight: 1 },
-                            { item: "punch", weight: 2 },
-                            { item: "flare", weight: 3 },
-                            { item: "twang", weight: 10 },
-                            { item: "swell", weight: 8 },
-                            { item: "lfo", weight: 7 },
-                            { item: "decay", weight: 5 },
-                            { item: "wibble", weight: 5 },
-                            { item: "linear", weight: 4 },
-                            { item: "rise", weight: 8 },
-                            { item: "fall", weight: 2 },
-                        ])].index, true, 0, -1, selectWeightedRandom([{ item: false, weight: 8 }, { item: true, weight: 1 }]), Config.perEnvelopeSpeedIndices[selectCurvedDistribution(1, 63, 45, 20)], envelopeLowerBound, envelopeUpperBound, selectCurvedDistribution(2, 16, 2, 6), selectCurvedDistribution(1, 64, 32, 31), selectWeightedRandom([{ item: 0, weight: 2 }, { item: 2, weight: 5 }]));
-                    }
                 }
                 if (Math.random() < 0.1) {
                     instrument.echoSustain = selectCurvedDistribution(0, Config.echoSustainRange - 1, Config.echoSustainRange >> 1, 2);
@@ -41391,51 +41138,6 @@ li.select2-results__option[role=group] > strong:hover {
                 if (Math.random() < 0.5) {
                     instrument.effects |= 1 << 0;
                     instrument.reverb = selectCurvedDistribution(1, Config.reverbRange - 1, 1, 1);
-                    if (Math.random() < 0.03) {
-                        let envelopeLowerBound = selectCurvedDistribution(0, 20, 8, 5) / 10;
-                        let envelopeUpperBound = selectCurvedDistribution(0, 20, 8, 5) / 10;
-                        if (envelopeLowerBound >= envelopeUpperBound) {
-                            envelopeLowerBound = 0;
-                            envelopeUpperBound = 1;
-                        }
-                        instrument.addEnvelope(Config.instrumentAutomationTargets.dictionary["reverb"].index, 0, Config.newEnvelopes.dictionary[selectWeightedRandom([
-                            { item: "note size", weight: 3 },
-                            { item: "pitch", weight: 4 },
-                            { item: "random", weight: 1 },
-                            { item: "punch", weight: 2 },
-                            { item: "flare", weight: 3 },
-                            { item: "twang", weight: 10 },
-                            { item: "swell", weight: 8 },
-                            { item: "lfo", weight: 7 },
-                            { item: "decay", weight: 5 },
-                            { item: "wibble", weight: 5 },
-                            { item: "linear", weight: 4 },
-                            { item: "rise", weight: 8 },
-                            { item: "fall", weight: 2 },
-                        ])].index, true, 0, -1, selectWeightedRandom([{ item: false, weight: 8 }, { item: true, weight: 1 }]), Config.perEnvelopeSpeedIndices[selectCurvedDistribution(1, 63, 45, 20)], envelopeLowerBound, envelopeUpperBound, selectCurvedDistribution(2, 16, 2, 6), selectCurvedDistribution(1, 64, 32, 31), selectWeightedRandom([{ item: 0, weight: 2 }, { item: 2, weight: 5 }]));
-                    }
-                }
-                if (Math.random() < 0.2) {
-                    let envelopeLowerBound = selectCurvedDistribution(0, 20, 8, 5) / 10;
-                    let envelopeUpperBound = selectCurvedDistribution(0, 20, 8, 5) / 10;
-                    if (envelopeLowerBound >= envelopeUpperBound) {
-                        envelopeLowerBound = 0;
-                        envelopeUpperBound = 1;
-                    }
-                    instrument.addEnvelope(Config.instrumentAutomationTargets.dictionary["noteVolume"].index, 0, Config.newEnvelopes.dictionary[selectWeightedRandom([
-                        { item: "pitch", weight: 1 },
-                        { item: "random", weight: 4 },
-                        { item: "punch", weight: 6 },
-                        { item: "flare", weight: 3 },
-                        { item: "twang", weight: 13 },
-                        { item: "swell", weight: 7 },
-                        { item: "lfo", weight: 2 },
-                        { item: "decay", weight: 4 },
-                        { item: "wibble", weight: 3 },
-                        { item: "linear", weight: 4 },
-                        { item: "rise", weight: 4 },
-                        { item: "fall", weight: 3 },
-                    ])].index, true, 0, -1, selectWeightedRandom([{ item: false, weight: 8 }, { item: true, weight: 1 }]), Config.perEnvelopeSpeedIndices[selectCurvedDistribution(1, 63, 40, 20)], envelopeLowerBound, envelopeUpperBound, selectCurvedDistribution(2, 16, 2, 6), selectCurvedDistribution(1, 64, 32, 31), selectWeightedRandom([{ item: 0, weight: 8 }, { item: 1, weight: 2 }]));
                 }
                 function normalize(harmonics) {
                     let max = 0;
@@ -41470,35 +41172,46 @@ li.select2-results__option[role=group] > strong:hover {
                             instrument.pulseWidth = selectCurvedDistribution(0, Config.pulseWidthRange - 1, Config.pulseWidthRange - 1, 2);
                             instrument.decimalOffset = 0;
                             if (Math.random() < 0.6) {
-                                instrument.addEnvelope(Config.instrumentAutomationTargets.dictionary["pulseWidth"].index, 0, Config.newEnvelopes.dictionary[selectWeightedRandom([
-                                    { item: "note size", weight: 2 },
-                                    { item: "pitch", weight: 1 },
-                                    { item: "random", weight: 3 },
+                                instrument.addEnvelope(Config.instrumentAutomationTargets.dictionary["pulseWidth"].index, 0, Config.envelopes.dictionary[selectWeightedRandom([
                                     { item: "punch", weight: 6 },
-                                    { item: "flare", weight: 3 },
-                                    { item: "twang", weight: 6 },
-                                    { item: "swell", weight: 8 },
-                                    { item: "lfo", weight: 6 },
-                                    { item: "decay", weight: 2 },
-                                    { item: "wibble", weight: 6 },
-                                    { item: "linear", weight: 3 },
-                                    { item: "rise", weight: 5 },
-                                    { item: "blip", weight: 10 },
-                                    { item: "fall", weight: 4 },
-                                ])].index, false, 0, -1, selectWeightedRandom([{ item: false, weight: 8 }, { item: true, weight: 1 }]), Config.perEnvelopeSpeedIndices[selectCurvedDistribution(1, 63, 40, 20)], selectWeightedRandom([
-                                    { item: 0, weight: 8 },
-                                    { item: 0.1, weight: 4 },
-                                    { item: 0.2, weight: 3 },
-                                    { item: 0.3, weight: 1 },
-                                    { item: 0.4, weight: 2 },
-                                    { item: 0.5, weight: 6 },
-                                ]), selectWeightedRandom([
-                                    { item: 0.6, weight: 1 },
-                                    { item: 0.7, weight: 2 },
-                                    { item: 0.8, weight: 3 },
-                                    { item: 0.9, weight: 5 },
-                                    { item: 1, weight: 8 }
-                                ]), selectCurvedDistribution(2, 16, 2, 6), selectCurvedDistribution(1, 64, 32, 31), selectWeightedRandom([{ item: 0, weight: 8 }, { item: 1, weight: 2 }]));
+                                    { item: "flare -1", weight: 1 },
+                                    { item: "flare 1", weight: 2 },
+                                    { item: "flare 2", weight: 4 },
+                                    { item: "flare 3", weight: 2 },
+                                    { item: "twang -1", weight: 1 },
+                                    { item: "twang 1", weight: 2 },
+                                    { item: "twang 2", weight: 4 },
+                                    { item: "twang 3", weight: 4 },
+                                    { item: "swell -1", weight: 4 },
+                                    { item: "swell 1", weight: 4 },
+                                    { item: "swell 2", weight: 2 },
+                                    { item: "swell 3", weight: 1 },
+                                    { item: "tremolo0", weight: 1 },
+                                    { item: "tremolo1", weight: 1 },
+                                    { item: "tremolo2", weight: 1 },
+                                    { item: "tremolo3", weight: 1 },
+                                    { item: "tremolo4", weight: 1 },
+                                    { item: "tremolo5", weight: 1 },
+                                    { item: "tremolo6", weight: 1 },
+                                    { item: "decay -1", weight: 1 },
+                                    { item: "decay 1", weight: 1 },
+                                    { item: "decay 2", weight: 2 },
+                                    { item: "decay 3", weight: 2 },
+                                    { item: "wibble-1", weight: 2 },
+                                    { item: "wibble 1", weight: 4 },
+                                    { item: "wibble 2", weight: 4 },
+                                    { item: "wibble 3", weight: 4 },
+                                    { item: "linear-2", weight: 1 },
+                                    { item: "linear-1", weight: 1 },
+                                    { item: "linear 1", weight: 2 },
+                                    { item: "linear 2", weight: 3 },
+                                    { item: "linear 3", weight: 2 },
+                                    { item: "rise -2", weight: 4 },
+                                    { item: "rise -1", weight: 4 },
+                                    { item: "rise 1", weight: 3 },
+                                    { item: "rise 2", weight: 2 },
+                                    { item: "rise 3", weight: 1 },
+                                ])].index);
                             }
                         }
                         break;
@@ -41610,46 +41323,46 @@ li.select2-results__option[role=group] > strong:hover {
                                 instrument.operators[i].frequency = selectCurvedDistribution(3, Config.operatorFrequencies.length - 1, 0, 3);
                                 instrument.operators[i].amplitude = (Math.pow(Math.random(), 2) * Config.operatorAmplitudeMax) | 0;
                                 if (instrument.envelopeCount < Config.maxEnvelopeCount && Math.random() < 0.4) {
-                                    let envelopeLowerBound = selectCurvedDistribution(0, 20, 8, 5) / 10;
-                                    let envelopeUpperBound = selectCurvedDistribution(0, 20, 8, 5) / 10;
-                                    if (envelopeLowerBound >= envelopeUpperBound) {
-                                        envelopeLowerBound = 0;
-                                        envelopeUpperBound = 1;
-                                    }
-                                    instrument.addEnvelope(Config.instrumentAutomationTargets.dictionary["operatorAmplitude"].index, i, Config.newEnvelopes.dictionary[selectWeightedRandom([
+                                    instrument.addEnvelope(Config.instrumentAutomationTargets.dictionary["operatorAmplitude"].index, i, Config.envelopes.dictionary[selectWeightedRandom([
                                         { item: "punch", weight: 2 },
-                                        { item: "pitch", weight: 1 },
-                                        { item: "flare", weight: 3 },
-                                        { item: "twang", weight: 4 },
-                                        { item: "swell", weight: 4 },
-                                        { item: "lfo", weight: 6 },
-                                        { item: "decay", weight: 2 },
-                                        { item: "wibble", weight: 5 },
-                                        { item: "linear", weight: 3 },
-                                        { item: "rise", weight: 5 },
-                                        { item: "fall", weight: 2 },
-                                    ])].index, true, 0, -1, selectWeightedRandom([{ item: false, weight: 8 }, { item: true, weight: 1 }]), Config.perEnvelopeSpeedIndices[selectCurvedDistribution(1, 63, 30, 30)], envelopeLowerBound, envelopeUpperBound, 2, 2, selectWeightedRandom([{ item: 0, weight: 8 }, { item: 2, weight: 4 }, { item: 3, weight: 2 }, { item: 1, weight: 1 }]));
-                                }
-                                if (instrument.envelopeCount < Config.maxEnvelopeCount && Math.random() < 0.15) {
-                                    let envelopeLowerBound = selectCurvedDistribution(0, 20, 8, 5) / 10;
-                                    let envelopeUpperBound = selectCurvedDistribution(0, 20, 8, 5) / 10;
-                                    if (envelopeLowerBound >= envelopeUpperBound) {
-                                        envelopeLowerBound = 0;
-                                        envelopeUpperBound = 1;
-                                    }
-                                    instrument.addEnvelope(Config.instrumentAutomationTargets.dictionary["operatorFrequency"].index, i, Config.newEnvelopes.dictionary[selectWeightedRandom([
-                                        { item: "punch", weight: 2 },
-                                        { item: "pitch", weight: 1 },
-                                        { item: "flare", weight: 3 },
-                                        { item: "twang", weight: 10 },
-                                        { item: "swell", weight: 5 },
-                                        { item: "lfo", weight: 6 },
-                                        { item: "decay", weight: 2 },
-                                        { item: "wibble", weight: 5 },
-                                        { item: "linear", weight: 3 },
-                                        { item: "rise", weight: 5 },
-                                        { item: "fall", weight: 2 },
-                                    ])].index, true, 0, -1, selectWeightedRandom([{ item: false, weight: 8 }, { item: true, weight: 1 }]), Config.perEnvelopeSpeedIndices[selectCurvedDistribution(1, 63, 30, 30)], envelopeLowerBound, envelopeUpperBound, 2, 2, selectWeightedRandom([{ item: 0, weight: 8 }, { item: 2, weight: 4 }, { item: 3, weight: 4 }, { item: 1, weight: 1 }]));
+                                        { item: "flare -1", weight: 1 },
+                                        { item: "flare 1", weight: 2 },
+                                        { item: "flare 2", weight: 2 },
+                                        { item: "flare 3", weight: 2 },
+                                        { item: "twang -1", weight: 1 },
+                                        { item: "twang 1", weight: 2 },
+                                        { item: "twang 2", weight: 2 },
+                                        { item: "twang 3", weight: 2 },
+                                        { item: "swell -1", weight: 2 },
+                                        { item: "swell 1", weight: 2 },
+                                        { item: "swell 2", weight: 2 },
+                                        { item: "swell 3", weight: 1 },
+                                        { item: "tremolo0", weight: 1 },
+                                        { item: "tremolo1", weight: 1 },
+                                        { item: "tremolo2", weight: 1 },
+                                        { item: "tremolo3", weight: 1 },
+                                        { item: "tremolo4", weight: 1 },
+                                        { item: "tremolo5", weight: 1 },
+                                        { item: "tremolo6", weight: 1 },
+                                        { item: "decay -1", weight: 1 },
+                                        { item: "decay 1", weight: 1 },
+                                        { item: "decay 2", weight: 2 },
+                                        { item: "decay 3", weight: 2 },
+                                        { item: "wibble-1", weight: 2 },
+                                        { item: "wibble 1", weight: 2 },
+                                        { item: "wibble 2", weight: 2 },
+                                        { item: "wibble 3", weight: 2 },
+                                        { item: "linear-2", weight: 1 },
+                                        { item: "linear-1", weight: 1 },
+                                        { item: "linear 1", weight: 2 },
+                                        { item: "linear 2", weight: 2 },
+                                        { item: "linear 3", weight: 1 },
+                                        { item: "rise -2", weight: 2 },
+                                        { item: "rise -1", weight: 2 },
+                                        { item: "rise 1", weight: 2 },
+                                        { item: "rise 2", weight: 2 },
+                                        { item: "rise 3", weight: 1 },
+                                    ])].index);
                                 }
                                 instrument.operators[i].waveform = Config.operatorWaves.dictionary[selectWeightedRandom([
                                     { item: "sine", weight: 10 },
@@ -41678,26 +41391,47 @@ li.select2-results__option[role=group] > strong:hover {
                             }
                             instrument.feedbackAmplitude = (Math.pow(Math.random(), 3) * Config.operatorAmplitudeMax) | 0;
                             if (instrument.envelopeCount < Config.maxEnvelopeCount && Math.random() < 0.4) {
-                                let envelopeLowerBound = selectCurvedDistribution(0, 20, 8, 5) / 10;
-                                let envelopeUpperBound = selectCurvedDistribution(0, 20, 8, 5) / 10;
-                                if (envelopeLowerBound >= envelopeUpperBound) {
-                                    envelopeLowerBound = 0;
-                                    envelopeUpperBound = 1;
-                                }
-                                instrument.addEnvelope(Config.instrumentAutomationTargets.dictionary["feedbackAmplitude"].index, 0, Config.newEnvelopes.dictionary[selectWeightedRandom([
-                                    { item: "note size", weight: 4 },
+                                instrument.addEnvelope(Config.instrumentAutomationTargets.dictionary["feedbackAmplitude"].index, 0, Config.envelopes.dictionary[selectWeightedRandom([
+                                    { item: "none", weight: 4 },
                                     { item: "punch", weight: 2 },
-                                    { item: "pitch", weight: 1 },
-                                    { item: "flare", weight: 2 },
-                                    { item: "twang", weight: 2 },
-                                    { item: "swell", weight: 4 },
-                                    { item: "lfo", weight: 3 },
-                                    { item: "decay", weight: 3 },
-                                    { item: "wibble", weight: 3 },
-                                    { item: "linear", weight: 2 },
-                                    { item: "rise", weight: 3 },
-                                    { item: "fall", weight: 3 },
-                                ])].index, true, 0, -1, selectWeightedRandom([{ item: false, weight: 8 }, { item: true, weight: 1 }]), Config.perEnvelopeSpeedIndices[selectCurvedDistribution(1, 63, 30, 30)], envelopeLowerBound, envelopeUpperBound, 2, 2, selectWeightedRandom([{ item: 0, weight: 8 }, { item: 2, weight: 4 }, { item: 3, weight: 2 }, { item: 1, weight: 1 }]));
+                                    { item: "flare -1", weight: 1 },
+                                    { item: "flare 1", weight: 2 },
+                                    { item: "flare 2", weight: 2 },
+                                    { item: "flare 3", weight: 2 },
+                                    { item: "twang -1", weight: 1 },
+                                    { item: "twang 1", weight: 2 },
+                                    { item: "twang 2", weight: 2 },
+                                    { item: "twang 3", weight: 2 },
+                                    { item: "swell -1", weight: 2 },
+                                    { item: "swell 1", weight: 2 },
+                                    { item: "swell 2", weight: 2 },
+                                    { item: "swell 3", weight: 1 },
+                                    { item: "tremolo0", weight: 1 },
+                                    { item: "tremolo1", weight: 1 },
+                                    { item: "tremolo2", weight: 1 },
+                                    { item: "tremolo3", weight: 1 },
+                                    { item: "tremolo4", weight: 1 },
+                                    { item: "tremolo5", weight: 1 },
+                                    { item: "tremolo6", weight: 1 },
+                                    { item: "decay -1", weight: 1 },
+                                    { item: "decay 1", weight: 1 },
+                                    { item: "decay 2", weight: 2 },
+                                    { item: "decay 3", weight: 2 },
+                                    { item: "wibble-1", weight: 2 },
+                                    { item: "wibble 1", weight: 2 },
+                                    { item: "wibble 2", weight: 2 },
+                                    { item: "wibble 3", weight: 2 },
+                                    { item: "linear-2", weight: 1 },
+                                    { item: "linear-1", weight: 1 },
+                                    { item: "linear 1", weight: 2 },
+                                    { item: "linear 2", weight: 2 },
+                                    { item: "linear 3", weight: 1 },
+                                    { item: "rise -2", weight: 2 },
+                                    { item: "rise -1", weight: 2 },
+                                    { item: "rise 1", weight: 2 },
+                                    { item: "rise 2", weight: 2 },
+                                    { item: "rise 3", weight: 1 },
+                                ])].index);
                             }
                         }
                         break;
@@ -42497,6 +42231,44 @@ li.select2-results__option[role=group] > strong:hover {
         constructor(doc, oldValue, newValue) {
             super(doc);
             this._instrument.rmHzOffset = newValue + Config.rmHzOffsetCenter;
+            doc.notifier.changed();
+            if (oldValue != newValue)
+                this._didSomething();
+        }
+    }
+    class ChangeGranular extends ChangeInstrumentSlider {
+        constructor(doc, oldValue, newValue) {
+            super(doc);
+            this._instrument.granular = newValue;
+            doc.notifier.changed();
+            doc.synth.unsetMod(Config.modulators.dictionary["granular"].index, doc.channel, doc.getCurrentInstrument());
+            if (oldValue != newValue)
+                this._didSomething();
+        }
+    }
+    class ChangeGrainSize extends ChangeInstrumentSlider {
+        constructor(doc, oldValue, newValue) {
+            super(doc);
+            this._instrument.grainSize = newValue;
+            doc.notifier.changed();
+            doc.synth.unsetMod(Config.modulators.dictionary["grain size"].index, doc.channel, doc.getCurrentInstrument());
+            if (oldValue != newValue)
+                this._didSomething();
+        }
+    }
+    class ChangeGrainAmounts extends ChangeInstrumentSlider {
+        constructor(doc, oldValue, newValue) {
+            super(doc);
+            this._instrument.grainAmounts = newValue;
+            doc.notifier.changed();
+            if (oldValue != newValue)
+                this._didSomething();
+        }
+    }
+    class ChangeGrainRange extends ChangeInstrumentSlider {
+        constructor(doc, oldValue, newValue) {
+            super(doc);
+            this._instrument.grainRange = newValue;
             doc.notifier.changed();
             if (oldValue != newValue)
                 this._didSomething();
@@ -44881,7 +44653,7 @@ li.select2-results__option[role=group] > strong:hover {
         constructor(doc) {
             super();
             const instrument = doc.song.channels[doc.channel].instruments[doc.getCurrentInstrument()];
-            instrument.addEnvelope(0, 0, 0, true, 0, instrument.isNoiseInstrument ? Config.drumCount : Config.maxPitch, false, 1, 0);
+            instrument.addEnvelope(0, 0, 0);
             instrument.preset = instrument.type;
             doc.notifier.changed();
             this._didSomething();
@@ -44896,15 +44668,6 @@ li.select2-results__option[role=group] > strong:hover {
                 instrument.envelopes[i].target = instrument.envelopes[i + 1].target;
                 instrument.envelopes[i].index = instrument.envelopes[i + 1].index;
                 instrument.envelopes[i].envelope = instrument.envelopes[i + 1].envelope;
-                instrument.envelopes[i].pitchEnvelopeStart = instrument.envelopes[i + 1].pitchEnvelopeStart;
-                instrument.envelopes[i].pitchEnvelopeEnd = instrument.envelopes[i + 1].pitchEnvelopeEnd;
-                instrument.envelopes[i].inverse = instrument.envelopes[i + 1].inverse;
-                instrument.envelopes[i].perEnvelopeSpeed = instrument.envelopes[i + 1].perEnvelopeSpeed;
-                instrument.envelopes[i].perEnvelopeLowerBound = instrument.envelopes[i + 1].perEnvelopeLowerBound;
-                instrument.envelopes[i].perEnvelopeUpperBound = instrument.envelopes[i + 1].perEnvelopeUpperBound;
-                instrument.envelopes[i].steps = instrument.envelopes[i + 1].steps;
-                instrument.envelopes[i].seed = instrument.envelopes[i + 1].seed;
-                instrument.envelopes[i].waveform = instrument.envelopes[i + 1].waveform;
             }
             instrument.preset = instrument.type;
             doc.notifier.changed();
@@ -44939,147 +44702,16 @@ li.select2-results__option[role=group] > strong:hover {
             }
         }
     }
-    class ChangeEnvelopePitchStart extends Change {
-        constructor(doc, startNote, index) {
-            super();
-            const instrument = doc.song.channels[doc.channel].instruments[doc.getCurrentInstrument()];
-            const oldStartNote = instrument.envelopes[index].pitchEnvelopeStart;
-            if (oldStartNote != startNote) {
-                instrument.envelopes[index].pitchEnvelopeStart = startNote;
-                instrument.preset = instrument.type;
-                doc.notifier.changed();
-                this._didSomething();
-            }
-        }
-    }
-    class ChangeEnvelopePitchEnd extends Change {
-        constructor(doc, endNote, index) {
-            super();
-            const instrument = doc.song.channels[doc.channel].instruments[doc.getCurrentInstrument()];
-            const oldEndNote = instrument.envelopes[index].pitchEnvelopeEnd;
-            if (oldEndNote != endNote) {
-                instrument.envelopes[index].pitchEnvelopeEnd = endNote;
-                instrument.preset = instrument.type;
-                doc.notifier.changed();
-                this._didSomething();
-            }
-        }
-    }
-    class ChangeEnvelopeInverse extends Change {
-        constructor(doc, value, index) {
-            super();
-            const instrument = doc.song.channels[doc.channel].instruments[doc.getCurrentInstrument()];
-            const oldValue = instrument.envelopes[index].inverse;
-            if (oldValue != value) {
-                instrument.envelopes[index].inverse = value;
-                instrument.preset = instrument.type;
-                doc.notifier.changed();
-                this._didSomething();
-            }
-        }
-    }
-    class ChangePerEnvelopeSpeed extends Change {
-        constructor(doc, speed, index) {
-            super();
-            const instrument = doc.song.channels[doc.channel].instruments[doc.getCurrentInstrument()];
-            const oldSpeed = instrument.envelopes[index].perEnvelopeSpeed;
-            if (oldSpeed != speed) {
-                instrument.envelopes[index].perEnvelopeSpeed = speed;
-                instrument.preset = instrument.type;
-                doc.notifier.changed();
-                this._didSomething();
-            }
-        }
-    }
-    class ChangeEnvelopeLowerBound extends Change {
-        constructor(doc, bound, index) {
-            super();
-            const instrument = doc.song.channels[doc.channel].instruments[doc.getCurrentInstrument()];
-            const oldBound = instrument.envelopes[index].perEnvelopeLowerBound;
-            if (oldBound != bound) {
-                bound = bound > Config.perEnvelopeBoundMax ? Config.perEnvelopeBoundMax : bound < Config.perEnvelopeBoundMin ? Config.perEnvelopeBoundMin : Math.round(bound * 10) != bound * 10 ? Config.perEnvelopeBoundMin : bound;
-                instrument.envelopes[index].perEnvelopeLowerBound = bound;
-                instrument.preset = instrument.type;
-                doc.notifier.changed();
-                this._didSomething();
-            }
-        }
-    }
-    class ChangeEnvelopeUpperBound extends Change {
-        constructor(doc, bound, index) {
-            super();
-            const instrument = doc.song.channels[doc.channel].instruments[doc.getCurrentInstrument()];
-            const oldBound = instrument.envelopes[index].perEnvelopeUpperBound;
-            if (oldBound != bound) {
-                bound = bound > Config.perEnvelopeBoundMax ? Config.perEnvelopeBoundMax : bound < Config.perEnvelopeBoundMin ? Config.perEnvelopeBoundMin : Math.round(bound * 10) != bound * 10 ? Config.perEnvelopeBoundMin : bound;
-                instrument.envelopes[index].perEnvelopeUpperBound = bound;
-                instrument.preset = instrument.type;
-                doc.notifier.changed();
-                this._didSomething();
-            }
-        }
-    }
-    class ChangeRandomEnvelopeSteps extends Change {
-        constructor(doc, steps, index) {
-            super();
-            const instrument = doc.song.channels[doc.channel].instruments[doc.getCurrentInstrument()];
-            const oldSteps = instrument.envelopes[index].steps;
-            if (oldSteps != steps) {
-                steps = steps > Config.randomEnvelopeStepsMax ? Config.randomEnvelopeStepsMax : steps < 1 ? 2 : Math.floor(steps);
-                instrument.envelopes[index].steps = steps;
-                instrument.preset = instrument.type;
-                doc.notifier.changed();
-                this._didSomething();
-            }
-        }
-    }
-    class ChangeRandomEnvelopeSeed extends Change {
-        constructor(doc, seed, index) {
-            super();
-            const instrument = doc.song.channels[doc.channel].instruments[doc.getCurrentInstrument()];
-            const oldSeed = instrument.envelopes[index].seed;
-            if (oldSeed != seed) {
-                seed = seed > Config.randomEnvelopeSeedMax ? Config.randomEnvelopeSeedMax : seed < 1 ? 2 : Math.floor(seed);
-                instrument.envelopes[index].seed = seed;
-                doc.notifier.changed();
-                this._didSomething();
-            }
-        }
-    }
-    class PasteEnvelope extends Change {
-        constructor(doc, envelope, index) {
-            super();
-            const instrument = doc.song.channels[doc.channel].instruments[doc.getCurrentInstrument()];
-            instrument.envelopes[index].fromJsonObject(envelope, "abyssbox");
-            instrument.preset = instrument.type;
-            doc.notifier.changed();
-            this._didSomething();
-        }
-    }
-    class ChangeSetEnvelopeWaveform extends Change {
-        constructor(doc, waveform, index) {
-            super();
-            const instrument = doc.song.channels[doc.channel].instruments[doc.getCurrentInstrument()];
-            const oldWaveform = instrument.envelopes[index].waveform;
-            waveform = parseInt(waveform + "");
-            if (oldWaveform != waveform) {
-                instrument.envelopes[index].waveform = waveform;
-            }
-            instrument.preset = instrument.type;
-            doc.notifier.changed();
-            this._didSomething();
-        }
-    }
 
-    const { button: button$u, div: div$u, span: span$6, h2: h2$s, input: input$j, br: br$5, select: select$h, option: option$h } = HTML;
+    const { button: button$t, div: div$t, span: span$6, h2: h2$s, input: input$j, br: br$5, select: select$h, option: option$h } = HTML;
     class BeatsPerBarPrompt {
         constructor(_doc) {
             this._doc = _doc;
             this._beatsStepper = input$j({ style: "width: 3em; margin-left: 1em;", type: "number", step: "1" });
             this._conversionStrategySelect = select$h({ style: "width: 100%;" }, option$h({ value: "splice" }, "Splice beats at end of bars."), option$h({ value: "stretch" }, "Stretch notes to fit in bars."), option$h({ value: "overflow" }, "Overflow notes across bars."));
-            this._cancelButton = button$u({ class: "cancelButton" });
-            this._okayButton = button$u({ class: "okayButton", style: "width:45%;" }, "Okay");
-            this.container = div$u({ class: "prompt noSelection", style: "width: 250px;" }, div$u({ class: "promptTitle" }, h2$s({ class: "bpmExt", style: "text-align: inherit;" }, ""), h2$s({ class: "bpmTitle" }, "Beats Per Bar")), div$u({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, div$u({ style: "text-align: right;" }, "Beats per bar:", br$5(), span$6({ style: "font-size: smaller; color: ${ColorConfig.secondaryText};" }, "(Multiples of 3 or 4 are recommended)")), this._beatsStepper), div$u({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, div$u({ class: "selectContainer", style: "width: 100%;" }, this._conversionStrategySelect)), div$u({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton), this._cancelButton);
+            this._cancelButton = button$t({ class: "cancelButton" });
+            this._okayButton = button$t({ class: "okayButton", style: "width:45%;" }, "Okay");
+            this.container = div$t({ class: "prompt noSelection", style: "width: 250px;" }, div$t({ class: "promptTitle" }, h2$s({ class: "bpmExt", style: "text-align: inherit;" }, ""), h2$s({ class: "bpmTitle" }, "Beats Per Bar")), div$t({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, div$t({ style: "text-align: right;" }, "Beats per bar:", br$5(), span$6({ style: "font-size: smaller; color: ${ColorConfig.secondaryText};" }, "(Multiples of 3 or 4 are recommended)")), this._beatsStepper), div$t({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, div$t({ class: "selectContainer", style: "width: 100%;" }, this._conversionStrategySelect)), div$t({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton), this._cancelButton);
             this._close = () => {
                 this._doc.undo();
             };
@@ -45132,7 +44764,7 @@ li.select2-results__option[role=group] > strong:hover {
         }
     }
 
-    const { button: button$t, div: div$t, label: label$3, br: br$4, h2: h2$r, input: input$i } = HTML;
+    const { button: button$s, div: div$s, label: label$3, br: br$4, h2: h2$r, input: input$i } = HTML;
     class ChannelSettingsPrompt {
         constructor(_doc) {
             this._doc = _doc;
@@ -45142,9 +44774,9 @@ li.select2-results__option[role=group] > strong:hover {
             this._modChannelStepper = input$i({ style: "width: 3em; margin-left: 1em;", type: "number", step: "1" });
             this._layeredInstrumentsBox = input$i({ style: "width: 3em; margin-left: 1em;", type: "checkbox" });
             this._patternInstrumentsBox = input$i({ style: "width: 3em; margin-left: 1em;", type: "checkbox" });
-            this._cancelButton = button$t({ class: "cancelButton" });
-            this._okayButton = button$t({ class: "okayButton", style: "width:45%;" }, "Okay");
-            this.container = div$t({ class: "prompt noSelection", style: "width: 250px; text-align: right;" }, div$t({ class: "promptTitle" }, h2$r({ class: "channelExt", style: "text-align: inherit;" }, ""), h2$r({ class: "channelTitle" }, "Channel Settings")), label$3({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, "Pitch channels:", this._pitchChannelStepper), label$3({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, "Drum channels:", this._drumChannelStepper), div$t({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, "Mod channels:", this._modChannelStepper), label$3({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, "Available patterns per channel:", this._patternsStepper), label$3({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, "Simultaneous instruments", br$4(), "per channel:", this._layeredInstrumentsBox), label$3({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, "Different instruments", br$4(), "per pattern:", this._patternInstrumentsBox), div$t({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton), this._cancelButton);
+            this._cancelButton = button$s({ class: "cancelButton" });
+            this._okayButton = button$s({ class: "okayButton", style: "width:45%;" }, "Okay");
+            this.container = div$s({ class: "prompt noSelection", style: "width: 250px; text-align: right;" }, div$s({ class: "promptTitle" }, h2$r({ class: "channelExt", style: "text-align: inherit;" }, ""), h2$r({ class: "channelTitle" }, "Channel Settings")), label$3({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, "Pitch channels:", this._pitchChannelStepper), label$3({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, "Drum channels:", this._drumChannelStepper), div$s({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, "Mod channels:", this._modChannelStepper), label$3({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, "Available patterns per channel:", this._patternsStepper), label$3({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, "Simultaneous instruments", br$4(), "per channel:", this._layeredInstrumentsBox), label$3({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, "Different instruments", br$4(), "per pattern:", this._patternInstrumentsBox), div$s({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton), this._cancelButton);
             this._close = () => {
                 this._doc.undo();
             };
@@ -45219,7 +44851,7 @@ li.select2-results__option[role=group] > strong:hover {
         }
     }
 
-    const { button: button$s, div: div$s, h2: h2$q } = HTML;
+    const { button: button$r, div: div$r, h2: h2$q } = HTML;
     class CustomChipPromptCanvas {
         constructor(doc) {
             this._mouseX = 0;
@@ -45412,10 +45044,10 @@ li.select2-results__option[role=group] > strong:hover {
             this._doc = _doc;
             this._songEditor = _songEditor;
             this.customChipCanvas = new CustomChipPromptCanvas(this._doc);
-            this._playButton = button$s({ style: "width: 55%;", type: "button" });
-            this._cancelButton = button$s({ class: "cancelButton" });
-            this._okayButton = button$s({ class: "okayButton", style: "width:45%;" }, "Okay");
-            this.container = div$s({ class: "prompt noSelection", style: "width: 600px;" }, div$s({ class: "promptTitle" }, h2$q({ class: "edit-custom-chipExt", style: "text-align: inherit;" }, ""), h2$q({ class: "edit-custom-chipTitle" }, "Edit Custom Chip Instrument")), div$s({ style: "display: flex; width: 55%; align-self: center; flex-direction: row; align-items: center; justify-content: center;" }, this._playButton), div$s({ style: "display: flex; flex-direction: row; align-items: center; justify-content: center;" }, this.customChipCanvas.container), div$s({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton), this._cancelButton);
+            this._playButton = button$r({ style: "width: 55%;", type: "button" });
+            this._cancelButton = button$r({ class: "cancelButton" });
+            this._okayButton = button$r({ class: "okayButton", style: "width:45%;" }, "Okay");
+            this.container = div$r({ class: "prompt noSelection", style: "width: 600px;" }, div$r({ class: "promptTitle" }, h2$q({ class: "edit-custom-chipExt", style: "text-align: inherit;" }, ""), h2$q({ class: "edit-custom-chipTitle" }, "Edit Custom Chip Instrument")), div$r({ style: "display: flex; width: 55%; align-self: center; flex-direction: row; align-items: center; justify-content: center;" }, this._playButton), div$r({ style: "display: flex; flex-direction: row; align-items: center; justify-content: center;" }, this.customChipCanvas.container), div$r({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton), this._cancelButton);
             this._togglePlay = () => {
                 this._songEditor.togglePlay();
                 this.updatePlayButton();
@@ -46078,7 +45710,7 @@ li.select2-results__option[role=group] > strong:hover {
         }
     }
 
-    const { button: button$r, div: div$r, h2: h2$p, p: p$9 } = HTML;
+    const { button: button$q, div: div$q, h2: h2$p, p: p$9 } = HTML;
     class CustomFilterPrompt {
         constructor(_doc, _songEditor, _useNoteFilter) {
             this._doc = _doc;
@@ -46087,29 +45719,29 @@ li.select2-results__option[role=group] > strong:hover {
             this.filterData = new FilterSettings;
             this.startingFilterData = new FilterSettings;
             this._subfilterIndex = 0;
-            this._playButton = button$r({ style: "width: 55%;", type: "button" });
+            this._playButton = button$q({ style: "width: 55%;", type: "button" });
             this._filterButtons = [];
-            this._filterButtonContainer = div$r({ class: "instrument-bar", style: "justify-content: center;" });
-            this._cancelButton = button$r({ class: "cancelButton" });
-            this._okayButton = button$r({ class: "okayButton", style: "width:45%;" }, "Okay");
-            this._filterContainer = div$r({ style: "width: 100%; display: flex; flex-direction: row; align-items: center; justify-content: center;" });
-            this._editorTitle = div$r({ class: "promptTitle" }, h2$p({ class: "edit-filterExt", style: "text-align: inherit;" }, ""), h2$p({ class: "edit-filterTitle" }, "Edit Filter"));
-            this._filterCopyButton = button$r({ style: "width:86px; margin-right: 5px;", class: "copyButton" }, [
+            this._filterButtonContainer = div$q({ class: "instrument-bar", style: "justify-content: center;" });
+            this._cancelButton = button$q({ class: "cancelButton" });
+            this._okayButton = button$q({ class: "okayButton", style: "width:45%;" }, "Okay");
+            this._filterContainer = div$q({ style: "width: 100%; display: flex; flex-direction: row; align-items: center; justify-content: center;" });
+            this._editorTitle = div$q({ class: "promptTitle" }, h2$p({ class: "edit-filterExt", style: "text-align: inherit;" }, ""), h2$p({ class: "edit-filterTitle" }, "Edit Filter"));
+            this._filterCopyButton = button$q({ style: "width:86px; margin-right: 5px;", class: "copyButton" }, [
                 "Copy",
                 SVG.svg({ style: "flex-shrink: 0; position: absolute; left: 0; top: 50%; margin-top: -1em; pointer-events: none;", width: "2em", height: "2em", viewBox: "-5 -21 26 26" }, [
                     SVG.path({ d: "M 0 -15 L 1 -15 L 1 0 L 13 0 L 13 1 L 0 1 L 0 -15 z M 2 -1 L 2 -17 L 10 -17 L 14 -13 L 14 -1 z M 3 -2 L 13 -2 L 13 -12 L 9 -12 L 9 -16 L 3 -16 z", fill: "currentColor" }),
                 ]),
             ]);
-            this._filterPasteButton = button$r({ style: "width:86px;", class: "pasteButton" }, [
+            this._filterPasteButton = button$q({ style: "width:86px;", class: "pasteButton" }, [
                 "Paste",
                 SVG.svg({ style: "flex-shrink: 0; position: absolute; left: 0; top: 50%; margin-top: -1em; pointer-events: none;", width: "2em", height: "2em", viewBox: "0 0 26 26" }, [
                     SVG.path({ d: "M 8 18 L 6 18 L 6 5 L 17 5 L 17 7 M 9 8 L 16 8 L 20 12 L 20 22 L 9 22 z", stroke: "currentColor", fill: "none" }),
                     SVG.path({ d: "M 9 3 L 14 3 L 14 6 L 9 6 L 9 3 z M 16 8 L 20 12 L 16 12 L 16 8 z", fill: "currentColor", }),
                 ]),
             ]);
-            this._filterCopyPasteContainer = div$r({ style: "width: 185px;" }, this._filterCopyButton, this._filterPasteButton);
-            this._filterCoordinateText = div$r({ style: "text-align: left; margin-bottom: 0px; font-size: x-small; height: 1.3em; color: " + ColorConfig.secondaryText + ";" }, p$9(""));
-            this.container = div$r({ class: "prompt noSelection", style: "width: 600px;" }, this._editorTitle, div$r({ style: "display: flex; width: 55%; align-self: center; flex-direction: row; align-items: center; justify-content: center;" }, this._playButton), this._filterButtonContainer, this._filterContainer, div$r({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton, this._filterCopyPasteContainer), this._cancelButton);
+            this._filterCopyPasteContainer = div$q({ style: "width: 185px;" }, this._filterCopyButton, this._filterPasteButton);
+            this._filterCoordinateText = div$q({ style: "text-align: left; margin-bottom: 0px; font-size: x-small; height: 1.3em; color: " + ColorConfig.secondaryText + ";" }, p$9(""));
+            this.container = div$q({ class: "prompt noSelection", style: "width: 600px;" }, this._editorTitle, div$q({ style: "display: flex; width: 55%; align-self: center; flex-direction: row; align-items: center; justify-content: center;" }, this._playButton), this._filterButtonContainer, this._filterContainer, div$q({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton, this._filterCopyPasteContainer), this._cancelButton);
             this._setSubfilter = (index, useHistory = true, doSwap = true) => {
                 this._filterButtons[this._subfilterIndex].classList.remove("selected-instrument");
                 if (doSwap)
@@ -46211,12 +45843,12 @@ li.select2-results__option[role=group] > strong:hover {
             this.filterEditor.container.insertBefore(this._filterCoordinateText, this.filterEditor.container.firstChild);
             this.filterEditor.coordText = this._filterCoordinateText;
             this._editorTitle.children[0].innerHTML = (_useNoteFilter) ? "Edit Note Filter" : "Edit EQ Filter";
-            let newButton = button$r({ class: "no-underline", style: "max-width: 5em;" }, "Main");
+            let newButton = button$q({ class: "no-underline", style: "max-width: 5em;" }, "Main");
             this._filterButtonContainer.appendChild(newButton);
             this._filterButtons.push(newButton);
             newButton.addEventListener("click", () => { this._setSubfilter(0); });
             for (let i = 1; i < Config.filterMorphCount; i++) {
-                let newSubButton = button$r({ class: "no-underline", style: "max-width: 2em;" }, "" + i);
+                let newSubButton = button$q({ class: "no-underline", style: "max-width: 2em;" }, "" + i);
                 this._filterButtons.push(newSubButton);
                 this._filterButtonContainer.appendChild(newSubButton);
                 newSubButton.addEventListener("click", () => { this._setSubfilter(i); });
@@ -46249,16 +45881,16 @@ li.select2-results__option[role=group] > strong:hover {
         }
     }
 
-    const { button: button$q, div: div$q, h2: h2$o, input: input$h, label: label$2, br: br$3 } = HTML;
+    const { button: button$p, div: div$p, h2: h2$o, input: input$h, label: label$2, br: br$3 } = HTML;
     class InstrumentExportPrompt {
         constructor(_doc) {
             this._doc = _doc;
-            this._cancelButton = button$q({ class: "cancelButton" });
-            this._exportButton = button$q({ class: "exportButton", style: "width:45%;" }, "Export");
+            this._cancelButton = button$p({ class: "cancelButton" });
+            this._exportButton = button$p({ class: "exportButton", style: "width:45%;" }, "Export");
             this._exportMultipleBox = input$h({ style: "width: 3em; margin-left: 1em;", type: "checkbox" });
             this._channelName = this._doc.song.channels[this._doc.channel].name == "" ? "Beepbox-Instrument" : this._doc.song.channels[this._doc.channel].name;
             this._fileName = input$h({ type: "text", style: "width: 10em;", value: this._channelName, maxlength: 250, "autofocus": "autofocus" });
-            this.container = div$q({ class: "prompt noSelection", style: "width: 200px;" }, div$q({ class: "promptTitle" }, h2$o({ class: "export-instrumentExt", style: "text-align: inherit;" }, ""), h2$o({ class: "export-instrumentTitle" }, "Export Instruments Options")), div$q({ style: "display: flex; flex-direction: row; align-items: center; justify-content: space-between;" }, "File name:", this._fileName), label$2({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, "Export all instruments", br$3(), "in channel:", this._exportMultipleBox), div$q({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._exportButton), this._cancelButton);
+            this.container = div$p({ class: "prompt noSelection", style: "width: 200px;" }, div$p({ class: "promptTitle" }, h2$o({ class: "export-instrumentExt", style: "text-align: inherit;" }, ""), h2$o({ class: "export-instrumentTitle" }, "Export Instruments Options")), div$p({ style: "display: flex; flex-direction: row; align-items: center; justify-content: space-between;" }, "File name:", this._fileName), label$2({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, "Export all instruments", br$3(), "in channel:", this._exportMultipleBox), div$p({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._exportButton), this._cancelButton);
             this._close = () => {
                 this._doc.undo();
             };
@@ -46325,16 +45957,16 @@ li.select2-results__option[role=group] > strong:hover {
         }
     }
 
-    const { button: button$p, div: div$p, h2: h2$n, input: input$g, select: select$g, option: option$g, code: code$1 } = HTML;
+    const { button: button$o, div: div$o, h2: h2$n, input: input$g, select: select$g, option: option$g, code: code$1 } = HTML;
     class InstrumentImportPrompt {
         constructor(_doc) {
             this._doc = _doc;
-            this._cancelButton = button$p({ class: "cancelButton" });
+            this._cancelButton = button$o({ class: "cancelButton" });
             this._importStrategySelect = select$g({ style: "width: 100%;" }, option$g({ value: "append" }, "Append instruments to the end of the list."), option$g({ value: "replace" }, "Replace only the selected instrument."), option$g({ value: "all" }, "Replace all instruments in the channel."));
             this._fileInput = input$g({ type: "file", accept: ".json,application/json" });
-            this.importStratSelectDiv = div$p({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, div$p({ class: "selectContainer", style: "width: 100%;" }, this._importStrategySelect));
-            this.warningText = div$p({}, div$p({ style: "text-align: left;" }, "You must enable either ", code$1("Simultaneous instruments per channel"), " or ", code$1("Different instruments per pattern"), " to change the import strategy."));
-            this.container = div$p({ class: "prompt noSelection", style: "width: 300px;" }, div$p({ class: "promptTitle" }, h2$n({ class: "import-instrumentExt", style: "text-align: inherit;" }, ""), h2$n({ class: "import-instrumentTitle" }, "Import Instrument(s)")), this.warningText, this.importStratSelectDiv, this._fileInput, this._cancelButton);
+            this.importStratSelectDiv = div$o({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, div$o({ class: "selectContainer", style: "width: 100%;" }, this._importStrategySelect));
+            this.warningText = div$o({}, div$o({ style: "text-align: left;" }, "You must enable either ", code$1("Simultaneous instruments per channel"), " or ", code$1("Different instruments per pattern"), " to change the import strategy."));
+            this.container = div$o({ class: "prompt noSelection", style: "width: 300px;" }, div$o({ class: "promptTitle" }, h2$n({ class: "import-instrumentExt", style: "text-align: inherit;" }, ""), h2$n({ class: "import-instrumentTitle" }, "Import Instrument(s)")), this.warningText, this.importStratSelectDiv, this._fileInput, this._cancelButton);
             this._whenFileSelected = () => {
                 const file = this._fileInput.files[0];
                 if (!file)
@@ -49146,15 +48778,15 @@ button.playButton::before {
     CustomThemeBases._iconStyleElement = document.head.appendChild(HTML.style({ type: "text/css" }));
     CustomThemeBases._cursorStyleElement = document.head.appendChild(HTML.style({ type: "text/css" }));
 
-    const { button: button$o, div: div$o, h2: h2$m, option: option$f, select: select$f, optgroup: optgroup$2 } = HTML;
+    const { button: button$n, div: div$n, h2: h2$m, option: option$f, select: select$f, optgroup: optgroup$2 } = HTML;
     class SetThemePrompt {
         constructor(_doc) {
             this._doc = _doc;
-            this._themeSelect = select$f({ style: "width: 100%;", id: "themeSelect" }, option$f({ value: "none" }, "None"), optgroup$2({ label: "AbyssBox Themes" }, option$f({ value: "AbyssBox Classic" }, "AbyssBox Classic"), option$f({ value: "AbyssBox Competitive" }, "AbyssBox Competitive"), option$f({ value: "AbyssBox Light" }, "AbyssBox Light"), option$f({ value: "AbyssBox 0.8" }, "AbyssBox 0.8"), option$f({ value: "AbyssBox Piano" }, "AbyssBox Piano [!]"), option$f({ value: "Half-Life" }, "Half-Life"), option$f({ value: "Half-Life: Source" }, "Half-Life: Source"), option$f({ value: "Doom 1993" }, "Doom 1993"), option$f({ value: "Undertale" }, "Undertale"), option$f({ value: "Yume Nikki" }, "Yume Nikki [!]"), option$f({ value: "Scratch" }, "Scratch"), option$f({ value: "Scratch Addons" }, "Scratch Addons"), option$f({ value: "Windows Xp" }, "Windows Xp"), option$f({ value: "Frutiger Aero" }, "Frutiger Aero"), option$f({ value: "Frutiger Aero Night" }, "Frutiger Aero Night"), option$f({ value: "Skeuomorphic" }, "Skeuomorphic/Early 2000's (LeoV)"), option$f({ value: "woodland" }, "Woodland"), option$f({ value: "corporate dark" }, "Corporate Dark"), option$f({ value: "corporate light" }, "Corporate Light"), option$f({ value: "Glyde" }, "Glyde"), option$f({ value: "starry studio" }, "Starry Studio"), option$f({ value: "Terminal 2.0 (AB)" }, "Terminal 2.0 (AB)"), option$f({ value: "Slushie" }, "Slushie"), option$f({ value: "Slushie Pixel" }, "Slushie 2"), option$f({ value: "BeepBox Pixel" }, "BeepBox Pixel"), option$f({ value: "forest 2" }, "Forest 2"), option$f({ value: "canyon 2" }, "Canyon 2"), option$f({ value: "Nebula 2" }, "Nebula 2"), option$f({ value: "Ghost House" }, "Ghost House"), option$f({ value: "Ghost House 2" }, "Ghost House 2")), optgroup$2({ label: "BeepBox Themes" }, option$f({ value: "dark classic" }, "BeepBox Dark"), option$f({ value: "light classic" }, "BeepBox Light"), option$f({ value: "dark competition" }, "BeepBox Competition Dark")), optgroup$2({ label: "JummBox Themes" }, option$f({ value: "jummbox classic" }, "JummBox Dark"), option$f({ value: "jummbox light" }, "JummBox Light"), option$f({ value: "forest" }, "Forest"), option$f({ value: "canyon" }, "Canyon"), option$f({ value: "midnight" }, "Midnight"), option$f({ value: "beachcombing" }, "Beachcombing"), option$f({ value: "violet verdant" }, "Violet Verdant"), option$f({ value: "sunset" }, "Sunset"), option$f({ value: "autumn" }, "Autumn"), option$f({ value: "fruit" }, "Shadowfruit"), option$f({ value: "toxic" }, "Toxic"), option$f({ value: "roe" }, "Roe"), option$f({ value: "moonlight" }, "Moonlight"), option$f({ value: "portal" }, "Portal"), option$f({ value: "fusion" }, "Fusion"), option$f({ value: "inverse" }, "Inverse"), option$f({ value: "nebula" }, "Nebula"), option$f({ value: "roe light" }, "Roe Light"), option$f({ value: "amoled dark" }, "High Contrast Dark"), option$f({ value: "energized" }, "Energized"), option$f({ value: "neapolitan" }, "Neapolitan"), option$f({ value: "mono" }, "Poly"), option$f({ value: "blutonium" }, "Blutonium")), optgroup$2({ label: "ModBox Themes" }, option$f({ value: "modbox classic" }, "Modbox"), option$f({ value: "modbox 2" }, "Modbox 2.0"), option$f({ value: "modbox artic" }, "Artic"), option$f({ value: "modbox cinnamon" }, "Cinnamon Roll [!]"), option$f({ value: "modbox ocean" }, "Ocean"), option$f({ value: "modbox rainbow" }, "Rainbow [!]"), option$f({ value: "modbox float" }, "Float [!]"), option$f({ value: "modbox windows" }, "Windows"), option$f({ value: "modbox grassland" }, "Grassland"), option$f({ value: "modbox dessert" }, "Dessert"), option$f({ value: "modbox kahoot" }, "Kahootiest"), option$f({ value: "modbox bitbeam" }, "Beam to the Bit [!]"), option$f({ value: "modbox egg" }, "Pretty Egg"), option$f({ value: "modbox pony" }, "Poniryoshka"), option$f({ value: "modbox gameboy" }, "Gameboy [!]"), option$f({ value: "modbox woodkid" }, "Woodkid [!]"), option$f({ value: "modbox midnight" }, "Midnight [!]"), option$f({ value: "modbox snedbox" }, "Snedbox"), option$f({ value: "modbox unnamed" }, "unnamed [!]"), option$f({ value: "modbox piano" }, "Piano [!]"), option$f({ value: "modbox halloween" }, "Halloween [!]"), option$f({ value: "modbox frozen" }, "FrozenOver❄️ [!]")), optgroup$2({ label: "ShitBox Themes" }, option$f({ value: "shitbox 1.0" }, "Shitbox 1.0"), option$f({ value: "shitbox 2.0" }, "Shitbox 2.0"), option$f({ value: "shitbox 3.0" }, "Shitbox 3.0/shitbox4"), option$f({ value: "shitbox ModBox 2.0" }, "Shitbox ModBox 2.0"), option$f({ value: "shitbox Realm" }, "Shitbox Realm [!]")), optgroup$2({ label: "Nepbox Themes" }, option$f({ value: "nepbox" }, "Nepbox"), option$f({ value: "nepbox laffey" }, "Laffey"), option$f({ value: "nepbox snedbox" }, "Snedbox (Nb) [!]"), option$f({ value: "nepbox piano" }, "Piano (Nb) [!]")), optgroup$2({ label: "Mod Default Themes" }, option$f({ value: "sandbox classic" }, "Sandbox"), option$f({ value: "harrybox" }, "Haileybox"), option$f({ value: "brucebox" }, "Brucebox"), option$f({ value: "nerdbox" }, "NerdBox"), option$f({ value: "zefbox" }, "Zefbox"), option$f({ value: "cardboardbox classic" }, "Cardboardbox"), option$f({ value: "blubox classic" }, "Blubox"), option$f({ value: "dogebox classic" }, "Dogebox"), option$f({ value: "dogebox dark" }, "Way too Dark (DB)/TOO DARK(BluB)"), option$f({ value: "wackybox" }, "Wackybox"), option$f({ value: "todbox dark mode" }, "Todbox Dark Mode"), option$f({ value: "mainbox 1.0" }, "Mainbox"), option$f({ value: "microbox" }, "MicroBox"), option$f({ value: "paandorasbox" }, "PaandorasBox"), option$f({ value: "foxbox" }, "FoxBox"), option$f({ value: "midbox" }, "Midbox"), option$f({ value: "gold light" }, "Gold Light"), option$f({ value: "dogebox2" }, "Dogebox2"), option$f({ value: "WeebBox" }, "WeebBox"), option$f({ value: "BoxBeep Dark" }, "BoxBeep Dark"), option$f({ value: "BoxBeep light" }, "BoxBeep Light"), option$f({ value: "birdbox dark" }, "BirdBox Dark"), option$f({ value: "birdbox light" }, "BirdBox Light")), optgroup$2({ label: "Miscellaneous Themes" }, option$f({ value: "azur lane" }, "Azur Lane"), option$f({ value: "AWeebyssBox" }, "AWeebyssBox"), option$f({ value: "Deuteranopia" }, "Deuteranopia"), option$f({ value: "Protanopia" }, "Protanopia"), option$f({ value: "Tritanopia" }, "Tritanopia"), option$f({ value: "2012 Video Tutorial" }, "2012 Video Tutorial"), option$f({ value: "I am on fire" }, "I am on fire")));
-            this._cancelButton = button$o({ class: "cancelButton" });
-            this._okayButton = button$o({ class: "okayButton", style: "width:45%;" }, "Okay");
+            this._themeSelect = select$f({ style: "width: 100%;", id: "themeSelect" }, option$f({ value: "none" }, "None"), optgroup$2({ label: "AbyssBox Themes" }, option$f({ value: "AbyssBox Classic" }, "AbyssBox Classic"), option$f({ value: "AbyssBox Competitive" }, "AbyssBox Competitive"), option$f({ value: "AbyssBox Light" }, "AbyssBox Light"), option$f({ value: "AbyssBox 0.8" }, "AbyssBox 0.8"), option$f({ value: "AbyssBox Piano" }, "AbyssBox Piano [!]"), option$f({ value: "Half-Life" }, "Half-Life"), option$f({ value: "Half-Life: Source" }, "Half-Life: Source"), option$f({ value: "Doom 1993" }, "Doom 1993"), option$f({ value: "Undertale" }, "Undertale"), option$f({ value: "Yume Nikki" }, "Yume Nikki [!]"), option$f({ value: "Scratch" }, "Scratch"), option$f({ value: "Scratch Addons" }, "Scratch Addons"), option$f({ value: "Windows Xp" }, "Windows Xp"), option$f({ value: "Frutiger Aero" }, "Frutiger Aero"), option$f({ value: "Frutiger Aero Night" }, "Frutiger Aero Night"), option$f({ value: "Skeuomorphic" }, "Skeuomorphic/Early 2000's (LeoV)"), option$f({ value: "woodland" }, "Woodland"), option$f({ value: "corporate dark" }, "Corporate Dark"), option$f({ value: "corporate light" }, "Corporate Light"), option$f({ value: "Glyde" }, "Glyde"), option$f({ value: "starry studio" }, "Starry Studio"), option$f({ value: "Terminal 2.0 (AB)" }, "Terminal 2.0 (AB)"), option$f({ value: "Slushie" }, "Slushie"), option$f({ value: "Slushie Pixel" }, "Slushie 2"), option$f({ value: "BeepBox Pixel" }, "BeepBox Pixel"), option$f({ value: "forest 2" }, "Forest 2"), option$f({ value: "canyon 2" }, "Canyon 2"), option$f({ value: "Nebula 2" }, "Nebula 2"), option$f({ value: "Ghost House" }, "Ghost House"), option$f({ value: "Ghost House 2" }, "Ghost House 2")), optgroup$2({ label: "BeepBox Themes" }, option$f({ value: "dark classic" }, "BeepBox Dark"), option$f({ value: "light classic" }, "BeepBox Light"), option$f({ value: "dark competition" }, "BeepBox Competition Dark")), optgroup$2({ label: "JummBox Themes" }, option$f({ value: "jummbox classic" }, "JummBox Dark"), option$f({ value: "jummbox light" }, "JummBox Light"), option$f({ value: "forest" }, "Forest"), option$f({ value: "canyon" }, "Canyon"), option$f({ value: "midnight" }, "Midnight"), option$f({ value: "beachcombing" }, "Beachcombing"), option$f({ value: "violet verdant" }, "Violet Verdant"), option$f({ value: "sunset" }, "Sunset"), option$f({ value: "autumn" }, "Autumn"), option$f({ value: "fruit" }, "Shadowfruit"), option$f({ value: "toxic" }, "Toxic"), option$f({ value: "roe" }, "Roe"), option$f({ value: "moonlight" }, "Moonlight"), option$f({ value: "portal" }, "Portal"), option$f({ value: "fusion" }, "Fusion"), option$f({ value: "inverse" }, "Inverse"), option$f({ value: "nebula" }, "Nebula"), option$f({ value: "roe light" }, "Roe Light"), option$f({ value: "amoled dark" }, "High Contrast Dark"), option$f({ value: "energized" }, "Energized"), option$f({ value: "neapolitan" }, "Neapolitan"), option$f({ value: "mono" }, "Poly"), option$f({ value: "blutonium" }, "Blutonium")), optgroup$2({ label: "ModBox Themes" }, option$f({ value: "modbox classic" }, "Modbox"), option$f({ value: "modbox 2" }, "Modbox 2.0"), option$f({ value: "modbox artic" }, "Artic"), option$f({ value: "modbox cinnamon" }, "Cinnamon Roll [!]"), option$f({ value: "modbox ocean" }, "Ocean"), option$f({ value: "modbox rainbow" }, "Rainbow [!]"), option$f({ value: "modbox float" }, "Float [!]"), option$f({ value: "modbox windows" }, "Windows"), option$f({ value: "modbox grassland" }, "Grassland"), option$f({ value: "modbox dessert" }, "Dessert"), option$f({ value: "modbox kahoot" }, "Kahootiest"), option$f({ value: "modbox bitbeam" }, "Beam to the Bit [!]"), option$f({ value: "modbox egg" }, "Pretty Egg"), option$f({ value: "modbox pony" }, "Poniryoshka"), option$f({ value: "modbox gameboy" }, "Gameboy [!]"), option$f({ value: "modbox woodkid" }, "Woodkid [!]"), option$f({ value: "modbox midnight" }, "Midnight [!]"), option$f({ value: "modbox snedbox" }, "Snedbox"), option$f({ value: "modbox unnamed" }, "unnamed [!]"), option$f({ value: "modbox piano" }, "Piano [!]"), option$f({ value: "modbox halloween" }, "Halloween [!]"), option$f({ value: "modbox frozen" }, "FrozenOver❄️ [!]")), optgroup$2({ label: "ShitBox Themes" }, option$f({ value: "shitbox 1.0" }, "Shitbox 1.0"), option$f({ value: "shitbox 2.0" }, "Shitbox 2.0"), option$f({ value: "shitbox 3.0" }, "Shitbox 3.0/shitbox4"), option$f({ value: "shitbox ModBox 2.0" }, "Shitbox ModBox 2.0"), option$f({ value: "shitbox Realm" }, "Shitbox Realm [!]")), optgroup$2({ label: "Nepbox Themes" }, option$f({ value: "nepbox" }, "Nepbox"), option$f({ value: "nepbox laffey" }, "Laffey"), option$f({ value: "nepbox snedbox" }, "Snedbox (Nb) [!]"), option$f({ value: "nepbox piano" }, "Piano (Nb) [!]")), optgroup$2({ label: "Mod Default Themes" }, option$f({ value: "sandbox classic" }, "Sandbox"), option$f({ value: "harrybox" }, "Haileybox"), option$f({ value: "brucebox" }, "Brucebox"), option$f({ value: "nerdbox" }, "NerdBox"), option$f({ value: "zefbox" }, "Zefbox"), option$f({ value: "cardboardbox classic" }, "Cardboardbox"), option$f({ value: "blubox classic" }, "Blubox"), option$f({ value: "dogebox classic" }, "Dogebox"), option$f({ value: "dogebox dark" }, "Way too Dark (DB)/TOO DARK(BluB)"), option$f({ value: "wackybox" }, "Wackybox"), option$f({ value: "todbox dark mode" }, "Todbox Dark Mode"), option$f({ value: "mainbox 1.0" }, "Mainbox"), option$f({ value: "microbox" }, "MicroBox"), option$f({ value: "paandorasbox" }, "PaandorasBox"), option$f({ value: "foxbox" }, "FoxBox"), option$f({ value: "midbox" }, "Midbox"), option$f({ value: "gold light" }, "Gold Light"), option$f({ value: "dogebox2" }, "Dogebox2"), option$f({ value: "WeebBox" }, "WeebBox"), option$f({ value: "BoxBeep Dark" }, "BoxBeep Dark"), option$f({ value: "BoxBeep light" }, "BoxBeep Light"), option$f({ value: "birdbox dark" }, "BirdBox Dark"), option$f({ value: "birdbox light" }, "BirdBox Light"), option$f({ value: "ultrabox dark" }, "UltraBox"), option$f({ value: "slarmoosbox" }, "Slarmoo's Box"), option$f({ value: "lemmbox dark" }, "LemmBox Dark")), optgroup$2({ label: "Miscellaneous Themes" }, option$f({ value: "azur lane" }, "Azur Lane"), option$f({ value: "AWeebyssBox" }, "AWeebyssBox"), option$f({ value: "Deuteranopia" }, "Deuteranopia"), option$f({ value: "Protanopia" }, "Protanopia"), option$f({ value: "Tritanopia" }, "Tritanopia"), option$f({ value: "2012 Video Tutorial" }, "2012 Video Tutorial"), option$f({ value: "I am on fire" }, "I am on fire")));
+            this._cancelButton = button$n({ class: "cancelButton" });
+            this._okayButton = button$n({ class: "okayButton", style: "width:45%;" }, "Okay");
             this.lastTheme = this._doc.song.setSongTheme;
-            this.container = div$o({ class: "prompt noSelection", id: "themeContainerPrompt", style: "width: 220px;" }, div$o({ class: "promptTitle" }, h2$m({ class: "songThemeExt", style: "text-align: inherit;" }, ""), h2$m({ class: "songThemeTitle", style: "margin-bottom: 0.5em;" }, "Set Theme for Song")), div$o({ style: "text-align: left; margin: 0.5em 0;" }, "Using this, you can set the theme for this song specifically, going to a different song will have it load your regular theme!"), div$o({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, div$o({ class: "selectContainer", style: "width: 100%;" }, this._themeSelect)), div$o({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton), this._cancelButton);
+            this.container = div$n({ class: "prompt noSelection", id: "themeContainerPrompt", style: "width: 220px;" }, div$n({ class: "promptTitle" }, h2$m({ class: "songThemeExt", style: "text-align: inherit;" }, ""), h2$m({ class: "songThemeTitle", style: "margin-bottom: 0.5em;" }, "Set Theme for Song")), div$n({ style: "text-align: left; margin: 0.5em 0;" }, "Using this, you can set the theme for this song specifically, going to a different song will have it load your regular theme!"), div$n({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, div$n({ class: "selectContainer", style: "width: 100%;" }, this._themeSelect)), div$n({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton), this._cancelButton);
             this._whenKeyPressed = (event) => {
                 if (event.target.tagName != "BUTTON" && event.keyCode == 13) {
                     this._saveChanges();
@@ -49223,7 +48855,7 @@ button.playButton::before {
         }
     }
 
-    const { button: button$n, div: div$n, h2: h2$l, input: input$f } = HTML;
+    const { button: button$m, div: div$m, h2: h2$l, input: input$f } = HTML;
     function gcd(x, y) {
         while (y !== 0) {
             const z = x % y;
@@ -49329,16 +48961,16 @@ button.playButton::before {
             this._clockPadding = this._clockWidth / this._maxSteps;
             this._clockRadius = this._clockWidth / 2 - this._clockPointMaxRadius - this._clockPadding;
             this._sequenceButtons = [];
-            this._sequenceRemoveButton = button$n({ class: "no-underline", style: "flex-grow: 0; flex-basis: 30px;" }, SVG.svg({ width: "26", height: "26", viewBox: "-13 -13 26 26", "pointer-events": "none" }, SVG.path({ d: "M -7.07 -5.66 L -5.66 -7.07 L 0 -1.4 L 5.66 -7.07 L 7.07 -5.66 L 1.4 0 L 7.07 5.66 L 5.66 7.07 L 0 1.4 L -5.66 7.07 L -7.07 5.66 L -1.4 0 z", fill: ColorConfig.primaryText })));
-            this._sequenceAddButton = button$n({ class: "no-underline last-button", style: "flex-grow: 0; flex-basis: 30px;" }, SVG.svg({ width: "26", height: "26", viewBox: "-13 -13 26 26", "pointer-events": "none" }, SVG.path({ d: "M -8 -1 L -1 -1 L -1 -8 L 1 -8 L 1 -1 L 8 -1 L 8 1 L 1 1 L 1 8 L -1 8 L -1 1 L -8 1 z", fill: ColorConfig.primaryText })));
-            this._sequenceButtonContainer = div$n({ class: "instrument-bar", style: "justify-content: center; width: 100%;" }, this._sequenceRemoveButton, this._sequenceAddButton);
+            this._sequenceRemoveButton = button$m({ class: "no-underline", style: "flex-grow: 0; flex-basis: 30px;" }, SVG.svg({ width: "26", height: "26", viewBox: "-13 -13 26 26", "pointer-events": "none" }, SVG.path({ d: "M -7.07 -5.66 L -5.66 -7.07 L 0 -1.4 L 5.66 -7.07 L 7.07 -5.66 L 1.4 0 L 7.07 5.66 L 5.66 7.07 L 0 1.4 L -5.66 7.07 L -7.07 5.66 L -1.4 0 z", fill: ColorConfig.primaryText })));
+            this._sequenceAddButton = button$m({ class: "no-underline last-button", style: "flex-grow: 0; flex-basis: 30px;" }, SVG.svg({ width: "26", height: "26", viewBox: "-13 -13 26 26", "pointer-events": "none" }, SVG.path({ d: "M -8 -1 L -1 -1 L -1 -8 L 1 -8 L 1 -1 L 8 -1 L 8 1 L 1 1 L 1 8 L -1 8 L -1 1 L -8 1 z", fill: ColorConfig.primaryText })));
+            this._sequenceButtonContainer = div$m({ class: "instrument-bar", style: "justify-content: center; width: 100%;" }, this._sequenceRemoveButton, this._sequenceAddButton);
             this._barPreviewBackground = SVG.svg({ "pointer-events": "none" });
             this._barPreviewSteps = SVG.svg({ "pointer-events": "none" });
-            this._barPreviewLabel = div$n({ style: `flex-grow: 1; color: ${ColorConfig.secondaryText}` });
-            this._barPreviewGoToFirstButton = button$n({ style: "height: auto; min-height: var(--button-size);" }, SVG.svg({ width: "26", height: "26", viewBox: "-13 -14 26 26", "pointer-events": "none" }, SVG.rect({ x: "-6", y: "-6", width: "2", height: "12", fill: ColorConfig.primaryText }), SVG.path({ d: "M 6 -6 L 6 6 L -3 0 z", fill: ColorConfig.primaryText })));
-            this._barPreviewGoBackButton = button$n({ style: "height: auto; min-height: var(--button-size); margin-left: 1em;" }, SVG.svg({ width: "24", height: "26", viewBox: "-10 -14 24 26", "pointer-events": "none" }, SVG.path({ d: "M 6 -6 L 6 6 L -3 0 z", fill: ColorConfig.primaryText })));
-            this._barPreviewGoForwardButton = button$n({ style: "height: auto; min-height: var(--button-size);" }, SVG.svg({ width: "24", height: "26", viewBox: "-14 -14 24 26", "pointer-events": "none" }, SVG.path({ d: "M -6 -6 L -6 6 L 3 0 z", fill: ColorConfig.primaryText })));
-            this._barPreviewGoToLastButton = button$n({ style: "height: auto; min-height: var(--button-size); margin-left: 1em;" }, SVG.svg({ width: "26", height: "26", viewBox: "-13 -14 26 26", "pointer-events": "none" }, SVG.rect({ x: "4", y: "-6", width: "2", height: "12", fill: ColorConfig.primaryText }), SVG.path({ d: "M -6 -6 L -6 6 L 3 0 z", fill: ColorConfig.primaryText })));
+            this._barPreviewLabel = div$m({ style: `flex-grow: 1; color: ${ColorConfig.secondaryText}` });
+            this._barPreviewGoToFirstButton = button$m({ style: "height: auto; min-height: var(--button-size);" }, SVG.svg({ width: "26", height: "26", viewBox: "-13 -14 26 26", "pointer-events": "none" }, SVG.rect({ x: "-6", y: "-6", width: "2", height: "12", fill: ColorConfig.primaryText }), SVG.path({ d: "M 6 -6 L 6 6 L -3 0 z", fill: ColorConfig.primaryText })));
+            this._barPreviewGoBackButton = button$m({ style: "height: auto; min-height: var(--button-size); margin-left: 1em;" }, SVG.svg({ width: "24", height: "26", viewBox: "-10 -14 24 26", "pointer-events": "none" }, SVG.path({ d: "M 6 -6 L 6 6 L -3 0 z", fill: ColorConfig.primaryText })));
+            this._barPreviewGoForwardButton = button$m({ style: "height: auto; min-height: var(--button-size);" }, SVG.svg({ width: "24", height: "26", viewBox: "-14 -14 24 26", "pointer-events": "none" }, SVG.path({ d: "M -6 -6 L -6 6 L 3 0 z", fill: ColorConfig.primaryText })));
+            this._barPreviewGoToLastButton = button$m({ style: "height: auto; min-height: var(--button-size); margin-left: 1em;" }, SVG.svg({ width: "26", height: "26", viewBox: "-13 -14 26 26", "pointer-events": "none" }, SVG.rect({ x: "4", y: "-6", width: "2", height: "12", fill: ColorConfig.primaryText }), SVG.path({ d: "M -6 -6 L -6 6 L 3 0 z", fill: ColorConfig.primaryText })));
             this._clockWire = SVG.circle({ cx: this._clockWidth / 2, cy: this._clockHeight / 2, r: this._clockRadius, stroke: ColorConfig.primaryText, "stroke-width": "0.5", fill: "none" });
             this._clockPoints = SVG.svg({ "pointer-events": "none" });
             this._stepsStepper = input$f({ style: "width: 3em; margin-left: 1em;", type: "number", min: this._minSteps, max: this._maxSteps, value: "8", step: "1" });
@@ -49349,12 +48981,12 @@ button.playButton::before {
             this._channelStepper = input$f({ style: "width: 3em; margin-left: 1em;", type: "number", min: "1", max: this._maxChannel + 1, value: "1", step: "1" });
             this._pitchStepper = input$f({ style: "width: 3em; margin-left: 1em;", type: "number", min: "0", max: Config.maxPitch, value: "0", step: "1" });
             this._barAmountStepper = input$f({ style: "width: 3em; margin-left: 1em;", type: "number", min: "1", max: Config.barCountMax, value: "1", step: "1" });
-            this._extendUntilLoopButton = button$n({ style: "height: auto; min-height: var(--button-size); margin-left: 1em;" }, "Extend until loop");
+            this._extendUntilLoopButton = button$m({ style: "height: auto; min-height: var(--button-size); margin-left: 1em;" }, "Extend until loop");
             this._generateFadingNotesBox = input$f({ type: "checkbox", style: "width: 1em; padding: 0; margin-left: 1em;" });
             this._invertBox = input$f({ type: "checkbox", style: "width: 1em; padding: 0; margin-left: 1em;" });
-            this._okayButton = button$n({ class: "okayButton", style: "width: 45%;" }, "Okay");
-            this._cancelButton = button$n({ class: "cancelButton" });
-            this.container = div$n({ class: "prompt noSelection", style: "width: 600px;" }, div$n({ class: "promptTitle" }, h2$l({ class: "gerExt", style: "text-align: inherit;" }, ""), h2$l({ class: "gerTitle" }, "Generate Euclidean Rhythm")), div$n({ style: "display: flex; flex-direction: row; align-items: center;" }, this._sequenceButtonContainer), div$n({ style: "display: flex; flex-direction: row; align-items: center; justify-content: space-between;" }, div$n({ style: "flex-grow: 0; flex-shrink: 0;" }, this._barPreviewGoToFirstButton, this._barPreviewGoBackButton), this._barPreviewLabel, div$n({ style: "flex-grow: 0; flex-shrink: 0;" }, this._barPreviewGoForwardButton, this._barPreviewGoToLastButton)), div$n({ style: "display: flex; flex-direction: row; align-items: center; justify-content: center;" }, SVG.svg({ "pointer-events": "none", style: "touch-action: none; overflow: hidden;", width: "100%", height: "20px", viewBox: `0 0 ${this._barPreviewWidth} ${this._barPreviewHeight}`, preserveAspectRatio: "none" }, this._barPreviewBackground, this._barPreviewSteps)), div$n({ style: "display: flex; flex-direction: row; align-items: center; justify-content: space-evenly;" }, div$n({ style: "max-width: 150px; height: 100%;" }, SVG.svg({ "pointer-events": "none", width: "100%", height: "100%", style: "touch-action: none; overflow: hidden; margin-right: 1.5em; max-width: 150px; height: 100%;", viewBox: `0 0 ${this._clockWidth} ${this._clockHeight}`, preserveAspectRatio: "none" }, this._clockWire, this._clockPoints)), div$n({ style: "display: flex; height: 100%;" }, div$n({ style: "flex-grow: 1; " }, div$n({ style: "display: flex; flex-direction: row; align-items: center; height: 3em; justify-content: flex-end;" }, div$n({ style: `text-align: right; flex-grow: 1; color: ${ColorConfig.primaryText};` }, "Steps"), this._stepsStepper), div$n({ style: "display: flex; flex-direction: row; align-items: center; height: 3em; justify-content: flex-end; margin-top: 0.5em;" }, div$n({ style: `text-align: right; flex-grow: 1; color: ${ColorConfig.primaryText};` }, "Pulses"), this._pulsesStepper), div$n({ style: "display: flex; flex-direction: row; align-items: center; height: 3em; justify-content: flex-end; margin-top: 0.5em;" }, div$n({ style: `text-align: right; flex-grow: 1; color: ${ColorConfig.primaryText};` }, "Rotation"), this._rotationStepper)), div$n({ style: "flex-grow: 1; margin-left: 1em;" }, div$n({ style: "display: flex; flex-direction: row; align-items: center; height: 3em; justify-content: flex-end; margin-bottom: 1em;" }, div$n({ style: `text-align: right; flex-grow: 1; color: ${ColorConfig.primaryText};` }, "Size"), div$n({ style: "display: flex; flex-direction: column;" }, this._stepSizeNumeratorStepper, this._stepSizeDenominatorStepper)), div$n({ style: "display: flex; flex-direction: row; align-items: center; height: 3em; justify-content: flex-end; margin-top: 0.5em;" }, div$n({ style: `text-align: right; flex-grow: 1; color: ${ColorConfig.primaryText};` }, "Channel"), this._channelStepper), div$n({ style: "display: flex; flex-direction: row; align-items: center; height: 3em; justify-content: flex-end; margin-top: 0.5em;" }, div$n({ style: `text-align: right; flex-grow: 1; color: ${ColorConfig.primaryText};` }, "Pitch"), this._pitchStepper)))), div$n({ style: "display: flex; flex-direction: row; align-items: center; justify-content: flex-end;" }, div$n({ style: `text-align: right; color: ${ColorConfig.primaryText};` }, "Generate fading notes"), this._generateFadingNotesBox, div$n({ style: `text-align: right; color: ${ColorConfig.primaryText}; margin-left: 1em;` }, "Invert"), this._invertBox), div$n({ style: "display: flex; flex-direction: row; align-items: center; justify-content: flex-end;" }, div$n({ style: `text-align: right; color: ${ColorConfig.primaryText};` }, "Length (in bars)"), this._barAmountStepper, this._extendUntilLoopButton), div$n({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton), this._cancelButton);
+            this._okayButton = button$m({ class: "okayButton", style: "width: 45%;" }, "Okay");
+            this._cancelButton = button$m({ class: "cancelButton" });
+            this.container = div$m({ class: "prompt noSelection", style: "width: 600px;" }, div$m({ class: "promptTitle" }, h2$l({ class: "gerExt", style: "text-align: inherit;" }, ""), h2$l({ class: "gerTitle" }, "Generate Euclidean Rhythm")), div$m({ style: "display: flex; flex-direction: row; align-items: center;" }, this._sequenceButtonContainer), div$m({ style: "display: flex; flex-direction: row; align-items: center; justify-content: space-between;" }, div$m({ style: "flex-grow: 0; flex-shrink: 0;" }, this._barPreviewGoToFirstButton, this._barPreviewGoBackButton), this._barPreviewLabel, div$m({ style: "flex-grow: 0; flex-shrink: 0;" }, this._barPreviewGoForwardButton, this._barPreviewGoToLastButton)), div$m({ style: "display: flex; flex-direction: row; align-items: center; justify-content: center;" }, SVG.svg({ "pointer-events": "none", style: "touch-action: none; overflow: hidden;", width: "100%", height: "20px", viewBox: `0 0 ${this._barPreviewWidth} ${this._barPreviewHeight}`, preserveAspectRatio: "none" }, this._barPreviewBackground, this._barPreviewSteps)), div$m({ style: "display: flex; flex-direction: row; align-items: center; justify-content: space-evenly;" }, div$m({ style: "max-width: 150px; height: 100%;" }, SVG.svg({ "pointer-events": "none", width: "100%", height: "100%", style: "touch-action: none; overflow: hidden; margin-right: 1.5em; max-width: 150px; height: 100%;", viewBox: `0 0 ${this._clockWidth} ${this._clockHeight}`, preserveAspectRatio: "none" }, this._clockWire, this._clockPoints)), div$m({ style: "display: flex; height: 100%;" }, div$m({ style: "flex-grow: 1; " }, div$m({ style: "display: flex; flex-direction: row; align-items: center; height: 3em; justify-content: flex-end;" }, div$m({ style: `text-align: right; flex-grow: 1; color: ${ColorConfig.primaryText};` }, "Steps"), this._stepsStepper), div$m({ style: "display: flex; flex-direction: row; align-items: center; height: 3em; justify-content: flex-end; margin-top: 0.5em;" }, div$m({ style: `text-align: right; flex-grow: 1; color: ${ColorConfig.primaryText};` }, "Pulses"), this._pulsesStepper), div$m({ style: "display: flex; flex-direction: row; align-items: center; height: 3em; justify-content: flex-end; margin-top: 0.5em;" }, div$m({ style: `text-align: right; flex-grow: 1; color: ${ColorConfig.primaryText};` }, "Rotation"), this._rotationStepper)), div$m({ style: "flex-grow: 1; margin-left: 1em;" }, div$m({ style: "display: flex; flex-direction: row; align-items: center; height: 3em; justify-content: flex-end; margin-bottom: 1em;" }, div$m({ style: `text-align: right; flex-grow: 1; color: ${ColorConfig.primaryText};` }, "Size"), div$m({ style: "display: flex; flex-direction: column;" }, this._stepSizeNumeratorStepper, this._stepSizeDenominatorStepper)), div$m({ style: "display: flex; flex-direction: row; align-items: center; height: 3em; justify-content: flex-end; margin-top: 0.5em;" }, div$m({ style: `text-align: right; flex-grow: 1; color: ${ColorConfig.primaryText};` }, "Channel"), this._channelStepper), div$m({ style: "display: flex; flex-direction: row; align-items: center; height: 3em; justify-content: flex-end; margin-top: 0.5em;" }, div$m({ style: `text-align: right; flex-grow: 1; color: ${ColorConfig.primaryText};` }, "Pitch"), this._pitchStepper)))), div$m({ style: "display: flex; flex-direction: row; align-items: center; justify-content: flex-end;" }, div$m({ style: `text-align: right; color: ${ColorConfig.primaryText};` }, "Generate fading notes"), this._generateFadingNotesBox, div$m({ style: `text-align: right; color: ${ColorConfig.primaryText}; margin-left: 1em;` }, "Invert"), this._invertBox), div$m({ style: "display: flex; flex-direction: row; align-items: center; justify-content: flex-end;" }, div$m({ style: `text-align: right; color: ${ColorConfig.primaryText};` }, "Length (in bars)"), this._barAmountStepper, this._extendUntilLoopButton), div$m({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton), this._cancelButton);
             this.cleanUp = () => {
                 this._okayButton.removeEventListener("click", this._saveChanges);
                 this._cancelButton.removeEventListener("click", this._close);
@@ -49941,7 +49573,7 @@ button.playButton::before {
             this._renderSequenceButtons = () => {
                 const container = this._sequenceButtonContainer;
                 while (this._sequenceButtons.length < this._sequences.length) {
-                    const sequenceButton = button$n({ class: "no-underline" }, (this._sequenceButtons.length + 1) + "");
+                    const sequenceButton = button$m({ class: "no-underline" }, (this._sequenceButtons.length + 1) + "");
                     this._sequenceButtons.push(sequenceButton);
                     container.insertBefore(sequenceButton, this._sequenceRemoveButton);
                 }
@@ -51642,7 +51274,7 @@ button.playButton::before {
         }
     }
 
-    const { button: button$m, div: div$m, h2: h2$k, input: input$e, select: select$e, option: option$e } = HTML;
+    const { button: button$l, div: div$l, h2: h2$k, input: input$e, select: select$e, option: option$e } = HTML;
     function lerp(low, high, t) {
         return low + t * (high - low);
     }
@@ -51671,22 +51303,22 @@ button.playButton::before {
             this._doc = _doc;
             this.outputStarted = false;
             this._fileName = input$e({ type: "text", style: "width: 10em;", value: "BeepBox-Song", maxlength: 250, "autofocus": "autofocus" });
-            this._computedSamplesLabel = div$m({ style: "width: 10em;" }, new Text("0:00"));
+            this._computedSamplesLabel = div$l({ style: "width: 10em;" }, new Text("0:00"));
             this._enableIntro = input$e({ type: "checkbox" });
             this._loopDropDown = input$e({ style: "width: 3em;", type: "number", min: "1", max: "16", step: "1" });
             this._enableOutro = input$e({ type: "checkbox" });
             this._formatSelect = select$e({ style: "width: 100%;" }, option$e({ value: "wav" }, "Export to .wav file."), option$e({ value: "mp3" }, "Export to .mp3 file."), option$e({ value: "ogg" }, "Export to .ogg file."), option$e({ value: "opus" }, "Export to .opus file."), option$e({ value: "midi" }, "Export to .mid file."), option$e({ value: "json" }, "Export to .json file."), option$e({ value: "html" }, "Export to .html file."));
             this._removeWhitespace = input$e({ type: "checkbox" });
-            this._removeWhitespaceDiv = div$m({ style: "vertical-align: middle; align-items: center; justify-content: space-between; margin-bottom: 14px;" }, "Remove Whitespace: ", this._removeWhitespace);
-            this._oggWarning = div$m({ style: "vertical-align: middle; align-items: center; justify-content: space-between; margin-bottom: 14px;" }, "Warning: .ogg files aren't supported on as many devices as mp3 or wav. So Playback might not be possible on specific devices.");
-            this._opusWarning = div$m({ style: "vertical-align: middle; align-items: center; justify-content: space-between; margin-bottom: 14px;" }, "Warning: .opus files aren't supported on as many devices as mp3 or wav. So Playback might not be possible on specific devices.");
-            this._cancelButton = button$m({ class: "cancelButton" });
-            this._exportButton = button$m({ class: "exportButton", style: "width:45%;" }, "Export");
-            this._outputProgressBar = div$m({ style: `width: 0%; background: ${ColorConfig.loopAccent}; height: 100%; position: absolute; z-index: 2;` });
-            this._outputProgressLabel = div$m({ style: `position: relative; top: -1px; z-index: 3;` }, "0%");
-            this._outputProgressContainer = div$m({ style: `height: 12px; background: ${ColorConfig.uiWidgetBackground}; display: block; position: relative; z-index: 1; margin-bottom: 14px;` }, this._outputProgressBar, this._outputProgressLabel);
-            this._exportPrompt = div$m({}, div$m({ class: "promptTitle", style: "margin-bottom: 14px;" }, h2$k({ class: "exportExt", style: "text-align: inherit;" }, ""), h2$k({ class: "exportTitle" }, "Export Options")), div$m({ style: "display: flex; flex-direction: row; align-items: center; justify-content: space-between; margin-bottom: 14px;" }, "File name:", this._fileName), div$m({ style: "display: flex; flex-direction: row; align-items: center; justify-content: space-between; margin-bottom: 14px;" }, "Length:", this._computedSamplesLabel), div$m({ style: "display: table; width: 100%; margin-bottom: 14px;" }, div$m({ style: "display: table-row;" }, div$m({ style: "display: table-cell;" }, "Intro:"), div$m({ style: "display: table-cell;" }, "Loop Count:"), div$m({ style: "display: table-cell;" }, "Outro:")), div$m({ style: "display: table-row; margin-bottom: 14px;" }, div$m({ style: "display: table-cell; vertical-align: middle;" }, this._enableIntro), div$m({ style: "display: table-cell; vertical-align: middle;" }, this._loopDropDown), div$m({ style: "display: table-cell; vertical-align: middle;" }, this._enableOutro))), this._removeWhitespaceDiv, this._oggWarning, div$m({ class: "selectContainer", style: "width: 100%; margin-bottom: 14px;" }, this._formatSelect), div$m({ style: "text-align: left; margin-bottom: 14px;" }, "Exporting can be slow. Reloading the page or clicking the X will cancel it. Please be patient."), this._outputProgressContainer, div$m({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between; margin-bottom: 14px;" }, this._exportButton), this._cancelButton);
-            this.container = div$m({ class: "prompt noSelection", style: "width: 200px;" }, this._exportPrompt);
+            this._removeWhitespaceDiv = div$l({ style: "vertical-align: middle; align-items: center; justify-content: space-between; margin-bottom: 14px;" }, "Remove Whitespace: ", this._removeWhitespace);
+            this._oggWarning = div$l({ style: "vertical-align: middle; align-items: center; justify-content: space-between; margin-bottom: 14px;" }, "Warning: .ogg files aren't supported on as many devices as mp3 or wav. So Playback might not be possible on specific devices.");
+            this._opusWarning = div$l({ style: "vertical-align: middle; align-items: center; justify-content: space-between; margin-bottom: 14px;" }, "Warning: .opus files aren't supported on as many devices as mp3 or wav. So Playback might not be possible on specific devices.");
+            this._cancelButton = button$l({ class: "cancelButton" });
+            this._exportButton = button$l({ class: "exportButton", style: "width:45%;" }, "Export");
+            this._outputProgressBar = div$l({ style: `width: 0%; background: ${ColorConfig.loopAccent}; height: 100%; position: absolute; z-index: 2;` });
+            this._outputProgressLabel = div$l({ style: `position: relative; top: -1px; z-index: 3;` }, "0%");
+            this._outputProgressContainer = div$l({ style: `height: 12px; background: ${ColorConfig.uiWidgetBackground}; display: block; position: relative; z-index: 1; margin-bottom: 14px;` }, this._outputProgressBar, this._outputProgressLabel);
+            this._exportPrompt = div$l({}, div$l({ class: "promptTitle", style: "margin-bottom: 14px;" }, h2$k({ class: "exportExt", style: "text-align: inherit;" }, ""), h2$k({ class: "exportTitle" }, "Export Options")), div$l({ style: "display: flex; flex-direction: row; align-items: center; justify-content: space-between; margin-bottom: 14px;" }, "File name:", this._fileName), div$l({ style: "display: flex; flex-direction: row; align-items: center; justify-content: space-between; margin-bottom: 14px;" }, "Length:", this._computedSamplesLabel), div$l({ style: "display: table; width: 100%; margin-bottom: 14px;" }, div$l({ style: "display: table-row;" }, div$l({ style: "display: table-cell;" }, "Intro:"), div$l({ style: "display: table-cell;" }, "Loop Count:"), div$l({ style: "display: table-cell;" }, "Outro:")), div$l({ style: "display: table-row; margin-bottom: 14px;" }, div$l({ style: "display: table-cell; vertical-align: middle;" }, this._enableIntro), div$l({ style: "display: table-cell; vertical-align: middle;" }, this._loopDropDown), div$l({ style: "display: table-cell; vertical-align: middle;" }, this._enableOutro))), this._removeWhitespaceDiv, this._oggWarning, div$l({ class: "selectContainer", style: "width: 100%; margin-bottom: 14px;" }, this._formatSelect), div$l({ style: "text-align: left; margin-bottom: 14px;" }, "Exporting can be slow. Reloading the page or clicking the X will cancel it. Please be patient."), this._outputProgressContainer, div$l({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between; margin-bottom: 14px;" }, this._exportButton), this._cancelButton);
+            this.container = div$l({ class: "prompt noSelection", style: "width: 200px;" }, this._exportPrompt);
             this._close = () => {
                 if (this.synth != null)
                     this.synth.renderingSong = false;
@@ -51819,6 +51451,9 @@ button.playButton::before {
             this._fileName.value = _doc.song.title;
             ExportPrompt._validateFileName(null, this._fileName);
             this._computedSamplesLabel.firstChild.textContent = this._doc.samplesToTime(this._doc.synth.getTotalSamples(this._enableIntro.checked, this._enableOutro.checked, +this._loopDropDown.value - 1));
+            if (this._doc.prompt == "quickExport") {
+                this._export();
+            }
         }
         changeFileName(newValue) {
             this._fileName.value = newValue;
@@ -52595,20 +52230,20 @@ You should be redirected to the song at:<br /><br />
         0x51,
     ];
 
-    const { button: button$l, p: p$8, div: div$l, h2: h2$j, input: input$d, select: select$d, option: option$d } = HTML;
+    const { button: button$k, p: p$8, div: div$k, h2: h2$j, input: input$d, select: select$d, option: option$d } = HTML;
     class ImportPrompt {
         constructor(_doc) {
             this._doc = _doc;
             this.exportStuff = new ExportPrompt(this._doc);
-            this._importButton = button$l({ style: "border-image-source: none !important; height: auto; min-height: var(--button-size); margin: 0.5em; width:50%; color: var(--primary-text); border-bottom: solid; border-bottom-color: var(--link-accent);" }, "Import");
-            this._exportButton = button$l({ style: "border-image-source: none !important; height: auto; min-height: var(--button-size); margin: 0.5em; width:50%; color: var(--secondary-text);" }, "Export");
+            this._importButton = button$k({ style: "border-image-source: none !important; height: auto; min-height: var(--button-size); margin: 0.5em; width:50%; color: var(--primary-text); border-bottom: solid; border-bottom-color: var(--link-accent);" }, "Import");
+            this._exportButton = button$k({ style: "border-image-source: none !important; height: auto; min-height: var(--button-size); margin: 0.5em; width:50%; color: var(--secondary-text);" }, "Export");
             this._fileInput = input$d({ type: "file", accept: ".json,application/json,.mid,.midi,audio/midi,audio/x-midi" });
-            this._cancelButton = button$l({ class: "cancelButton" });
+            this._cancelButton = button$k({ class: "cancelButton" });
             this._modeImportSelect = select$d({ style: "width: 100%;" }, option$d({ value: "auto" }, "Auto-detect mode (for json)"), option$d({ value: "BeepBox" }, "BeepBox"), option$d({ value: "ModBox" }, "ModBox"), option$d({ value: "JummBox" }, "JummBox"), option$d({ value: "SynthBox" }, "SynthBox"), option$d({ value: "GoldBox" }, "GoldBox"), option$d({ value: "PaandorasBox" }, "PaandorasBox"), option$d({ value: "UltraBox" }, "UltraBox"));
-            this._importPrompt = div$l({}, div$l({ class: "promptTitle" }, h2$j({ class: "importExt", style: "text-align: inherit;" }, ""), h2$j({ class: "importTitle" }, "Import")), p$8({ style: "text-align: left; margin: 0.5em 0;" }, "BeepBox songs can be exported and re-imported as .json files. You could also use other means to make .json files for BeepBox as long as they follow the same structure."), p$8({ style: "text-align: left; margin: 0.5em 0;" }, "BeepBox can also (crudely) import .mid files. There are many tools available for creating .mid files. Shorter and simpler songs are more likely to work well."), this._modeImportSelect, this._fileInput, this._cancelButton);
-            this._exportPrompt = div$l({ style: "display:none;" }, this.exportStuff._exportPrompt);
-            this.customContainer = div$l({ class: "customContainer", id: "customContainer", style: "width: 100%;" }, p$8({ style: "text-align: center; margin: 1em 0; display:flex; flex-direction: row;" }, this._importButton, this._exportButton), this._importPrompt, this._exportPrompt);
-            this.container = div$l({ class: "prompt noSelection", style: "width: 300px;" }, this.customContainer);
+            this._importPrompt = div$k({}, div$k({ class: "promptTitle" }, h2$j({ class: "importExt", style: "text-align: inherit;" }, ""), h2$j({ class: "importTitle" }, "Import")), p$8({ style: "text-align: left; margin: 0.5em 0;" }, "BeepBox songs can be exported and re-imported as .json files. You could also use other means to make .json files for BeepBox as long as they follow the same structure."), p$8({ style: "text-align: left; margin: 0.5em 0;" }, "BeepBox can also (crudely) import .mid files. There are many tools available for creating .mid files. Shorter and simpler songs are more likely to work well."), this._modeImportSelect, this._fileInput, this._cancelButton);
+            this._exportPrompt = div$k({ style: "display:none;" }, this.exportStuff._exportPrompt);
+            this.customContainer = div$k({ class: "customContainer", id: "customContainer", style: "width: 100%;" }, p$8({ style: "text-align: center; margin: 1em 0; display:flex; flex-direction: row;" }, this._importButton, this._exportButton), this._importPrompt, this._exportPrompt);
+            this.container = div$k({ class: "prompt noSelection", style: "width: 300px;" }, this.customContainer);
             this._importCategoryButton = () => {
                 this._importPrompt.style.display = "";
                 this._exportPrompt.style.display = "none";
@@ -52637,6 +52272,13 @@ You should be redirected to the song at:<br /><br />
             this.cleanUp = () => {
                 this._fileInput.removeEventListener("change", this._whenFileSelected);
                 this._cancelButton.removeEventListener("click", this._close);
+                window.removeEventListener("dragover", (event) => { event.preventDefault(); });
+                window.removeEventListener("dragenter", (event) => { event.preventDefault(); });
+                window.removeEventListener("dragleave", (event) => { event.preventDefault(); });
+                window.removeEventListener("drop", (event) => {
+                    event.preventDefault();
+                    this.handleDrop(event);
+                });
             };
             this._whenFileSelected = () => {
                 const file = this._fileInput.files[0];
@@ -52663,8 +52305,17 @@ You should be redirected to the song at:<br /><br />
                 }
                 else {
                     console.error("Unrecognized file extension.");
-                    this._close();
+                    return;
                 }
+            };
+            this.handleDrop = (e) => {
+                const files = e.dataTransfer.files;
+                if (!files)
+                    return;
+                if (files.length > 1)
+                    return;
+                this._fileInput.files = files;
+                this._whenFileSelected();
             };
             this._fileInput.select();
             setTimeout(() => this._fileInput.focus());
@@ -52672,9 +52323,16 @@ You should be redirected to the song at:<br /><br />
             this._cancelButton.addEventListener("click", this._close);
             this._importButton.addEventListener("click", this._importCategoryButton);
             this._exportButton.addEventListener("click", this._exportCategoryButton);
-            if (this._doc.prompt == "export") {
+            if (this._doc.prompt == "export" || this._doc.prompt == "quickExport") {
                 this._exportCategoryButton();
             }
+            window.addEventListener("dragover", (event) => { event.preventDefault(); });
+            window.addEventListener("dragenter", (event) => { event.preventDefault(); });
+            window.addEventListener("dragleave", (event) => { event.preventDefault(); });
+            window.addEventListener("drop", (event) => {
+                event.preventDefault();
+                this.handleDrop(event);
+            });
         }
         _parseMidiFile(buffer) {
             const reader = new ArrayBufferReader(new DataView(buffer));
@@ -53536,13 +53194,13 @@ You should be redirected to the song at:<br /><br />
     }
     ChannelRow.patternHeight = 28;
 
-    const { button: button$k, label: label$1, div: div$k, form, h2: h2$i, input: input$c } = HTML;
+    const { button: button$j, label: label$1, div: div$j, form, h2: h2$i, input: input$c } = HTML;
     class LayoutPrompt {
         constructor(_doc) {
             this._doc = _doc;
             this._fileInput = input$c({ type: "file", accept: ".json,application/json,.mid,.midi,audio/midi,audio/x-midi" });
-            this._okayButton = button$k({ class: "okayButton", style: "width:45%;" }, "Okay");
-            this._cancelButton = button$k({ class: "cancelButton" });
+            this._okayButton = button$j({ class: "okayButton", style: "width:45%;" }, "Okay");
+            this._cancelButton = button$j({ class: "cancelButton" });
             this._form = form({ style: "display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;" }, label$1({ class: "layout-option" }, input$c({ type: "radio", name: "layout", value: "small" }), SVG(`\
 					<svg viewBox="-4 -1 28 22">
 						<rect x="0" y="0" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1"/>
@@ -53550,7 +53208,7 @@ You should be redirected to the song at:<br /><br />
 						<rect x="14" y="2" width="4" height="16" fill="currentColor"/>
 						<rect x="2" y="13" width="11" height="5" fill="currentColor"/>
 					</svg>
-				`), div$k("Small")), label$1({ class: "layout-option" }, input$c({ type: "radio", name: "layout", value: "long" }), SVG(`\
+				`), div$j("Small")), label$1({ class: "layout-option" }, input$c({ type: "radio", name: "layout", value: "long" }), SVG(`\
 					<svg viewBox="-1 -1 28 22">
 						<rect x="0" y="0" width="26" height="20" fill="none" stroke="currentColor" stroke-width="1"/>
 						<rect x="2" y="2" width="12" height="10" fill="currentColor"/>
@@ -53558,14 +53216,14 @@ You should be redirected to the song at:<br /><br />
 						<rect x="20" y="2" width="4" height="10" fill="currentColor"/>
 						<rect x="2" y="13" width="22" height="5" fill="currentColor"/>
 					</svg>
-				`), div$k("Long")), label$1({ class: "layout-option" }, input$c({ type: "radio", name: "layout", value: "tall" }), SVG(`\
+				`), div$j("Long")), label$1({ class: "layout-option" }, input$c({ type: "radio", name: "layout", value: "tall" }), SVG(`\
 					<svg viewBox="-1 -1 28 22">
 						<rect x="0" y="0" width="26" height="20" fill="none" stroke="currentColor" stroke-width="1"/>
 						<rect x="11" y="2" width="8" height="16" fill="currentColor"/>
 						<rect x="20" y="2" width="4" height="16" fill="currentColor"/>
 						<rect x="2" y="2" width="8" height="16" fill="currentColor"/>
 					</svg>
-				`), div$k("Tall")), label$1({ class: "layout-option" }, input$c({ type: "radio", name: "layout", value: "wide" }), SVG(`\
+				`), div$j("Tall")), label$1({ class: "layout-option" }, input$c({ type: "radio", name: "layout", value: "wide" }), SVG(`\
 					<svg viewBox="-1 -1 28 22">
 						<rect x="0" y="0" width="26" height="20" fill="none" stroke="currentColor" stroke-width="1"/>
 						<rect x="2" y="2" width="4" height="16" fill="currentColor"/>
@@ -53573,7 +53231,7 @@ You should be redirected to the song at:<br /><br />
 						<rect x="21.5" y="2" width="2.5" height="16" fill="currentColor"/>
 						<rect x="7" y="2" width="10" height="16" fill="currentColor"/>
 					</svg>
-				`), div$k("Wide (JB)")), label$1({ class: "layout-option" }, input$c({ type: "radio", name: "layout", value: "AbyssBox Special" }), SVG(`\
+				`), div$j("Wide (JB)")), label$1({ class: "layout-option" }, input$c({ type: "radio", name: "layout", value: "AbyssBox Special" }), SVG(`\
 					<svg viewBox="-1 -1 28 22">
 						<rect x="0" y="0" width="26" height="20" fill="none" stroke="currentColor" stroke-width="1"/>
 						<rect x="7" y="2" width="4" height="11" fill="currentColor"/>
@@ -53581,14 +53239,14 @@ You should be redirected to the song at:<br /><br />
 						<rect x="10" y="2" width="14" height="11" fill="currentColor"/>
 						<rect x="2" y="14" width="22" height="4" fill="currentColor"/>
 					</svg>
-				`), div$k("Flipped (AB)")), label$1({ class: "layout-option" }, input$c({ type: "radio", name: "layout", value: "focus" }), SVG(`\
+				`), div$j("Flipped (AB)")), label$1({ class: "layout-option" }, input$c({ type: "radio", name: "layout", value: "focus" }), SVG(`\
 					<svg viewBox="-1 -1 28 22">
 						<rect x="0" y="0" width="26" height="20" fill="none" stroke="currentColor" stroke-width="1"/>
 						<rect x="2" y="2" width="17" height="10" fill="currentColor"/>
 						<rect x="20" y="2" width="4" height="16" fill="currentColor"/>
 						<rect x="2" y="13" width="17" height="5" fill="currentColor"/>
 					</svg>
-				`), div$k("Focus (AB)")), label$1({ class: "layout-option" }, input$c({ type: "radio", name: "layout", value: "long (AB)" }), SVG(`\
+				`), div$j("Focus (AB)")), label$1({ class: "layout-option" }, input$c({ type: "radio", name: "layout", value: "long (AB)" }), SVG(`\
 					<svg viewBox="-1 -1 28 22">
 						<rect x="0" y="0" width="26" height="20" fill="none" stroke="currentColor" stroke-width="1"/>
 						<rect x="2" y="2" width="12" height="10" fill="currentColor"/>
@@ -53596,7 +53254,7 @@ You should be redirected to the song at:<br /><br />
 						<rect x="20" y="2" width="4" height="16" fill="currentColor"/>
 						<rect x="2" y="13" width="12" height="5" fill="currentColor"/>
 					</svg>
-				`), div$k("Long (AB)")), label$1({ class: "layout-option" }, input$c({ type: "radio", name: "layout", value: "theatre" }), SVG(`\
+				`), div$j("Long (AB)")), label$1({ class: "layout-option" }, input$c({ type: "radio", name: "layout", value: "theatre" }), SVG(`\
 					<svg viewBox="-1 -1 28 22">
 						<rect x="0" y="0" width="26" height="20" fill="none" stroke="currentColor" stroke-width="1"/>
 						<rect x="2" y="2" width="22" height="10" fill="currentColor"></rect>
@@ -53604,15 +53262,15 @@ You should be redirected to the song at:<br /><br />
 						<rect x="19" y="13" width="2" height="5" fill="currentColor"></rect>
 						<rect x="22" y="13" width="2" height="5" fill="currentColor"></rect>
 					</svg>
-				`), div$k("theatre (AB)")), label$1({ class: "layout-option" }, input$c({ type: "radio", name: "layout", value: "Upside Down" }), SVG(`\
+				`), div$j("theatre (AB)")), label$1({ class: "layout-option" }, input$c({ type: "radio", name: "layout", value: "Upside Down" }), SVG(`\
 					<svg viewBox="-1 -1 28 22">
 						<rect x="0" y="0" width="26" height="20" fill="none" stroke="currentColor" stroke-width="1"/>
 						<rect x="7" y="8" width="17" height="10" fill="currentColor"/> /* pattern area */
 						<rect x="2" y="2" width="4" height="16" fill="currentColor"/> /* settings area */
 						<rect x="7" y="2" width="17" height="5" fill="currentColor"/> /* track area */
 					</svg>
-				`), div$k("Upturn (AB)")));
-            this.container = div$k({ class: "prompt noSelection", style: "width: 300px;" }, div$k({ class: "promptTitle" }, h2$i({ class: "layoutExt", style: "text-align: inherit;" }, ""), h2$i({ class: "layoutTitle" }, "Layout")), this._form, div$k({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton), this._cancelButton);
+				`), div$j("Upturn (AB)")));
+            this.container = div$j({ class: "prompt noSelection", style: "width: 300px;" }, div$j({ class: "promptTitle" }, h2$i({ class: "layoutExt", style: "text-align: inherit;" }, ""), h2$i({ class: "layoutTitle" }, "Layout")), this._form, div$j({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton), this._cancelButton);
             this._close = () => {
                 this._doc.undo();
             };
@@ -53642,73 +53300,20 @@ You should be redirected to the song at:<br /><br />
     }
 
     class EnvelopeEditor {
-        constructor(_doc, _extraSettingsDropdown, _openPrompt) {
+        constructor(_doc) {
             this._doc = _doc;
-            this._extraSettingsDropdown = _extraSettingsDropdown;
-            this._openPrompt = _openPrompt;
             this.container = HTML.div({ class: "envelopeEditor" });
             this._rows = [];
             this._targetSelects = [];
             this._envelopeSelects = [];
             this._deleteButtons = [];
-            this.extraSettingsDropdowns = [];
-            this.extraPitchSettingsGroups = [];
-            this.extraSettingsDropdownGroups = [];
-            this.extraRandomSettingsGroups = [];
-            this.extraLFODropdownGroups = [];
-            this.openExtraSettingsDropdowns = [];
-            this.perEnvelopeSpeedGroups = [];
-            this._pitchStartSliders = [];
-            this.pitchStartBoxes = [];
-            this._pitchEndSliders = [];
-            this.pitchEndBoxes = [];
-            this._startNoteDisplays = [];
-            this._endNoteDisplays = [];
-            this._inverters = [];
-            this._perEnvelopeSpeedSliders = [];
-            this._perEnvelopeSpeedDisplays = [];
-            this.perEnvelopeLowerBoundBoxes = [];
-            this.perEnvelopeUpperBoundBoxes = [];
-            this._perEnvelopeLowerBoundSliders = [];
-            this._perEnvelopeUpperBoundSliders = [];
-            this.randomStepsBoxes = [];
-            this.randomSeedBoxes = [];
-            this._randomStepsSliders = [];
-            this._randomSeedSliders = [];
-            this._randomEnvelopeTypeSelects = [];
-            this._randomStepsWrappers = [];
-            this._envelopeCopyButtons = [];
-            this._envelopePasteButtons = [];
-            this._waveformSelects = [];
-            this.LFOStepsBoxes = [];
-            this._LFOStepsSliders = [];
-            this._LFOStepsWrappers = [];
             this._renderedEnvelopeCount = 0;
             this._renderedEqFilterCount = -1;
             this._renderedNoteFilterCount = -1;
             this._renderedEffects = 0;
-            this._lastChange = null;
             this._onChange = (event) => {
                 const targetSelectIndex = this._targetSelects.indexOf(event.target);
                 const envelopeSelectIndex = this._envelopeSelects.indexOf(event.target);
-                const inverterIndex = this._inverters.indexOf(event.target);
-                const startBoxIndex = this.pitchStartBoxes.indexOf(event.target);
-                const endBoxIndex = this.pitchEndBoxes.indexOf(event.target);
-                const startSliderIndex = this._pitchStartSliders.indexOf(event.target);
-                const endSliderIndex = this._pitchEndSliders.indexOf(event.target);
-                const speedSliderIndex = this._perEnvelopeSpeedSliders.indexOf(event.target);
-                const lowerBoundBoxIndex = this.perEnvelopeLowerBoundBoxes.indexOf(event.target);
-                const upperBoundBoxIndex = this.perEnvelopeUpperBoundBoxes.indexOf(event.target);
-                const lowerBoundSliderIndex = this._perEnvelopeLowerBoundSliders.indexOf(event.target);
-                const upperBoundSliderIndex = this._perEnvelopeUpperBoundSliders.indexOf(event.target);
-                const randomStepsBoxIndex = this.randomStepsBoxes.indexOf(event.target);
-                const randomSeedBoxIndex = this.randomSeedBoxes.indexOf(event.target);
-                const randomStepsSliderIndex = this._randomStepsSliders.indexOf(event.target);
-                const randomSeedSliderIndex = this._randomSeedSliders.indexOf(event.target);
-                const waveformSelectIndex = this._waveformSelects.indexOf(event.target);
-                const randomTypeSelectIndex = this._randomEnvelopeTypeSelects.indexOf(event.target);
-                const LFOStepsBoxIndex = this.LFOStepsBoxes.indexOf(event.target);
-                const LFOStepsSliderIndex = this._LFOStepsSliders.indexOf(event.target);
                 if (targetSelectIndex != -1) {
                     const combinedValue = parseInt(this._targetSelects[targetSelectIndex].value);
                     const target = combinedValue % Config.instrumentAutomationTargets.length;
@@ -53716,193 +53321,17 @@ You should be redirected to the song at:<br /><br />
                     this._doc.record(new ChangeSetEnvelopeTarget(this._doc, targetSelectIndex, target, index));
                 }
                 else if (envelopeSelectIndex != -1) {
-                    const envelopeIndex = this._envelopeSelects.indexOf(event.target);
-                    this._doc.record(new ChangeSetEnvelopeType(this._doc, envelopeIndex, this._envelopeSelects[envelopeIndex].selectedIndex));
-                    this.rerenderExtraSettings(envelopeSelectIndex);
-                    this.render();
-                }
-                else if (waveformSelectIndex != -1) {
-                    this._doc.record(new ChangeSetEnvelopeWaveform(this._doc, this._waveformSelects[waveformSelectIndex].value, waveformSelectIndex));
-                }
-                else if (randomTypeSelectIndex != -1) {
-                    this._doc.record(new ChangeSetEnvelopeWaveform(this._doc, this._randomEnvelopeTypeSelects[randomTypeSelectIndex].value, randomTypeSelectIndex));
-                }
-                else if (inverterIndex != -1) {
-                    this._doc.record(new ChangeEnvelopeInverse(this._doc, this._inverters[inverterIndex].checked, inverterIndex));
-                }
-                else if (startBoxIndex != -1) {
-                    if (this._lastChange != null) {
-                        this._doc.record(this._lastChange);
-                        this._lastChange = null;
-                    }
-                }
-                else if (endBoxIndex != -1) {
-                    if (this._lastChange != null) {
-                        this._doc.record(this._lastChange);
-                        this._lastChange = null;
-                    }
-                }
-                else if (startSliderIndex != -1) {
-                    if (this._lastChange != null) {
-                        this._doc.record(this._lastChange);
-                        this._lastChange = null;
-                    }
-                }
-                else if (endSliderIndex != -1) {
-                    if (this._lastChange != null) {
-                        this._doc.record(this._lastChange);
-                        this._lastChange = null;
-                    }
-                }
-                else if (speedSliderIndex != -1) {
-                    if (this._lastChange != null) {
-                        this._doc.record(this._lastChange);
-                        this._lastChange = null;
-                    }
-                }
-                else if (lowerBoundBoxIndex != -1) {
-                    if (this._lastChange != null) {
-                        this._doc.record(this._lastChange);
-                        this._lastChange = null;
-                    }
-                }
-                else if (upperBoundBoxIndex != -1) {
-                    if (this._lastChange != null) {
-                        this._doc.record(this._lastChange);
-                        this._lastChange = null;
-                    }
-                }
-                else if (lowerBoundSliderIndex != -1) {
-                    if (this._lastChange != null) {
-                        this._doc.record(this._lastChange);
-                        this._lastChange = null;
-                    }
-                }
-                else if (upperBoundSliderIndex != -1) {
-                    if (this._lastChange != null) {
-                        this._doc.record(this._lastChange);
-                        this._lastChange = null;
-                    }
-                }
-                else if (randomStepsBoxIndex != -1) {
-                    if (this._lastChange != null) {
-                        this._doc.record(this._lastChange);
-                        this._lastChange = null;
-                    }
-                }
-                else if (randomSeedBoxIndex != -1) {
-                    if (this._lastChange != null) {
-                        this._doc.record(this._lastChange);
-                        this._lastChange = null;
-                    }
-                }
-                else if (randomStepsSliderIndex != -1) {
-                    if (this._lastChange != null) {
-                        this._doc.record(this._lastChange);
-                        this._lastChange = null;
-                    }
-                }
-                else if (randomSeedSliderIndex != -1) {
-                    if (this._lastChange != null) {
-                        this._doc.record(this._lastChange);
-                        this._lastChange = null;
-                    }
-                }
-                else if (LFOStepsBoxIndex != -1) {
-                    if (this._lastChange != null) {
-                        this._doc.record(this._lastChange);
-                        this._lastChange = null;
-                    }
-                }
-                else if (LFOStepsSliderIndex != -1) {
-                    if (this._lastChange != null) {
-                        this._doc.record(this._lastChange);
-                        this._lastChange = null;
-                    }
+                    this._doc.record(new ChangeSetEnvelopeType(this._doc, envelopeSelectIndex, this._envelopeSelects[envelopeSelectIndex].selectedIndex));
                 }
             };
             this._onClick = (event) => {
-                const deleteButtonIndex = this._deleteButtons.indexOf(event.target);
-                const envelopeCopyButtonIndex = this._envelopeCopyButtons.indexOf(event.target);
-                const envelopePasteButtonIndex = this._envelopePasteButtons.indexOf(event.target);
-                if (deleteButtonIndex != -1) {
-                    this._doc.record(new ChangeRemoveEnvelope(this._doc, deleteButtonIndex));
-                    this.extraSettingsDropdownGroups[deleteButtonIndex].style.display = "none";
-                }
-                else if (envelopeCopyButtonIndex != -1) {
-                    const instrument = this._doc.song.channels[this._doc.channel].instruments[this._doc.getCurrentInstrument()];
-                    window.localStorage.setItem("envelopeCopy", JSON.stringify(instrument.envelopes[envelopeCopyButtonIndex].toJsonObject()));
-                }
-                else if (envelopePasteButtonIndex != -1) {
-                    const envelopeCopy = window.localStorage.getItem("envelopeCopy");
-                    this._doc.record(new PasteEnvelope(this._doc, JSON.parse(String(envelopeCopy)), envelopePasteButtonIndex));
-                }
-            };
-            this._onInput = (event) => {
-                const startBoxIndex = this.pitchStartBoxes.indexOf(event.target);
-                const endBoxIndex = this.pitchEndBoxes.indexOf(event.target);
-                const startSliderIndex = this._pitchStartSliders.indexOf(event.target);
-                const endSliderIndex = this._pitchEndSliders.indexOf(event.target);
-                const speedSliderIndex = this._perEnvelopeSpeedSliders.indexOf(event.target);
-                const lowerBoundBoxIndex = this.perEnvelopeLowerBoundBoxes.indexOf(event.target);
-                const upperBoundBoxIndex = this.perEnvelopeUpperBoundBoxes.indexOf(event.target);
-                const lowerBoundSliderIndex = this._perEnvelopeLowerBoundSliders.indexOf(event.target);
-                const upperBoundSliderIndex = this._perEnvelopeUpperBoundSliders.indexOf(event.target);
-                const randomStepsBoxIndex = this.randomStepsBoxes.indexOf(event.target);
-                const randomSeedBoxIndex = this.randomSeedBoxes.indexOf(event.target);
-                const randomStepsSliderIndex = this._randomStepsSliders.indexOf(event.target);
-                const randomSeedSliderIndex = this._randomSeedSliders.indexOf(event.target);
-                const LFOStepsBoxIndex = this.LFOStepsBoxes.indexOf(event.target);
-                const LFOStepsSliderIndex = this._LFOStepsSliders.indexOf(event.target);
-                if (startBoxIndex != -1) {
-                    this._lastChange = new ChangeEnvelopePitchStart(this._doc, parseInt(this.pitchStartBoxes[startBoxIndex].value), startBoxIndex);
-                }
-                else if (endBoxIndex != -1) {
-                    this._lastChange = new ChangeEnvelopePitchEnd(this._doc, parseInt(this.pitchEndBoxes[endBoxIndex].value), endBoxIndex);
-                }
-                else if (startSliderIndex != -1) {
-                    this._lastChange = new ChangeEnvelopePitchStart(this._doc, parseInt(this._pitchStartSliders[startSliderIndex].value), startSliderIndex);
-                }
-                else if (endSliderIndex != -1) {
-                    this._lastChange = new ChangeEnvelopePitchEnd(this._doc, parseInt(this._pitchEndSliders[endSliderIndex].value), endSliderIndex);
-                }
-                else if (speedSliderIndex != -1) {
-                    this._lastChange = new ChangePerEnvelopeSpeed(this._doc, this.convertIndexSpeed(parseFloat(this._perEnvelopeSpeedSliders[speedSliderIndex].value), "speed"), speedSliderIndex);
-                }
-                else if (lowerBoundBoxIndex != -1) {
-                    this._lastChange = new ChangeEnvelopeLowerBound(this._doc, parseFloat(this.perEnvelopeLowerBoundBoxes[lowerBoundBoxIndex].value), lowerBoundBoxIndex);
-                }
-                else if (upperBoundBoxIndex != -1) {
-                    this._lastChange = new ChangeEnvelopeUpperBound(this._doc, parseFloat(this.perEnvelopeUpperBoundBoxes[upperBoundBoxIndex].value), upperBoundBoxIndex);
-                }
-                else if (lowerBoundSliderIndex != -1) {
-                    this._lastChange = new ChangeEnvelopeLowerBound(this._doc, parseFloat(this._perEnvelopeLowerBoundSliders[lowerBoundSliderIndex].value), lowerBoundSliderIndex);
-                }
-                else if (upperBoundSliderIndex != -1) {
-                    this._lastChange = new ChangeEnvelopeUpperBound(this._doc, parseFloat(this._perEnvelopeUpperBoundSliders[upperBoundSliderIndex].value), upperBoundSliderIndex);
-                }
-                else if (randomStepsBoxIndex != -1) {
-                    this._lastChange = new ChangeRandomEnvelopeSteps(this._doc, parseFloat(this.randomStepsBoxes[randomStepsBoxIndex].value), randomStepsBoxIndex);
-                }
-                else if (randomSeedBoxIndex != -1) {
-                    this._lastChange = new ChangeRandomEnvelopeSeed(this._doc, parseFloat(this.randomSeedBoxes[randomSeedBoxIndex].value), randomSeedBoxIndex);
-                }
-                else if (randomStepsSliderIndex != -1) {
-                    this._lastChange = new ChangeRandomEnvelopeSteps(this._doc, parseFloat(this._randomStepsSliders[randomStepsSliderIndex].value), randomStepsSliderIndex);
-                }
-                else if (randomSeedSliderIndex != -1) {
-                    this._lastChange = new ChangeRandomEnvelopeSeed(this._doc, parseFloat(this._randomSeedSliders[randomSeedSliderIndex].value), randomSeedSliderIndex);
-                }
-                else if (LFOStepsBoxIndex != -1) {
-                    this._lastChange = new ChangeRandomEnvelopeSteps(this._doc, parseFloat(this.LFOStepsBoxes[LFOStepsBoxIndex].value), LFOStepsBoxIndex);
-                }
-                else if (LFOStepsSliderIndex != -1) {
-                    this._lastChange = new ChangeRandomEnvelopeSteps(this._doc, parseFloat(this._LFOStepsSliders[LFOStepsSliderIndex].value), LFOStepsSliderIndex);
+                const index = this._deleteButtons.indexOf(event.target);
+                if (index != -1) {
+                    this._doc.record(new ChangeRemoveEnvelope(this._doc, index));
                 }
             };
             this.container.addEventListener("change", this._onChange);
             this.container.addEventListener("click", this._onClick);
-            this.container.addEventListener("input", this._onInput);
         }
         _makeOption(target, index) {
             let displayName = Config.instrumentAutomationTargets[target].displayName;
@@ -53925,163 +53354,6 @@ You should be redirected to the song at:<br /><br />
                 option.hidden = !instrument.supportsEnvelopeTarget(target, index);
             }
         }
-        _pitchToNote(value, isNoise) {
-            let text = "";
-            if (isNoise) {
-                value = value * 6 + 12;
-            }
-            const offset = Config.keys[this._doc.song.key].basePitch % Config.pitchesPerOctave;
-            const keyValue = (value + offset) % Config.pitchesPerOctave;
-            if (Config.keys[keyValue].isWhiteKey) {
-                text = Config.keys[keyValue].name;
-            }
-            else {
-                const shiftDir = Config.blackKeyNameParents[value % Config.pitchesPerOctave];
-                text = Config.keys[(keyValue + Config.pitchesPerOctave + shiftDir) % Config.pitchesPerOctave].name;
-                if (shiftDir == 1) {
-                    text += "♭";
-                }
-                else if (shiftDir == -1) {
-                    text += "♯";
-                }
-            }
-            return "[" + text + Math.floor((value + Config.pitchesPerOctave) / 12 + this._doc.song.octave - 1) + "]";
-        }
-        rerenderExtraSettings(index = 0) {
-            const instrument = this._doc.song.channels[this._doc.channel].instruments[this._doc.getCurrentInstrument()];
-            for (let i = index; i < Config.maxEnvelopeCount; i++) {
-                if (i >= instrument.envelopeCount) {
-                    if (this.extraSettingsDropdowns[i]) {
-                        this.extraSettingsDropdowns[i].style.display = "none";
-                    }
-                    if (this.extraSettingsDropdownGroups[i]) {
-                        this.extraSettingsDropdownGroups[i].style.display = "none";
-                    }
-                    if (this.extraPitchSettingsGroups[i]) {
-                        this.extraPitchSettingsGroups[i].style.display = "none";
-                    }
-                    if (this.extraPitchSettingsGroups[i]) {
-                        this.perEnvelopeSpeedGroups[i].style.display = "none";
-                    }
-                    if (this.extraLFODropdownGroups[i]) {
-                        this.extraLFODropdownGroups[i].style.display = "none";
-                    }
-                }
-                else if (this.openExtraSettingsDropdowns[i]) {
-                    this.extraSettingsDropdownGroups[i].style.display = "flex";
-                    this.extraSettingsDropdowns[i].style.display = "inline";
-                    if (Config.newEnvelopes[instrument.envelopes[i].envelope].name == "pitch") {
-                        this.extraPitchSettingsGroups[i].style.display = "flex";
-                        this.pitchStartBoxes[i].value = instrument.envelopes[i].pitchEnvelopeStart.toString();
-                        this.pitchEndBoxes[i].value = instrument.envelopes[i].pitchEnvelopeEnd.toString();
-                        this._pitchStartSliders[i].max = (instrument.isNoiseInstrument ? Config.drumCount - 1 : Config.maxPitch).toString();
-                        this.pitchStartBoxes[i].max = (instrument.isNoiseInstrument ? Config.drumCount - 1 : Config.maxPitch).toString();
-                        this._pitchEndSliders[i].max = (instrument.isNoiseInstrument ? Config.drumCount - 1 : Config.maxPitch).toString();
-                        this.pitchEndBoxes[i].max = (instrument.isNoiseInstrument ? Config.drumCount - 1 : Config.maxPitch).toString();
-                        if (instrument.isNoiseInstrument && parseInt(this.pitchStartBoxes[i].value) > Config.drumCount - 1) {
-                            this.pitchStartBoxes[i].value = (Config.drumCount - 1).toString();
-                        }
-                        if (instrument.isNoiseInstrument && parseInt(this.pitchEndBoxes[i].value) > Config.drumCount - 1) {
-                            this.pitchEndBoxes[i].value = (Config.drumCount - 1).toString();
-                        }
-                        this._startNoteDisplays[i].textContent = "Start " + this._pitchToNote(parseInt(this.pitchStartBoxes[i].value), instrument.isNoiseInstrument) + ": ";
-                        this._endNoteDisplays[i].textContent = "End " + this._pitchToNote(parseInt(this.pitchEndBoxes[i].value), instrument.isNoiseInstrument) + ": ";
-                        this.perEnvelopeSpeedGroups[i].style.display = "none";
-                        this.extraRandomSettingsGroups[i].style.display = "none";
-                        this.extraLFODropdownGroups[i].style.display = "none";
-                    }
-                    else if (Config.newEnvelopes[instrument.envelopes[i].envelope].name == "random") {
-                        const isRandomTime = instrument.envelopes[i].waveform == 0 || instrument.envelopes[i].waveform == 3;
-                        this.randomStepsBoxes[i].value = instrument.envelopes[i].steps.toString();
-                        this.randomSeedBoxes[i].value = instrument.envelopes[i].seed.toString();
-                        this._randomStepsSliders[i].value = instrument.envelopes[i].steps.toString();
-                        this._randomSeedSliders[i].value = instrument.envelopes[i].seed.toString();
-                        this._perEnvelopeSpeedSliders[i].value = this.convertIndexSpeed(instrument.envelopes[i].perEnvelopeSpeed, "index").toString();
-                        this._perEnvelopeSpeedDisplays[i].textContent = "Spd: x" + prettyNumber(this.convertIndexSpeed(parseFloat(this._perEnvelopeSpeedSliders[i].value), "speed"));
-                        if (instrument.envelopes[i].waveform > 4)
-                            instrument.envelopes[i].waveform = 0;
-                        this._randomStepsWrappers[i].style.display = instrument.envelopes[i].waveform == 0 || instrument.envelopes[i].waveform == 2 ? "flex" : "none";
-                        this._randomEnvelopeTypeSelects[i].selectedIndex = instrument.envelopes[i].waveform;
-                        this.perEnvelopeSpeedGroups[i].style.display = isRandomTime ? "" : "none";
-                        this.extraSettingsDropdownGroups[i].style.display = "flex";
-                        this.extraSettingsDropdowns[i].style.display = "inline";
-                        this.extraPitchSettingsGroups[i].style.display = "none";
-                        this.extraRandomSettingsGroups[i].style.display = "";
-                        this.extraLFODropdownGroups[i].style.display = "none";
-                    }
-                    else if (Config.newEnvelopes[instrument.envelopes[i].envelope].name == "lfo") {
-                        this._waveformSelects[i].value = instrument.envelopes[i].waveform.toString();
-                        this._perEnvelopeSpeedSliders[i].value = this.convertIndexSpeed(instrument.envelopes[i].perEnvelopeSpeed, "index").toString();
-                        this._perEnvelopeSpeedDisplays[i].textContent = "Spd: x" + prettyNumber(this.convertIndexSpeed(parseFloat(this._perEnvelopeSpeedSliders[i].value), "speed"));
-                        if (instrument.envelopes[i].waveform == 5 || instrument.envelopes[i].waveform == 6) {
-                            this._LFOStepsWrappers[i].style.display = "flex";
-                        }
-                        else {
-                            this._LFOStepsWrappers[i].style.display = "none";
-                        }
-                        this.extraLFODropdownGroups[i].style.display = "";
-                        this.perEnvelopeSpeedGroups[i].style.display = "flex";
-                        this.extraSettingsDropdownGroups[i].style.display = "flex";
-                        this.extraSettingsDropdowns[i].style.display = "inline";
-                        this.extraPitchSettingsGroups[i].style.display = "none";
-                        this.extraRandomSettingsGroups[i].style.display = "none";
-                    }
-                    else {
-                        this.extraPitchSettingsGroups[i].style.display = "none";
-                        this.extraRandomSettingsGroups[i].style.display = "none";
-                        this.extraLFODropdownGroups[i].style.display = "none";
-                        if (Config.newEnvelopes[instrument.envelopes[i].envelope].name == "note size" || Config.newEnvelopes[instrument.envelopes[i].envelope].name == "punch" || Config.newEnvelopes[instrument.envelopes[i].envelope].name == "none") {
-                            this.perEnvelopeSpeedGroups[i].style.display = "none";
-                        }
-                        else {
-                            this.perEnvelopeSpeedGroups[i].style.display = "flex";
-                            this._perEnvelopeSpeedSliders[i].value = this.convertIndexSpeed(instrument.envelopes[i].perEnvelopeSpeed, "index").toString();
-                            this._perEnvelopeSpeedDisplays[i].textContent = "Spd: x" + prettyNumber(this.convertIndexSpeed(parseFloat(this._perEnvelopeSpeedSliders[i].value), "speed"));
-                        }
-                    }
-                    this._inverters[i].checked = instrument.envelopes[i].inverse;
-                    this.perEnvelopeLowerBoundBoxes[i].value = instrument.envelopes[i].perEnvelopeLowerBound.toString();
-                    this.perEnvelopeUpperBoundBoxes[i].value = instrument.envelopes[i].perEnvelopeUpperBound.toString();
-                    this._perEnvelopeLowerBoundSliders[i].value = instrument.envelopes[i].perEnvelopeLowerBound.toString();
-                    this._perEnvelopeUpperBoundSliders[i].value = instrument.envelopes[i].perEnvelopeUpperBound.toString();
-                }
-                else if (this.openExtraSettingsDropdowns[i] == false) {
-                    this.extraSettingsDropdownGroups[i].style.display = "none";
-                    this.extraPitchSettingsGroups[i].style.display = "none";
-                    this.extraSettingsDropdowns[i].style.display = "inline";
-                    this.perEnvelopeSpeedGroups[i].style.display = "none";
-                }
-                else {
-                    if (this.extraSettingsDropdowns[i]) {
-                        this.extraSettingsDropdowns[i].style.display = "none";
-                    }
-                    if (this.extraSettingsDropdownGroups[i]) {
-                        this.extraSettingsDropdownGroups[i].style.display = "none";
-                    }
-                    if (this.extraPitchSettingsGroups[i]) {
-                        this.extraPitchSettingsGroups[i].style.display = "none";
-                    }
-                    if (this.extraPitchSettingsGroups[i]) {
-                        this.perEnvelopeSpeedGroups[i].style.display = "none";
-                    }
-                    if (this.extraLFODropdownGroups[i]) {
-                        this.extraLFODropdownGroups[i].style.display = "none";
-                    }
-                    if (this.extraRandomSettingsGroups[i]) {
-                        this.extraRandomSettingsGroups[i].style.display = "none";
-                    }
-                }
-            }
-        }
-        convertIndexSpeed(value, convertTo) {
-            switch (convertTo) {
-                case "index":
-                    return Config.perEnvelopeSpeedToIndices[value] != null ? Config.perEnvelopeSpeedToIndices[value] : 23;
-                case "speed":
-                    return Config.perEnvelopeSpeedIndices[value] != null ? Config.perEnvelopeSpeedIndices[value] : 1;
-            }
-            return 0;
-        }
         render() {
             const instrument = this._doc.song.channels[this._doc.channel].instruments[this._doc.getCurrentInstrument()];
             for (let envelopeIndex = this._rows.length; envelopeIndex < instrument.envelopeCount; envelopeIndex++) {
@@ -54097,121 +53369,17 @@ You should be redirected to the song at:<br /><br />
                     if (interleaved)
                         target++;
                 }
-                const envelopeSelect = HTML.select({ id: "envelopeSelect" });
-                for (let envelope = 0; envelope < Config.newEnvelopes.length; envelope++) {
-                    envelopeSelect.appendChild(HTML.option({ value: envelope }, Config.newEnvelopes[envelope].name));
+                const envelopeSelect = HTML.select();
+                for (let envelope = 0; envelope < Config.envelopes.length; envelope++) {
+                    envelopeSelect.appendChild(HTML.option({ value: envelope }, Config.envelopes[envelope].name));
                 }
-                const deleteButton = HTML.button({ type: "button", class: "delete-envelope", style: "flex: 0.2" });
-                const pitchStartNoteSlider = HTML.input({ value: instrument.envelopes[envelopeIndex].pitchEnvelopeStart ? instrument.envelopes[envelopeIndex].pitchEnvelopeStart : 0, style: "width: 113px; margin-left: 0px;", type: "range", min: "0", max: instrument.isNoiseInstrument ? Config.drumCount - 1 : Config.maxPitch, step: "1" });
-                const pitchStartNoteBox = HTML.input({ value: instrument.envelopes[envelopeIndex].pitchEnvelopeStart ? instrument.envelopes[envelopeIndex].pitchEnvelopeStart : 0, style: "width: 4em; font-size: 80%; ", id: "startNoteBox", type: "number", step: "1", min: "0", max: instrument.isNoiseInstrument ? Config.drumCount - 1 : Config.maxPitch });
-                const pitchEndNoteSlider = HTML.input({ value: instrument.envelopes[envelopeIndex].pitchEnvelopeEnd ? instrument.envelopes[envelopeIndex].pitchEnvelopeEnd : instrument.isNoiseInstrument ? Config.drumCount - 1 : Config.maxPitch, style: "width: 113px; margin-left: 0px;", type: "range", min: "0", max: instrument.isNoiseInstrument ? Config.drumCount - 1 : Config.maxPitch, step: "1" });
-                const pitchEndNoteBox = HTML.input({ value: instrument.envelopes[envelopeIndex].pitchEnvelopeEnd ? instrument.envelopes[envelopeIndex].pitchEnvelopeEnd : instrument.isNoiseInstrument ? Config.drumCount - 1 : Config.maxPitch, style: "width: 4em; font-size: 80%; ", id: "endNoteBox", type: "number", step: "1", min: "0", max: instrument.isNoiseInstrument ? Config.drumCount - 1 : Config.maxPitch });
-                const pitchStartNoteDisplay = HTML.span({ class: "tip", style: `width:68px; flex:1; height:1em; font-size: smaller;`, onclick: () => this._openPrompt("pitchRange") }, "Start " + this._pitchToNote(parseInt(pitchStartNoteBox.value), instrument.isNoiseInstrument) + ": ");
-                const pitchEndNoteDisplay = HTML.span({ class: "tip", style: `width:68px; flex:1; height:1em; font-size: smaller;`, onclick: () => this._openPrompt("pitchRange") }, "End " + this._pitchToNote(parseInt(pitchEndNoteBox.value), instrument.isNoiseInstrument) + ": ");
-                const pitchStartBoxWrapper = HTML.div({ style: "flex: 1; display: flex; flex-direction: column; align-items: center;" }, pitchStartNoteDisplay, pitchStartNoteBox);
-                const pitchEndBoxWrapper = HTML.div({ style: "flex: 1; display: flex; flex-direction: column; align-items: center;" }, pitchEndNoteDisplay, pitchEndNoteBox);
-                const pitchStartNoteWrapper = HTML.div({ style: "margin-top: 3px; flex:1; display:flex; flex-direction: row; align-items:center; justify-content:right;" }, pitchStartBoxWrapper, pitchStartNoteSlider);
-                const pitchEndNoteWrapper = HTML.div({ style: "margin-top: 3px; flex:1; display:flex; flex-direction: row; align-items:center; justify-content:right;" }, pitchEndBoxWrapper, pitchEndNoteSlider);
-                const extraPitchSettingsGroup = HTML.div({ class: "editor-controls", style: "flex-direction:column; align-items:center;" }, pitchStartNoteWrapper, pitchEndNoteWrapper);
-                extraPitchSettingsGroup.style.display = "none";
-                const randomStepsBox = HTML.input({ value: instrument.envelopes[envelopeIndex].steps, type: "number", min: 1, max: Config.randomEnvelopeStepsMax, step: 1, style: "width: 4em; font-size: 80%; " });
-                const randomStepsSlider = HTML.input({ value: instrument.envelopes[envelopeIndex].steps, type: "range", min: 1, max: Config.randomEnvelopeStepsMax, step: 1, style: "width: 113px; margin-left: 0px;" });
-                const randomSeedBox = HTML.input({ value: instrument.envelopes[envelopeIndex].seed, type: "number", min: 1, max: Config.randomEnvelopeSeedMax, step: 1, style: "width: 4em; font-size: 80%; " });
-                const randomSeedSlider = HTML.input({ value: instrument.envelopes[envelopeIndex].seed, type: "range", min: 1, max: Config.randomEnvelopeSeedMax, step: 1, style: "width: 113px; margin-left: 0px;" });
-                const randomStepsBoxWrapper = HTML.div({ style: "flex: 1; display: flex; flex-direction: column; align-items: center;" }, HTML.span({ class: "tip", style: `width:68px; flex:1; height:1em; font-size: smaller;`, onclick: () => this._openPrompt("randomSteps") }, "Steps: "), randomStepsBox);
-                const randomSeedBoxWrapper = HTML.div({ style: "flex: 1; display: flex; flex-direction: column; align-items: center;" }, HTML.span({ class: "tip", style: `width:68px; flex:1; height:1em; font-size: smaller;`, onclick: () => this._openPrompt("randomSeed") }, "Seed: "), randomSeedBox);
-                const randomStepsWrapper = HTML.div({ style: "margin-top: 3px; flex:1; display:flex; flex-direction: row; align-items:center; justify-content:right;" }, randomStepsBoxWrapper, randomStepsSlider);
-                const randomSeedWrapper = HTML.div({ style: "margin-top: 3px; flex:1; display:flex; flex-direction: row; align-items:center; justify-content:right;" }, randomSeedBoxWrapper, randomSeedSlider);
-                const randomTypeSelect = HTML.select({ style: "width: 115px;" });
-                const randomNames = ["time", "pitch", "note", "time smooth"];
-                for (let waveform = 0; waveform < 4; waveform++) {
-                    randomTypeSelect.appendChild(HTML.option({ value: waveform }, randomNames[waveform]));
-                }
-                const randomTypeSelectWrapper = HTML.div({ class: "editor-controls selectContainer", style: "margin-top: 3px; flex:1; display:flex; flex-direction: row; align-items:center; justify-content:right;" }, HTML.span({ style: "font-size: smaller; margin-right: 35px;", class: "tip", onclick: () => this._openPrompt("randomEnvelopeType") }, "Type: "), randomTypeSelect);
-                const extraRandomSettingsGroup = HTML.div({ class: "editor-controls", style: "flex-direction:column; align-items:center;" }, randomTypeSelectWrapper, randomStepsWrapper, randomSeedWrapper);
-                extraRandomSettingsGroup.style.display = "none";
-                const waveformSelect = HTML.select({ style: "width: 115px;" });
-                const LFOStepsBox = HTML.input({ value: instrument.envelopes[envelopeIndex].steps, type: "number", min: 1, max: Config.randomEnvelopeStepsMax, step: 1, style: "width: 4em; font-size: 80%; " });
-                const LFOStepsSlider = HTML.input({ value: instrument.envelopes[envelopeIndex].steps, type: "range", min: 1, max: Config.randomEnvelopeStepsMax, step: 1, style: "width: 113px; margin-left: 0px;" });
-                const LFOStepsBoxWrapper = HTML.div({ style: "flex: 1; display: flex; flex-direction: column; align-items: center;" }, HTML.span({ class: "tip", style: `width:68px; flex:1; height:1em; font-size: smaller;`, onclick: () => this._openPrompt("randomSteps") }, "Steps: "), LFOStepsBox);
-                const LFOStepsWrapper = HTML.div({ style: "margin-top: 3px; flex:1; display:flex; flex-direction: row; align-items:center; justify-content:right;" }, LFOStepsBoxWrapper, LFOStepsSlider);
-                const wavenames = ["sine", "square", "triangle", "sawtooth", "trapezoid", "stepped saw", "stepped tri"];
-                for (let waveform = 0; waveform < 7; waveform++) {
-                    waveformSelect.appendChild(HTML.option({ value: waveform }, wavenames[waveform]));
-                }
-                const waveformWrapper = HTML.div({ class: "editor-controls selectContainer", style: "margin-top: 3px; flex:1; display:flex; flex-direction: row; align-items:center; justify-content:right;" }, HTML.span({ style: "font-size: smaller; margin-right: 10px;", class: "tip", onclick: () => this._openPrompt("lfoEnvelopeWaveform") }, "Waveform: "), waveformSelect);
-                const extraLFOSettingsGroup = HTML.div({ class: "editor-controls", style: "margin-top: 3px; flex:1; display:flex; flex-direction: column; align-items:center; justify-content:right;" }, waveformWrapper, LFOStepsWrapper);
-                extraLFOSettingsGroup.style.display = "none";
-                const perEnvelopeSpeedSlider = HTML.input({ style: "margin: 0; width: 113px", type: "range", min: 0, max: Config.perEnvelopeSpeedIndices.length - 1, value: this.convertIndexSpeed(instrument.envelopes[envelopeIndex].perEnvelopeSpeed, "index"), step: "1" });
-                const perEnvelopeSpeedDisplay = HTML.span({ class: "tip", style: `width:58px; flex:1; height:1em; font-size: smaller; margin-left: 10px;`, onclick: () => this._openPrompt("perEnvelopeSpeed") }, "Spd: x" + prettyNumber(this.convertIndexSpeed(parseFloat(perEnvelopeSpeedSlider.value), "speed")));
-                const perEnvelopeSpeedWrapper = HTML.div({ style: "margin-top: 3px; flex:1; display:flex; flex-direction: row; align-items:center; justify-content:right;" }, perEnvelopeSpeedDisplay, perEnvelopeSpeedSlider);
-                const perEnvelopeSpeedGroup = HTML.div({ class: "editor-controls", style: "flex-direction:column; align-items:center;" }, perEnvelopeSpeedWrapper);
-                const lowerBoundBox = HTML.input({ value: instrument.envelopes[envelopeIndex].perEnvelopeLowerBound, type: "number", min: Config.perEnvelopeBoundMin, max: Config.perEnvelopeBoundMax, step: 0.1, style: "width: 4em; font-size: 80%; " });
-                const lowerBoundSlider = HTML.input({ value: instrument.envelopes[envelopeIndex].perEnvelopeLowerBound, type: "range", min: Config.perEnvelopeBoundMin, max: Config.perEnvelopeBoundMax, step: 0.1, style: "width: 113px; margin-left: 0px;" });
-                const upperBoundBox = HTML.input({ value: instrument.envelopes[envelopeIndex].perEnvelopeUpperBound, type: "number", min: Config.perEnvelopeBoundMin, max: Config.perEnvelopeBoundMax, step: 0.1, style: "width: 4em; font-size: 80%; " });
-                const upperBoundSlider = HTML.input({ value: instrument.envelopes[envelopeIndex].perEnvelopeUpperBound, type: "range", min: Config.perEnvelopeBoundMin, max: Config.perEnvelopeBoundMax, step: 0.1, style: "width: 113px; margin-left: 0px;" });
-                const lowerBoundBoxWrapper = HTML.div({ style: "flex: 1; display: flex; flex-direction: column; align-items: center;" }, HTML.span({ class: "tip", style: `width:68px; flex:1; height:1em; font-size: smaller;`, onclick: () => this._openPrompt("envelopeRange") }, "Lwr bnd: "), lowerBoundBox);
-                const upperBoundBoxWrapper = HTML.div({ style: "flex: 1; display: flex; flex-direction: column; align-items: center;" }, HTML.span({ class: "tip", style: `width:68px; flex:1; height:1em; font-size: smaller;`, onclick: () => this._openPrompt("envelopeRange") }, "Upr bnd: "), upperBoundBox);
-                const lowerBoundWrapper = HTML.div({ style: "margin-top: 3px; flex:1; display:flex; flex-direction: row; align-items:center; justify-content:right;" }, lowerBoundBoxWrapper, lowerBoundSlider);
-                const upperBoundWrapper = HTML.div({ style: "margin-top: 3px; flex:1; display:flex; flex-direction: row; align-items:center; justify-content:right;" }, upperBoundBoxWrapper, upperBoundSlider);
-                const invertBox = HTML.input({ "checked": instrument.envelopes[envelopeIndex].inverse, type: "checkbox", style: "width: 1em; padding: 0.5em; margin-left: 4em;", id: "invertBox" });
-                const invertWrapper = HTML.div({ style: "margin: 0.5em; align-items:center; justify-content:right;" }, HTML.span({ class: "tip", onclick: () => this._openPrompt("envelopeInvert") }, "Invert: "), invertBox);
-                const envelopeCopyButton = HTML.button({ style: "margin-left:0px; max-width:86px; width: 86px; height: 26px; padding-left: 22px", class: "copyButton", title: "Copy Envelope" }, [
-                    "Copy Env",
-                    SVG.svg({ style: "flex-shrink: 0; position: absolute; left: 0; top: 50%; margin-top: -1em; pointer-events: none;", width: "26px", height: "26px", viewBox: "-5 -21 26 26" }, [
-                        SVG.path({ d: "M 0 -15 L 1 -15 L 1 0 L 13 0 L 13 1 L 0 1 L 0 -15 z M 2 -1 L 2 -17 L 10 -17 L 14 -13 L 14 -1 z M 3 -2 L 13 -2 L 13 -12 L 9 -12 L 9 -16 L 3 -16 z", fill: "currentColor" }),
-                    ]),
-                ]);
-                const envelopePasteButton = HTML.button({ style: "margin-left:2px; max-width:89px; width: 89px; height: 26px; padding-left: 22px", class: "pasteButton", title: "Paste Envelope" }, [
-                    "Paste Env",
-                    SVG.svg({ style: "flex-shrink: 0; position: absolute; left: 0; top: 50%; margin-top: -1em; pointer-events: none;", width: "26px", height: "26px", viewBox: "0 0 26 26" }, [
-                        SVG.path({ d: "M 8 18 L 6 18 L 6 5 L 17 5 L 17 7 M 9 8 L 16 8 L 20 12 L 20 22 L 9 22 z", stroke: "currentColor", fill: "none" }),
-                        SVG.path({ d: "M 9 3 L 14 3 L 14 6 L 9 6 L 9 3 z M 16 8 L 20 12 L 16 12 L 16 8 z", fill: "currentColor", }),
-                    ]),
-                ]);
-                const copyPasteContainer = HTML.div({ class: "editor-controls", style: "margin: 0.5em; display: flex; flex-direction:row; align-items:center;" }, envelopeCopyButton, envelopePasteButton);
-                const extraSettingsDropdown = HTML.button({ style: "margin-left:0em; margin-right: 0.3em; height:1.5em; width: 10px; padding: 0px; font-size: 8px; align-self: center;", onclick: () => { const instrument = this._doc.song.channels[this._doc.channel].instruments[this._doc.getCurrentInstrument()]; this._extraSettingsDropdown(8, envelopeIndex, Config.newEnvelopes[instrument.envelopes[envelopeIndex].envelope].name); } }, "▼");
-                extraSettingsDropdown.style.display = "inline";
-                const extraSettingsDropdownGroup = HTML.div({ class: "editor-controls", style: "flex-direction:column; align-items:center;" }, extraRandomSettingsGroup, extraLFOSettingsGroup, extraPitchSettingsGroup, perEnvelopeSpeedGroup, lowerBoundWrapper, upperBoundWrapper, invertWrapper, copyPasteContainer);
-                extraSettingsDropdownGroup.style.display = "none";
-                const row = HTML.div({ class: "envelope-row" }, extraSettingsDropdown, HTML.div({ class: "selectContainer", style: "width: 0; flex: 1;" }, targetSelect), HTML.div({ class: "selectContainer", style: "width: 0; flex: 0.85" }, envelopeSelect), deleteButton);
+                const deleteButton = HTML.button({ type: "button", class: "delete-envelope" });
+                const row = HTML.div({ class: "envelope-row" }, HTML.div({ class: "selectContainer", style: "width: 0; flex: 1;" }, targetSelect), HTML.div({ class: "selectContainer", style: "width: 0; flex: 0.7;" }, envelopeSelect), deleteButton);
                 this.container.appendChild(row);
-                this.container.appendChild(extraSettingsDropdownGroup);
                 this._rows[envelopeIndex] = row;
                 this._targetSelects[envelopeIndex] = targetSelect;
                 this._envelopeSelects[envelopeIndex] = envelopeSelect;
                 this._deleteButtons[envelopeIndex] = deleteButton;
-                this.extraSettingsDropdowns[envelopeIndex] = extraSettingsDropdown;
-                this.extraSettingsDropdownGroups[envelopeIndex] = extraSettingsDropdownGroup;
-                this._inverters[envelopeIndex] = invertBox;
-                this.perEnvelopeLowerBoundBoxes[envelopeIndex] = lowerBoundBox;
-                this.perEnvelopeUpperBoundBoxes[envelopeIndex] = upperBoundBox;
-                this._perEnvelopeLowerBoundSliders[envelopeIndex] = lowerBoundSlider;
-                this._perEnvelopeUpperBoundSliders[envelopeIndex] = upperBoundSlider;
-                this._perEnvelopeSpeedDisplays[envelopeIndex] = perEnvelopeSpeedDisplay;
-                this._perEnvelopeSpeedSliders[envelopeIndex] = perEnvelopeSpeedSlider;
-                this.perEnvelopeSpeedGroups[envelopeIndex] = perEnvelopeSpeedGroup;
-                this.extraPitchSettingsGroups[envelopeIndex] = extraPitchSettingsGroup;
-                this._pitchStartSliders[envelopeIndex] = pitchStartNoteSlider;
-                this.pitchStartBoxes[envelopeIndex] = pitchStartNoteBox;
-                this._pitchEndSliders[envelopeIndex] = pitchEndNoteSlider;
-                this.pitchEndBoxes[envelopeIndex] = pitchEndNoteBox;
-                this._startNoteDisplays[envelopeIndex] = pitchStartNoteDisplay;
-                this._endNoteDisplays[envelopeIndex] = pitchEndNoteDisplay;
-                this.extraRandomSettingsGroups[envelopeIndex] = extraRandomSettingsGroup;
-                this.randomStepsBoxes[envelopeIndex] = randomStepsBox;
-                this.randomSeedBoxes[envelopeIndex] = randomSeedBox;
-                this._randomStepsSliders[envelopeIndex] = randomStepsSlider;
-                this._randomSeedSliders[envelopeIndex] = randomSeedSlider;
-                this._randomStepsWrappers[envelopeIndex] = randomStepsWrapper;
-                this._randomEnvelopeTypeSelects[envelopeIndex] = randomTypeSelect;
-                this.extraLFODropdownGroups[envelopeIndex] = extraLFOSettingsGroup;
-                this._waveformSelects[envelopeIndex] = waveformSelect;
-                this.LFOStepsBoxes[envelopeIndex] = LFOStepsBox;
-                this._LFOStepsSliders[envelopeIndex] = LFOStepsSlider;
-                this._LFOStepsWrappers[envelopeIndex] = LFOStepsWrapper;
-                this._envelopeCopyButtons[envelopeIndex] = envelopeCopyButton;
-                this._envelopePasteButtons[envelopeIndex] = envelopePasteButton;
             }
             for (let envelopeIndex = this._renderedEnvelopeCount; envelopeIndex < instrument.envelopeCount; envelopeIndex++) {
                 this._rows[envelopeIndex].style.display = "";
@@ -54234,23 +53402,6 @@ You should be redirected to the song at:<br /><br />
             for (let envelopeIndex = 0; envelopeIndex < instrument.envelopeCount; envelopeIndex++) {
                 this._targetSelects[envelopeIndex].value = String(instrument.envelopes[envelopeIndex].target + instrument.envelopes[envelopeIndex].index * Config.instrumentAutomationTargets.length);
                 this._envelopeSelects[envelopeIndex].selectedIndex = instrument.envelopes[envelopeIndex].envelope;
-                this.pitchStartBoxes[envelopeIndex].value = String(instrument.envelopes[envelopeIndex].pitchEnvelopeStart);
-                this.pitchEndBoxes[envelopeIndex].value = String(instrument.envelopes[envelopeIndex].pitchEnvelopeEnd);
-                this._pitchStartSliders[envelopeIndex].value = String(instrument.envelopes[envelopeIndex].pitchEnvelopeStart);
-                this._pitchEndSliders[envelopeIndex].value = String(instrument.envelopes[envelopeIndex].pitchEnvelopeEnd);
-                this._inverters[envelopeIndex].checked = instrument.envelopes[envelopeIndex].inverse;
-                this._perEnvelopeSpeedSliders[envelopeIndex].value = String(this.convertIndexSpeed(instrument.envelopes[envelopeIndex].perEnvelopeSpeed, "index"));
-                this.perEnvelopeLowerBoundBoxes[envelopeIndex].value = String(instrument.envelopes[envelopeIndex].perEnvelopeLowerBound);
-                this.perEnvelopeUpperBoundBoxes[envelopeIndex].value = String(instrument.envelopes[envelopeIndex].perEnvelopeUpperBound);
-                this._perEnvelopeLowerBoundSliders[envelopeIndex].value = String(instrument.envelopes[envelopeIndex].perEnvelopeLowerBound);
-                this._perEnvelopeUpperBoundSliders[envelopeIndex].value = String(instrument.envelopes[envelopeIndex].perEnvelopeUpperBound);
-                this.randomStepsBoxes[envelopeIndex].value = String(instrument.envelopes[envelopeIndex].steps);
-                this.randomSeedBoxes[envelopeIndex].value = String(instrument.envelopes[envelopeIndex].seed);
-                this._randomStepsSliders[envelopeIndex].value = String(instrument.envelopes[envelopeIndex].steps);
-                this._randomSeedSliders[envelopeIndex].value = String(instrument.envelopes[envelopeIndex].seed);
-                this.LFOStepsBoxes[envelopeIndex].value = String(instrument.envelopes[envelopeIndex].steps);
-                this._LFOStepsSliders[envelopeIndex].value = String(instrument.envelopes[envelopeIndex].steps);
-                this.openExtraSettingsDropdowns[envelopeIndex] = this.openExtraSettingsDropdowns[envelopeIndex] ? true : false;
             }
             this._renderedEnvelopeCount = instrument.envelopeCount;
             this._renderedEqFilterCount = instrument.eqFilter.controlPointCount;
@@ -54418,7 +53569,7 @@ You should be redirected to the song at:<br /><br />
         }
     }
 
-    const { button: button$j, div: div$j, h2: h2$h, input: input$b } = HTML;
+    const { button: button$i, div: div$i, h2: h2$h, input: input$b } = HTML;
     class LimiterCanvas {
         constructor(lim) {
             this._editorWidth = 200;
@@ -54541,7 +53692,7 @@ You should be redirected to the song at:<br /><br />
             this._doc = _doc;
             this._songEditor = _songEditor;
             this.limiterCanvas = new LimiterCanvas(this);
-            this._playButton = button$j({ style: "width: 55%;", type: "button" });
+            this._playButton = button$i({ style: "width: 55%;", type: "button" });
             this.limitDecaySlider = input$b({ title: "limit decay", style: `width: 5em; flex-grow: 1; margin: 0;`, type: "range", min: "1", max: "30", value: "4", step: "1" });
             this.limitRiseSlider = input$b({ title: "limit rise", style: `width: 5em; flex-grow: 1; margin: 0;`, type: "range", min: "2000", max: "10000", value: "4000", step: "250" });
             this.compressionThresholdSlider = input$b({ title: "compressor threshold", style: `width: 100%; flex-grow: 1; margin: 0;`, type: "range", min: "0", max: "1.1", value: "1", step: "0.05" });
@@ -54553,10 +53704,10 @@ You should be redirected to the song at:<br /><br />
             this.inVolumeHistoricCap = 0.0;
             this.outVolumeHistoricTimer = 0.0;
             this.outVolumeHistoricCap = 0.0;
-            this._cancelButton = button$j({ class: "cancelButton" });
-            this._okayButton = button$j({ class: "okayButton", style: "width:45%;" }, "Okay");
-            this._resetButton = button$j({ style: "width:45%;" }, "Reset");
-            this.container = div$j({ class: "prompt noSelection", style: "width: 250px;" }, div$j({ class: "promptTitle" }, h2$h({ class: "limiterExt", style: "text-align: inherit;" }, ""), h2$h({ class: "limiterTitle" }, "Limiter Options")), div$j({ style: "display: flex; width: 55%; align-self: center; flex-direction: row; align-items: center; justify-content: center;" }, this._playButton), div$j({ style: "display: flex; flex-direction: row; align-items: center; justify-content: center;" }, this.limiterCanvas.container), div$j({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; margin-top: 1.5em; justify-content: flex-end;" }, div$j({ style: `text-align: right; width: 25%; margin-right: 4.5%; color: ${ColorConfig.primaryText};` }, ""), div$j({ style: `text-align: center; width: 33%; margin-right: 4.5%; color: ${ColorConfig.textSelection};` }, "Boost"), div$j({ style: `text-align: center; width: 33%; margin-right: 0%; color: ${ColorConfig.linkAccent};` }, "Cutoff")), div$j({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; margin-top: 0.5em; justify-content: flex-end;" }, div$j({ style: `text-align: right; width: 25%; margin-right: 4.5%; color: ${ColorConfig.primaryText};` }, "Threshold:"), div$j({ style: `width: 33%; margin-right: 4.5%;` }, this.compressionThresholdSlider), div$j({ style: `width: 33%; margin-right: 0%;` }, this.limitThresholdSlider)), div$j({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, div$j({ style: `text-align: right; width: 25%; margin-right: 4.5%; color: ${ColorConfig.primaryText};` }, "Ratio:"), div$j({ style: `width: 33%; margin-right: 4.5%;` }, this.compressionRatioSlider), div$j({ style: `width: 33%; margin-right: 0%;` }, this.limitRatioSlider)), div$j({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, div$j({ style: `text-align: right; width: 8.5em; margin-right: 1em; color: ${ColorConfig.primaryText};` }, "Limit Decay:"), this.limitDecaySlider), div$j({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, div$j({ style: `text-align: right; width: 8.5em; margin-right: 1em; color: ${ColorConfig.primaryText};` }, "Limit Rise:"), this.limitRiseSlider), div$j({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, div$j({ style: `text-align: right; width: 8.5em; margin-right: 1em; color: ${ColorConfig.primaryText};` }, "Master Gain:"), this.masterGainSlider), div$j({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton, this._resetButton), this._cancelButton);
+            this._cancelButton = button$i({ class: "cancelButton" });
+            this._okayButton = button$i({ class: "okayButton", style: "width:45%;" }, "Okay");
+            this._resetButton = button$i({ style: "width:45%;" }, "Reset");
+            this.container = div$i({ class: "prompt noSelection", style: "width: 250px;" }, div$i({ class: "promptTitle" }, h2$h({ class: "limiterExt", style: "text-align: inherit;" }, ""), h2$h({ class: "limiterTitle" }, "Limiter Options")), div$i({ style: "display: flex; width: 55%; align-self: center; flex-direction: row; align-items: center; justify-content: center;" }, this._playButton), div$i({ style: "display: flex; flex-direction: row; align-items: center; justify-content: center;" }, this.limiterCanvas.container), div$i({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; margin-top: 1.5em; justify-content: flex-end;" }, div$i({ style: `text-align: right; width: 25%; margin-right: 4.5%; color: ${ColorConfig.primaryText};` }, ""), div$i({ style: `text-align: center; width: 33%; margin-right: 4.5%; color: ${ColorConfig.textSelection};` }, "Boost"), div$i({ style: `text-align: center; width: 33%; margin-right: 0%; color: ${ColorConfig.linkAccent};` }, "Cutoff")), div$i({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; margin-top: 0.5em; justify-content: flex-end;" }, div$i({ style: `text-align: right; width: 25%; margin-right: 4.5%; color: ${ColorConfig.primaryText};` }, "Threshold:"), div$i({ style: `width: 33%; margin-right: 4.5%;` }, this.compressionThresholdSlider), div$i({ style: `width: 33%; margin-right: 0%;` }, this.limitThresholdSlider)), div$i({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, div$i({ style: `text-align: right; width: 25%; margin-right: 4.5%; color: ${ColorConfig.primaryText};` }, "Ratio:"), div$i({ style: `width: 33%; margin-right: 4.5%;` }, this.compressionRatioSlider), div$i({ style: `width: 33%; margin-right: 0%;` }, this.limitRatioSlider)), div$i({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, div$i({ style: `text-align: right; width: 8.5em; margin-right: 1em; color: ${ColorConfig.primaryText};` }, "Limit Decay:"), this.limitDecaySlider), div$i({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, div$i({ style: `text-align: right; width: 8.5em; margin-right: 1em; color: ${ColorConfig.primaryText};` }, "Limit Rise:"), this.limitRiseSlider), div$i({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, div$i({ style: `text-align: right; width: 8.5em; margin-right: 1em; color: ${ColorConfig.primaryText};` }, "Master Gain:"), this.masterGainSlider), div$i({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton, this._resetButton), this._cancelButton);
             this._volumeUpdate = () => {
                 this.inVolumeHistoricTimer--;
                 if (this.inVolumeHistoricTimer <= 0) {
@@ -54699,15 +53850,15 @@ You should be redirected to the song at:<br /><br />
         }
     }
 
-    const { button: button$i, div: div$i, h2: h2$g, input: input$a } = HTML;
+    const { button: button$h, div: div$h, h2: h2$g, input: input$a } = HTML;
     class CustomScalePrompt {
         constructor(_doc) {
             this._doc = _doc;
             this._flags = [];
             this._scaleFlags = [];
             this._scaleRows = [];
-            this._cancelButton = button$i({ class: "cancelButton" });
-            this._okayButton = button$i({ class: "okayButton", style: "width:45%;" }, "Okay");
+            this._cancelButton = button$h({ class: "cancelButton" });
+            this._okayButton = button$h({ class: "okayButton", style: "width:45%;" }, "Okay");
             this._close = () => {
                 this._doc.undo();
             };
@@ -54729,15 +53880,15 @@ You should be redirected to the song at:<br /><br />
                 this._doc.record(new ChangeCustomScale(this._doc, this._flags));
             };
             this._flags = _doc.song.scaleCustom.slice();
-            let scaleHolder = div$i({});
+            let scaleHolder = div$h({});
             for (var i = 1; i < Config.pitchesPerOctave; i++) {
                 this._scaleFlags[i] = input$a({ type: "checkbox", style: "width: 1em; padding: 0; margin-right: 4em;", "checked": this._flags[i], "value": i });
-                this._scaleRows[i] = div$i({ style: "text-align: right; height: 2em;" }, "note " + i + ":", this._scaleFlags[i]);
+                this._scaleRows[i] = div$h({ style: "text-align: right; height: 2em;" }, "note " + i + ":", this._scaleFlags[i]);
                 scaleHolder.appendChild(this._scaleRows[i]);
             }
             this._okayButton.addEventListener("click", this._saveChanges);
             this._cancelButton.addEventListener("click", this._close);
-            this.container = div$i({ class: "prompt noSelection", style: "width: 250px;" }, div$i({ class: "promptTitle" }, h2$g({ class: "sclaeExt", style: "text-align: inherit;" }, ""), h2$g({ class: "scaleTitle" }, "Custom Scale")), div$i({ style: "display: flex; flex-direction: row; align-items: center; justify-content: flex-end;" }, scaleHolder), div$i({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton), this._cancelButton);
+            this.container = div$h({ class: "prompt noSelection", style: "width: 250px;" }, div$h({ class: "promptTitle" }, h2$g({ class: "sclaeExt", style: "text-align: inherit;" }, ""), h2$g({ class: "scaleTitle" }, "Custom Scale")), div$h({ style: "display: flex; flex-direction: row; align-items: center; justify-content: flex-end;" }, scaleHolder), div$h({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton), this._cancelButton);
             this.container.addEventListener("keydown", this.whenKeyPressed);
         }
     }
@@ -55049,15 +54200,15 @@ You should be redirected to the song at:<br /><br />
         }
     }
 
-    const { button: button$h, div: div$h, span: span$4, h2: h2$f, input: input$9, br: br$2, select: select$c, option: option$c } = HTML;
+    const { button: button$g, div: div$g, span: span$4, h2: h2$f, input: input$9, br: br$2, select: select$c, option: option$c } = HTML;
     class MoveNotesSidewaysPrompt {
         constructor(_doc) {
             this._doc = _doc;
             this._beatsStepper = input$9({ style: "width: 3em; margin-left: 1em;", type: "number", step: "0.01", value: "0" });
             this._conversionStrategySelect = select$c({ style: "width: 100%;" }, option$c({ value: "overflow" }, "Overflow notes across bars."), option$c({ value: "wrapAround" }, "Wrap notes around within bars."));
-            this._cancelButton = button$h({ class: "cancelButton" });
-            this._okayButton = button$h({ class: "okayButton", style: "width:45%;" }, "Okay");
-            this.container = div$h({ class: "prompt noSelection", style: "width: 250px;" }, div$h({ class: "promptTitle" }, h2$f({ class: "mnsExt", style: "text-align: inherit;" }, ""), h2$f({ class: "mnsTitle" }, "Move Notes Sideways")), div$h({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, div$h({ style: "text-align: right;" }, "Beats to move:", br$2(), span$4({ style: `font-size: smaller; color: ${ColorConfig.secondaryText};` }, "(Negative is left, positive is right)")), this._beatsStepper), div$h({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, div$h({ class: "selectContainer", style: "width: 100%;" }, this._conversionStrategySelect)), div$h({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton), this._cancelButton);
+            this._cancelButton = button$g({ class: "cancelButton" });
+            this._okayButton = button$g({ class: "okayButton", style: "width:45%;" }, "Okay");
+            this.container = div$g({ class: "prompt noSelection", style: "width: 250px;" }, div$g({ class: "promptTitle" }, h2$f({ class: "mnsExt", style: "text-align: inherit;" }, ""), h2$f({ class: "mnsTitle" }, "Move Notes Sideways")), div$g({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, div$g({ style: "text-align: right;" }, "Beats to move:", br$2(), span$4({ style: `font-size: smaller; color: ${ColorConfig.secondaryText};` }, "(Negative is left, positive is right)")), this._beatsStepper), div$g({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, div$g({ class: "selectContainer", style: "width: 100%;" }, this._conversionStrategySelect)), div$g({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton), this._cancelButton);
             this._close = () => {
                 this._doc.undo();
             };
@@ -56058,7 +55209,7 @@ You should be redirected to the song at:<br /><br />
             this._svgNoteBackground = SVG.pattern({ id: "patternEditorNoteBackground" + this._barOffset, x: "0", y: "0", patternUnits: "userSpaceOnUse" });
             this._svgDrumBackground = SVG.pattern({ id: "patternEditorDrumBackground" + this._barOffset, x: "0", y: "0", patternUnits: "userSpaceOnUse" });
             this._svgModBackground = SVG.pattern({ id: "patternEditorModBackground" + this._barOffset, x: "0", y: "0", patternUnits: "userSpaceOnUse" });
-            this._svgBackground = SVG.rect({ id: "pitchEditorBackground", x: "0", y: "0", style: `opacity: ${getLocalStorageItem("customThemeImageOpacity", "1")};`, "pointer-events": "none", fill: "url(#patternEditorNoteBackground" + this._barOffset + ")" });
+            this._svgBackground = SVG.rect({ id: "pitchEditorBackground", x: "0", y: "0", "pointer-events": "none", fill: "url(#patternEditorNoteBackground" + this._barOffset + ")" });
             this._svgNoteContainer = SVG.svg();
             this._svgPlayhead = SVG.rect({ x: "0", y: "0", width: "4", fill: ColorConfig.playhead, "pointer-events": "none" });
             this._selectionRect = SVG.rect({ class: "dashed-line dash-move", fill: ColorConfig.boxSelectionFill, stroke: ColorConfig.hoverPreview, "stroke-width": 2, "stroke-dasharray": "5, 3", "fill-opacity": "0.4", "pointer-events": "none", visibility: "hidden" });
@@ -59273,15 +58424,15 @@ You should be redirected to the song at:<br /><br />
         }
     }
 
-    const { button: button$g, div: div$g, span: span$3, h2: h2$e, input: input$8, br: br$1, select: select$b, option: option$b } = HTML;
+    const { button: button$f, div: div$f, span: span$3, h2: h2$e, input: input$8, br: br$1, select: select$b, option: option$b } = HTML;
     class SongDurationPrompt {
         constructor(_doc) {
             this._doc = _doc;
             this._barsStepper = input$8({ style: "width: 3em; margin-left: 1em;", type: "number", step: "1" });
             this._positionSelect = select$b({ style: "width: 100%;" }, option$b({ value: "end" }, "Apply change at end of song."), option$b({ value: "beginning" }, "Apply change at beginning of song."));
-            this._cancelButton = button$g({ class: "cancelButton" });
-            this._okayButton = button$g({ class: "okayButton", style: "width:45%;" }, "Okay");
-            this.container = div$g({ class: "prompt noSelection", style: "width: 250px;" }, div$g({ class: "promptTitle" }, h2$e({ class: "song-lengthExt", style: "text-align: inherit;" }, ""), h2$e({ class: "song-lengthTitle" }, "Song Length")), div$g({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, div$g({ style: "display: inline-block; text-align: right;" }, "Bars per song:", br$1(), span$3({ style: `font-size: smaller; color: ${ColorConfig.secondaryText};` }, "(Multiples of 4 are recommended)")), this._barsStepper), div$g({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, div$g({ class: "selectContainer", style: "width: 100%;" }, this._positionSelect)), div$g({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton), this._cancelButton);
+            this._cancelButton = button$f({ class: "cancelButton" });
+            this._okayButton = button$f({ class: "okayButton", style: "width:45%;" }, "Okay");
+            this.container = div$f({ class: "prompt noSelection", style: "width: 250px;" }, div$f({ class: "promptTitle" }, h2$e({ class: "song-lengthExt", style: "text-align: inherit;" }, ""), h2$e({ class: "song-lengthTitle" }, "Song Length")), div$f({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, div$f({ style: "display: inline-block; text-align: right;" }, "Bars per song:", br$1(), span$3({ style: `font-size: smaller; color: ${ColorConfig.secondaryText};` }, "(Multiples of 4 are recommended)")), this._barsStepper), div$f({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, div$f({ class: "selectContainer", style: "width: 100%;" }, this._positionSelect)), div$f({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton), this._cancelButton);
             this._close = () => {
                 this._doc.undo();
             };
@@ -59336,14 +58487,14 @@ You should be redirected to the song at:<br /><br />
         }
     }
 
-    const { button: button$f, div: div$f, h2: h2$d, p: p$7, select: select$a, option: option$a } = HTML;
+    const { button: button$e, div: div$e, h2: h2$d, p: p$7, select: select$a, option: option$a } = HTML;
     class SustainPrompt {
         constructor(_doc) {
             this._doc = _doc;
             this._typeSelect = select$a({ style: "width: 100%;" }, option$a({ value: "acoustic" }, "(A) Acoustic"), option$a({ value: "bright" }, "(B) Bright"));
-            this._cancelButton = button$f({ class: "cancelButton" });
-            this._okayButton = button$f({ class: "okayButton", style: "width:45%;" }, "Okay");
-            this.container = div$f({ class: "prompt", style: "width: 300px;" }, div$f(h2$d("String Sustain"), p$7("This setting controls how quickly the picked string vibration decays."), p$7("Unlike most of BeepBox's instrument synthesizer features, a picked string cannot change frequency suddenly while maintaining its decay. If a tone's pitch changes suddenly (e.g. if the chord type is set to \"arpeggio\" or the transition type is set to \"continues\") then the string will be re-picked and start decaying from the beginning again, even if the envelopes don't otherwise restart.")), div$f({ style: { display: Config.enableAcousticSustain ? undefined : "none" } }, p$7("BeepBox comes with two slightly different sustain designs. You can select one here and press \"Okay\" to confirm it."), div$f({ class: "selectContainer", style: "width: 100%;" }, this._typeSelect)), div$f({ style: { display: Config.enableAcousticSustain ? "flex" : "none", "flex-direction": "row-reverse", "justify-content": "space-between" } }, this._okayButton), this._cancelButton);
+            this._cancelButton = button$e({ class: "cancelButton" });
+            this._okayButton = button$e({ class: "okayButton", style: "width:45%;" }, "Okay");
+            this.container = div$e({ class: "prompt", style: "width: 300px;" }, div$e(h2$d("String Sustain"), p$7("This setting controls how quickly the picked string vibration decays."), p$7("Unlike most of BeepBox's instrument synthesizer features, a picked string cannot change frequency suddenly while maintaining its decay. If a tone's pitch changes suddenly (e.g. if the chord type is set to \"arpeggio\" or the transition type is set to \"continues\") then the string will be re-picked and start decaying from the beginning again, even if the envelopes don't otherwise restart.")), div$e({ style: { display: Config.enableAcousticSustain ? undefined : "none" } }, p$7("BeepBox comes with two slightly different sustain designs. You can select one here and press \"Okay\" to confirm it."), div$e({ class: "selectContainer", style: "width: 100%;" }, this._typeSelect)), div$e({ style: { display: Config.enableAcousticSustain ? "flex" : "none", "flex-direction": "row-reverse", "justify-content": "space-between" } }, this._okayButton), this._cancelButton);
             this._close = () => {
                 this._doc.undo();
             };
@@ -59506,13 +58657,13 @@ You should be redirected to the song at:<br /><br />
         }
     }
 
-    const { button: button$e, div: div$e, h2: h2$c, p: p$6, select: select$9, option: option$9, iframe } = HTML;
+    const { button: button$d, div: div$d, h2: h2$c, p: p$6, select: select$9, option: option$9, iframe } = HTML;
     class SongRecoveryPrompt {
         constructor(_doc) {
             this._doc = _doc;
-            this._songContainer = div$e();
-            this._cancelButton = button$e({ class: "cancelButton" });
-            this.container = div$e({ class: "prompt", style: "width: 300px;" }, div$e({ class: "promptTitle" }, h2$c({ class: "songRecovExt", style: "text-align: inherit;" }, ""), h2$c({ class: "songRecovTitle" }, "Song Recovery")), div$e({ style: "max-height: 385px; overflow-y: auto;" }, p$6("This is a TEMPORARY list of songs you have recently modified. Please keep your own backups of songs you care about! SONGS THAT USE SAMPLES WILL TAKE A WHILE TO LOAD, so be patient!"), this._songContainer, p$6("(If \"Display Song Data in URL\" is enabled in your preferences, then you may also be able to find song versions in your browser history. However, song recovery won't work if you were browsing in private/incognito mode.)")), this._cancelButton);
+            this._songContainer = div$d();
+            this._cancelButton = button$d({ class: "cancelButton" });
+            this.container = div$d({ class: "prompt", style: "width: 300px;" }, div$d({ class: "promptTitle" }, h2$c({ class: "songRecovExt", style: "text-align: inherit;" }, ""), h2$c({ class: "songRecovTitle" }, "Song Recovery")), div$d({ style: "max-height: 385px; overflow-y: auto;" }, p$6("This is a TEMPORARY list of songs you have recently modified. Please keep your own backups of songs you care about! SONGS THAT USE SAMPLES WILL TAKE A WHILE TO LOAD, so be patient!"), this._songContainer, p$6("(If \"Display Song Data in URL\" is enabled in your preferences, then you may also be able to find song versions in your browser history. However, song recovery won't work if you were browsing in private/incognito mode.)")), this._cancelButton);
             this._close = () => {
                 this._doc.undo();
             };
@@ -59531,7 +58682,7 @@ You should be redirected to the song at:<br /><br />
                 }
                 const player = iframe({ style: "width: 100%; height: 60px; border: none; display: block;" });
                 player.src = "sr-player/#song=" + window.localStorage.getItem(versionToKey(song.versions[0]));
-                const container = div$e({ style: "margin: 4px 0;" }, div$e({ class: "selectContainer", style: "width: 100%; margin: 2px 0;" }, versionMenu), player);
+                const container = div$d({ style: "margin: 4px 0;" }, div$d({ class: "selectContainer", style: "width: 100%; margin: 2px 0;" }, versionMenu), player);
                 this._songContainer.appendChild(container);
                 versionMenu.addEventListener("change", () => {
                     const version = song.versions[versionMenu.selectedIndex];
@@ -59542,23 +58693,23 @@ You should be redirected to the song at:<br /><br />
         }
     }
 
-    const { button: button$d, label, div: div$d, p: p$5, a: a$3, h2: h2$b, input: input$7, select: select$8, option: option$8 } = HTML;
+    const { button: button$c, label, div: div$c, p: p$5, a: a$2, h2: h2$b, input: input$7, select: select$8, option: option$8 } = HTML;
     class RecordingSetupPrompt {
         constructor(_doc) {
             this._doc = _doc;
             this._keyboardMode = select$8({ style: "width: 100%;" }, option$8({ value: "useCapsLockForNotes" }, "simple shortcuts, use caps lock to play notes"), option$8({ value: "pressControlForShortcuts" }, "simple notes, press " + EditorConfig.ctrlName + " for shortcuts"));
             this._keyboardLayout = select$8({ style: "width: 100%;" }, option$8({ value: "wickiHayden" }, "Wicki-Hayden"), option$8({ value: "songScale" }, "selected song scale"), option$8({ value: "pianoAtC" }, "piano starting at C :)"), option$8({ value: "pianoAtA" }, "piano starting at A :("), option$8({ value: "pianoTransposingC" }, "piano transposing C :) to song key"), option$8({ value: "pianoTransposingA" }, "piano transposing A :( to song key"));
             this._bassOffset = select$8({ style: "width: 100%;" }, option$8({ value: "0" }, "disabled"), option$8({ value: "-1" }, "before"), option$8({ value: "1" }, "after"));
-            this._keyboardLayoutPreview = div$d({ style: "display: grid; row-gap: 4px; margin: 4px auto; font-size: 10px;" });
+            this._keyboardLayoutPreview = div$c({ style: "display: grid; row-gap: 4px; margin: 4px auto; font-size: 10px;" });
             this._enableMidi = input$7({ style: "width: 2em; margin-left: 1em;", type: "checkbox" });
             this._showRecordButton = input$7({ style: "width: 2em; margin-left: 1em;", type: "checkbox" });
             this._snapRecordedNotesToRhythm = input$7({ style: "width: 2em; margin-left: 1em;", type: "checkbox" });
             this._ignorePerformedNotesNotInScale = input$7({ style: "width: 2em; margin-left: 1em;", type: "checkbox" });
             this._metronomeCountIn = input$7({ style: "width: 2em; margin-left: 1em;", type: "checkbox" });
             this._metronomeWhileRecording = input$7({ style: "width: 2em; margin-left: 1em;", type: "checkbox" });
-            this._okayButton = button$d({ class: "okayButton", style: "width:45%;" }, "Okay");
-            this._cancelButton = button$d({ class: "cancelButton" });
-            this.container = div$d({ class: "prompt noSelection recordingSetupPrompt", style: "width: 600px; text-align: right; max-height: 90%;" }, div$d({ class: "promptTitle" }, h2$b({ class: "nrsExt", style: "text-align: inherit;" }, ""), h2$b({ class: "nrsTitle" }, "Note Recording Setup")), div$d({ style: "display: grid; overflow-y: auto; overflow-x: hidden; flex-shrink: 1;" }, p$5("AbyssBox can record notes as you perform them. You can start recording by pressing Ctrl+Space (or " + EditorConfig.ctrlSymbol + "P)."), label({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: center;" }, "Add ● record button next to ▶ play button:", this._showRecordButton), label({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: center;" }, "Snap recorded notes to the song's rhythm:", this._snapRecordedNotesToRhythm), label({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: center;" }, "Ignore notes not in the song's scale:", this._ignorePerformedNotesNotInScale), p$5("While recording, you can perform notes on your keyboard!"), label({ style: "display: flex; flex-direction: row; align-items: center; margin-top: 0.5em; margin-bottom: 0.5em; height: 2em; justify-content: center;" }, "Keyboard layout:", div$d({ class: "selectContainer", style: "width: 65%; margin-left: 1em;" }, this._keyboardLayout)), this._keyboardLayoutPreview, p$5("When not recording, you can use the computer keyboard either for shortcuts (like C and V for copy and paste) or for performing notes, depending on this mode:"), label({ style: "display: flex; margin-top: 0.5em; margin-bottom: 0.5em; flex-direction: row; align-items: center; height: 2em; justify-content: center;" }, div$d({ class: "selectContainer", style: "width: 50%;" }, this._keyboardMode)), p$5("Performing music takes practice! Try slowing the tempo and using this metronome to help you keep a rhythm."), label({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: center;" }, "Hear metronome while recording:", this._metronomeWhileRecording), label({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: center;" }, "Count-in 1 bar of metronome before recording:", this._metronomeCountIn), p$5("If you have a ", a$3({ href: "https://caniuse.com/midi", target: "_blank" }, "compatible browser"), " on a device connected to a MIDI keyboard, you can use it to perform notes in AbyssBox! (Or you could buy ", a$3({ href: "https://imitone.com/", target: "_blank" }, "Imitone"), " or ", a$3({ href: "https://vochlea.com/", target: "_blank" }, "Dubler"), " to hum notes into a microphone while wearing headphones!)"), label({ style: "display: flex; flex-direction: row; align-items: center; margin-top: 0.5em; height: 2em; justify-content: center;" }, "Enable MIDI performance:", this._enableMidi), p$5("The range of pitches available to play via your computer keyboard is affected by the octave scrollbar of the currently selected channel."), p$5("If you set the channel offset below to 'before' or 'after', notes below the middle octave in the view will be 'bass' notes, and placed in the channel before or after the viewed one. Using this, you can play bass and lead at the same time!"), label({ style: "display: flex; flex-direction: row; align-items: center; margin-top: 0.5em; margin-bottom: 0.5em; height: 2em; justify-content: center;" }, "Bass Offset:", div$d({ class: "selectContainer", style: "width: 50%; margin-left: 1em;" }, this._bassOffset)), p$5("Once you enable the setting, the keyboard layout above will darken to denote the new bass notes. The notes will be recorded with independent timing and this works with MIDI devices, too. Be aware that the octave offset of both used channels will impact how high/low the bass/lead are relative to one another."), p$5("Recorded notes often overlap such that one note ends after the next note already started. In UltraBox, these notes get split into multiple notes which may sound different when re-played than they did when you were recording. To fix the sound, you can either manually clean up the notes in the pattern editor, or you could try enabling the \"transition type\" effect on the instrument and setting it to \"continue\"."), div$d({ style: `width: 100%; height: 80px; background: linear-gradient(rgba(0,0,0,0), ${ColorConfig.editorBackground}); position: sticky; bottom: 0; pointer-events: none;` })), div$d({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton), this._cancelButton);
+            this._okayButton = button$c({ class: "okayButton", style: "width:45%;" }, "Okay");
+            this._cancelButton = button$c({ class: "cancelButton" });
+            this.container = div$c({ class: "prompt noSelection recordingSetupPrompt", style: "width: 600px; text-align: right; max-height: 90%;" }, div$c({ class: "promptTitle" }, h2$b({ class: "nrsExt", style: "text-align: inherit;" }, ""), h2$b({ class: "nrsTitle" }, "Note Recording Setup")), div$c({ style: "display: grid; overflow-y: auto; overflow-x: hidden; flex-shrink: 1;" }, p$5("AbyssBox can record notes as you perform them. You can start recording by pressing Ctrl+Space (or " + EditorConfig.ctrlSymbol + "P)."), label({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: center;" }, "Add ● record button next to ▶ play button:", this._showRecordButton), label({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: center;" }, "Snap recorded notes to the song's rhythm:", this._snapRecordedNotesToRhythm), label({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: center;" }, "Ignore notes not in the song's scale:", this._ignorePerformedNotesNotInScale), p$5("While recording, you can perform notes on your keyboard!"), label({ style: "display: flex; flex-direction: row; align-items: center; margin-top: 0.5em; margin-bottom: 0.5em; height: 2em; justify-content: center;" }, "Keyboard layout:", div$c({ class: "selectContainer", style: "width: 65%; margin-left: 1em;" }, this._keyboardLayout)), this._keyboardLayoutPreview, p$5("When not recording, you can use the computer keyboard either for shortcuts (like C and V for copy and paste) or for performing notes, depending on this mode:"), label({ style: "display: flex; margin-top: 0.5em; margin-bottom: 0.5em; flex-direction: row; align-items: center; height: 2em; justify-content: center;" }, div$c({ class: "selectContainer", style: "width: 50%;" }, this._keyboardMode)), p$5("Performing music takes practice! Try slowing the tempo and using this metronome to help you keep a rhythm."), label({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: center;" }, "Hear metronome while recording:", this._metronomeWhileRecording), label({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: center;" }, "Count-in 1 bar of metronome before recording:", this._metronomeCountIn), p$5("If you have a ", a$2({ href: "https://caniuse.com/midi", target: "_blank" }, "compatible browser"), " on a device connected to a MIDI keyboard, you can use it to perform notes in AbyssBox! (Or you could buy ", a$2({ href: "https://imitone.com/", target: "_blank" }, "Imitone"), " or ", a$2({ href: "https://vochlea.com/", target: "_blank" }, "Dubler"), " to hum notes into a microphone while wearing headphones!)"), label({ style: "display: flex; flex-direction: row; align-items: center; margin-top: 0.5em; height: 2em; justify-content: center;" }, "Enable MIDI performance:", this._enableMidi), p$5("The range of pitches available to play via your computer keyboard is affected by the octave scrollbar of the currently selected channel."), p$5("If you set the channel offset below to 'before' or 'after', notes below the middle octave in the view will be 'bass' notes, and placed in the channel before or after the viewed one. Using this, you can play bass and lead at the same time!"), label({ style: "display: flex; flex-direction: row; align-items: center; margin-top: 0.5em; margin-bottom: 0.5em; height: 2em; justify-content: center;" }, "Bass Offset:", div$c({ class: "selectContainer", style: "width: 50%; margin-left: 1em;" }, this._bassOffset)), p$5("Once you enable the setting, the keyboard layout above will darken to denote the new bass notes. The notes will be recorded with independent timing and this works with MIDI devices, too. Be aware that the octave offset of both used channels will impact how high/low the bass/lead are relative to one another."), p$5("Recorded notes often overlap such that one note ends after the next note already started. In UltraBox, these notes get split into multiple notes which may sound different when re-played than they did when you were recording. To fix the sound, you can either manually clean up the notes in the pattern editor, or you could try enabling the \"transition type\" effect on the instrument and setting it to \"continue\"."), div$c({ style: `width: 100%; height: 80px; background: linear-gradient(rgba(0,0,0,0), ${ColorConfig.editorBackground}); position: sticky; bottom: 0; pointer-events: none;` })), div$c({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton), this._cancelButton);
             this._close = () => {
                 this._doc.undo();
             };
@@ -59592,12 +58743,12 @@ You should be redirected to the song at:<br /><br />
                 const rowLengths = [12, 12, 11, 10];
                 const scale = this._doc.song.scale == Config.scales.dictionary["Custom"].index ? this._doc.song.scaleCustom : Config.scales[this._doc.song.scale].flags;
                 for (let rowIndex = 0; rowIndex < 4; rowIndex++) {
-                    const row = div$d({ style: "display: flex;" });
+                    const row = div$c({ style: "display: flex;" });
                     this._keyboardLayoutPreview.appendChild(row);
-                    const spacer = div$d({ style: "width: " + (rowIndex * 12) + "px; height: 20px; flex-shrink: 0;" });
+                    const spacer = div$c({ style: "width: " + (rowIndex * 12) + "px; height: 20px; flex-shrink: 0;" });
                     row.appendChild(spacer);
                     for (let colIndex = 0; colIndex < rowLengths[rowIndex]; colIndex++) {
-                        const key = div$d({ style: `width: 20px; height: 20px; margin: 0 2px; box-sizing: border-box; flex-shrink: 0; display: flex; justify-content: center; align-items: center;` });
+                        const key = div$c({ style: `width: 20px; height: 20px; margin: 0 2px; box-sizing: border-box; flex-shrink: 0; display: flex; justify-content: center; align-items: center;` });
                         row.appendChild(key);
                         const pitch = KeyboardLayout.keyPosToPitch(this._doc, colIndex, 3 - rowIndex, this._keyboardLayout.value);
                         if (pitch != null) {
@@ -60069,15 +59220,15 @@ You should be redirected to the song at:<br /><br />
         }
     }
 
-    const { button: button$c, div: div$c, h2: h2$a, option: option$7, select: select$7, optgroup: optgroup$1 } = HTML;
+    const { button: button$b, div: div$b, h2: h2$a, option: option$7, select: select$7, optgroup: optgroup$1 } = HTML;
     class ThemePrompt {
         constructor(_doc) {
             this._doc = _doc;
-            this._themeSelect = select$7({ style: "width: 100%;", id: "themeSelect" }, optgroup$1({ label: "AbyssBox Themes" }, option$7({ value: "AbyssBox Classic" }, "AbyssBox Classic"), option$7({ value: "AbyssBox Competitive" }, "AbyssBox Competitive"), option$7({ value: "AbyssBox Light" }, "AbyssBox Light"), option$7({ value: "AbyssBox 0.8" }, "AbyssBox 0.8"), option$7({ value: "AbyssBox Piano" }, "AbyssBox Piano [!]"), option$7({ value: "Half-Life" }, "Half-Life"), option$7({ value: "Half-Life: Source" }, "Half-Life: Source"), option$7({ value: "Doom 1993" }, "Doom 1993"), option$7({ value: "Undertale" }, "Undertale"), option$7({ value: "Yume Nikki" }, "Yume Nikki [!]"), option$7({ value: "Scratch" }, "Scratch"), option$7({ value: "Scratch Addons" }, "Scratch Addons"), option$7({ value: "Windows Xp" }, "Windows Xp"), option$7({ value: "Frutiger Aero" }, "Frutiger Aero"), option$7({ value: "Frutiger Aero Night" }, "Frutiger Aero Night"), option$7({ value: "Skeuomorphic" }, "Skeuomorphic/Early 2000's (LeoV)"), option$7({ value: "woodland" }, "Woodland"), option$7({ value: "corporate dark" }, "Corporate Dark"), option$7({ value: "corporate light" }, "Corporate Light"), option$7({ value: "Glyde" }, "Glyde"), option$7({ value: "starry studio" }, "Starry Studio"), option$7({ value: "Terminal 2.0 (AB)" }, "Terminal 2.0 (AB)"), option$7({ value: "Slushie" }, "Slushie"), option$7({ value: "Slushie Pixel" }, "Slushie 2"), option$7({ value: "BeepBox Pixel" }, "BeepBox Pixel"), option$7({ value: "forest 2" }, "Forest 2"), option$7({ value: "canyon 2" }, "Canyon 2"), option$7({ value: "Nebula 2" }, "Nebula 2"), option$7({ value: "Ghost House" }, "Ghost House"), option$7({ value: "Ghost House 2" }, "Ghost House 2")), optgroup$1({ label: "BeepBox Themes" }, option$7({ value: "dark classic" }, "BeepBox Dark"), option$7({ value: "light classic" }, "BeepBox Light"), option$7({ value: "dark competition" }, "BeepBox Competition Dark")), optgroup$1({ label: "JummBox Themes" }, option$7({ value: "jummbox classic" }, "JummBox Dark"), option$7({ value: "jummbox light" }, "JummBox Light"), option$7({ value: "forest" }, "Forest"), option$7({ value: "canyon" }, "Canyon"), option$7({ value: "midnight" }, "Midnight"), option$7({ value: "beachcombing" }, "Beachcombing"), option$7({ value: "violet verdant" }, "Violet Verdant"), option$7({ value: "sunset" }, "Sunset"), option$7({ value: "autumn" }, "Autumn"), option$7({ value: "fruit" }, "Shadowfruit"), option$7({ value: "toxic" }, "Toxic"), option$7({ value: "roe" }, "Roe"), option$7({ value: "moonlight" }, "Moonlight"), option$7({ value: "portal" }, "Portal"), option$7({ value: "fusion" }, "Fusion"), option$7({ value: "inverse" }, "Inverse"), option$7({ value: "nebula" }, "Nebula"), option$7({ value: "roe light" }, "Roe Light"), option$7({ value: "amoled dark" }, "High Contrast Dark"), option$7({ value: "energized" }, "Energized"), option$7({ value: "neapolitan" }, "Neapolitan"), option$7({ value: "mono" }, "Poly"), option$7({ value: "blutonium" }, "Blutonium")), optgroup$1({ label: "ModBox Themes" }, option$7({ value: "modbox classic" }, "Modbox"), option$7({ value: "modbox 2" }, "Modbox 2.0"), option$7({ value: "modbox artic" }, "Artic"), option$7({ value: "modbox cinnamon" }, "Cinnamon Roll [!]"), option$7({ value: "modbox ocean" }, "Ocean"), option$7({ value: "modbox rainbow" }, "Rainbow [!]"), option$7({ value: "modbox float" }, "Float [!]"), option$7({ value: "modbox windows" }, "Windows"), option$7({ value: "modbox grassland" }, "Grassland"), option$7({ value: "modbox dessert" }, "Dessert"), option$7({ value: "modbox kahoot" }, "Kahootiest"), option$7({ value: "modbox bitbeam" }, "Beam to the Bit [!]"), option$7({ value: "modbox egg" }, "Pretty Egg"), option$7({ value: "modbox pony" }, "Poniryoshka"), option$7({ value: "modbox gameboy" }, "Gameboy [!]"), option$7({ value: "modbox woodkid" }, "Woodkid [!]"), option$7({ value: "modbox midnight" }, "Midnight [!]"), option$7({ value: "modbox snedbox" }, "Snedbox"), option$7({ value: "modbox unnamed" }, "unnamed [!]"), option$7({ value: "modbox piano" }, "Piano [!]"), option$7({ value: "modbox halloween" }, "Halloween [!]"), option$7({ value: "modbox frozen" }, "FrozenOver❄️ [!]")), optgroup$1({ label: "ShitBox Themes" }, option$7({ value: "shitbox 1.0" }, "Shitbox 1.0"), option$7({ value: "shitbox 2.0" }, "Shitbox 2.0"), option$7({ value: "shitbox 3.0" }, "Shitbox 3.0/shitbox4"), option$7({ value: "shitbox ModBox 2.0" }, "Shitbox ModBox 2.0"), option$7({ value: "shitbox Realm" }, "Shitbox Realm [!]")), optgroup$1({ label: "Nepbox Themes" }, option$7({ value: "nepbox" }, "Nepbox"), option$7({ value: "nepbox laffey" }, "Laffey"), option$7({ value: "nepbox snedbox" }, "Snedbox (Nb) [!]"), option$7({ value: "nepbox piano" }, "Piano (Nb) [!]")), optgroup$1({ label: "Mod Default Themes" }, option$7({ value: "sandbox classic" }, "Sandbox"), option$7({ value: "harrybox" }, "Haileybox"), option$7({ value: "brucebox" }, "Brucebox"), option$7({ value: "nerdbox" }, "NerdBox"), option$7({ value: "zefbox" }, "Zefbox"), option$7({ value: "cardboardbox classic" }, "Cardboardbox"), option$7({ value: "blubox classic" }, "Blubox"), option$7({ value: "dogebox classic" }, "Dogebox"), option$7({ value: "dogebox dark" }, "Way too Dark (DB)/TOO DARK(BluB)"), option$7({ value: "wackybox" }, "Wackybox"), option$7({ value: "todbox dark mode" }, "Todbox Dark Mode"), option$7({ value: "mainbox 1.0" }, "Mainbox"), option$7({ value: "microbox" }, "MicroBox"), option$7({ value: "paandorasbox" }, "PaandorasBox"), option$7({ value: "foxbox" }, "FoxBox"), option$7({ value: "midbox" }, "Midbox"), option$7({ value: "gold light" }, "Gold Light"), option$7({ value: "dogebox2" }, "Dogebox2"), option$7({ value: "WeebBox" }, "WeebBox"), option$7({ value: "BoxBeep Dark" }, "BoxBeep Dark"), option$7({ value: "BoxBeep light" }, "BoxBeep Light"), option$7({ value: "birdbox dark" }, "BirdBox Dark"), option$7({ value: "birdbox light" }, "BirdBox Light")), optgroup$1({ label: "Miscellaneous Themes" }, option$7({ value: "azur lane" }, "Azur Lane"), option$7({ value: "AWeebyssBox" }, "AWeebyssBox"), option$7({ value: "Deuteranopia" }, "Deuteranopia"), option$7({ value: "Protanopia" }, "Protanopia"), option$7({ value: "Tritanopia" }, "Tritanopia"), option$7({ value: "2012 Video Tutorial" }, "2012 Video Tutorial"), option$7({ value: "I am on fire" }, "I am on fire"), option$7({ value: "custom" }, "Custom")));
-            this._cancelButton = button$c({ class: "cancelButton" });
-            this._okayButton = button$c({ class: "okayButton", style: "width:45%;" }, "Okay");
+            this._themeSelect = select$7({ style: "width: 100%;", id: "themeSelect" }, optgroup$1({ label: "AbyssBox Themes" }, option$7({ value: "AbyssBox Classic" }, "AbyssBox Classic"), option$7({ value: "AbyssBox Competitive" }, "AbyssBox Competitive"), option$7({ value: "AbyssBox Light" }, "AbyssBox Light"), option$7({ value: "AbyssBox 0.8" }, "AbyssBox 0.8"), option$7({ value: "AbyssBox Piano" }, "AbyssBox Piano [!]"), option$7({ value: "Half-Life" }, "Half-Life"), option$7({ value: "Half-Life: Source" }, "Half-Life: Source"), option$7({ value: "Doom 1993" }, "Doom 1993"), option$7({ value: "Undertale" }, "Undertale"), option$7({ value: "Yume Nikki" }, "Yume Nikki [!]"), option$7({ value: "Scratch" }, "Scratch"), option$7({ value: "Scratch Addons" }, "Scratch Addons"), option$7({ value: "Windows Xp" }, "Windows Xp"), option$7({ value: "Frutiger Aero" }, "Frutiger Aero"), option$7({ value: "Frutiger Aero Night" }, "Frutiger Aero Night"), option$7({ value: "Skeuomorphic" }, "Skeuomorphic/Early 2000's (LeoV)"), option$7({ value: "woodland" }, "Woodland"), option$7({ value: "corporate dark" }, "Corporate Dark"), option$7({ value: "corporate light" }, "Corporate Light"), option$7({ value: "Glyde" }, "Glyde"), option$7({ value: "starry studio" }, "Starry Studio"), option$7({ value: "Terminal 2.0 (AB)" }, "Terminal 2.0 (AB)"), option$7({ value: "Slushie" }, "Slushie"), option$7({ value: "Slushie Pixel" }, "Slushie 2"), option$7({ value: "BeepBox Pixel" }, "BeepBox Pixel"), option$7({ value: "forest 2" }, "Forest 2"), option$7({ value: "canyon 2" }, "Canyon 2"), option$7({ value: "Nebula 2" }, "Nebula 2"), option$7({ value: "Ghost House" }, "Ghost House"), option$7({ value: "Ghost House 2" }, "Ghost House 2")), optgroup$1({ label: "BeepBox Themes" }, option$7({ value: "dark classic" }, "BeepBox Dark"), option$7({ value: "light classic" }, "BeepBox Light"), option$7({ value: "dark competition" }, "BeepBox Competition Dark")), optgroup$1({ label: "JummBox Themes" }, option$7({ value: "jummbox classic" }, "JummBox Dark"), option$7({ value: "jummbox light" }, "JummBox Light"), option$7({ value: "forest" }, "Forest"), option$7({ value: "canyon" }, "Canyon"), option$7({ value: "midnight" }, "Midnight"), option$7({ value: "beachcombing" }, "Beachcombing"), option$7({ value: "violet verdant" }, "Violet Verdant"), option$7({ value: "sunset" }, "Sunset"), option$7({ value: "autumn" }, "Autumn"), option$7({ value: "fruit" }, "Shadowfruit"), option$7({ value: "toxic" }, "Toxic"), option$7({ value: "roe" }, "Roe"), option$7({ value: "moonlight" }, "Moonlight"), option$7({ value: "portal" }, "Portal"), option$7({ value: "fusion" }, "Fusion"), option$7({ value: "inverse" }, "Inverse"), option$7({ value: "nebula" }, "Nebula"), option$7({ value: "roe light" }, "Roe Light"), option$7({ value: "amoled dark" }, "High Contrast Dark"), option$7({ value: "energized" }, "Energized"), option$7({ value: "neapolitan" }, "Neapolitan"), option$7({ value: "mono" }, "Poly"), option$7({ value: "blutonium" }, "Blutonium")), optgroup$1({ label: "ModBox Themes" }, option$7({ value: "modbox classic" }, "Modbox"), option$7({ value: "modbox 2" }, "Modbox 2.0"), option$7({ value: "modbox artic" }, "Artic"), option$7({ value: "modbox cinnamon" }, "Cinnamon Roll [!]"), option$7({ value: "modbox ocean" }, "Ocean"), option$7({ value: "modbox rainbow" }, "Rainbow [!]"), option$7({ value: "modbox float" }, "Float [!]"), option$7({ value: "modbox windows" }, "Windows"), option$7({ value: "modbox grassland" }, "Grassland"), option$7({ value: "modbox dessert" }, "Dessert"), option$7({ value: "modbox kahoot" }, "Kahootiest"), option$7({ value: "modbox bitbeam" }, "Beam to the Bit [!]"), option$7({ value: "modbox egg" }, "Pretty Egg"), option$7({ value: "modbox pony" }, "Poniryoshka"), option$7({ value: "modbox gameboy" }, "Gameboy [!]"), option$7({ value: "modbox woodkid" }, "Woodkid [!]"), option$7({ value: "modbox midnight" }, "Midnight [!]"), option$7({ value: "modbox snedbox" }, "Snedbox"), option$7({ value: "modbox unnamed" }, "unnamed [!]"), option$7({ value: "modbox piano" }, "Piano [!]"), option$7({ value: "modbox halloween" }, "Halloween [!]"), option$7({ value: "modbox frozen" }, "FrozenOver❄️ [!]")), optgroup$1({ label: "ShitBox Themes" }, option$7({ value: "shitbox 1.0" }, "Shitbox 1.0"), option$7({ value: "shitbox 2.0" }, "Shitbox 2.0"), option$7({ value: "shitbox 3.0" }, "Shitbox 3.0/shitbox4"), option$7({ value: "shitbox ModBox 2.0" }, "Shitbox ModBox 2.0"), option$7({ value: "shitbox Realm" }, "Shitbox Realm [!]")), optgroup$1({ label: "Nepbox Themes" }, option$7({ value: "nepbox" }, "Nepbox"), option$7({ value: "nepbox laffey" }, "Laffey"), option$7({ value: "nepbox snedbox" }, "Snedbox (Nb) [!]"), option$7({ value: "nepbox piano" }, "Piano (Nb) [!]")), optgroup$1({ label: "Mod Default Themes" }, option$7({ value: "sandbox classic" }, "Sandbox"), option$7({ value: "harrybox" }, "Haileybox"), option$7({ value: "brucebox" }, "Brucebox"), option$7({ value: "nerdbox" }, "NerdBox"), option$7({ value: "zefbox" }, "Zefbox"), option$7({ value: "cardboardbox classic" }, "Cardboardbox"), option$7({ value: "blubox classic" }, "Blubox"), option$7({ value: "dogebox classic" }, "Dogebox"), option$7({ value: "dogebox dark" }, "Way too Dark (DB)/TOO DARK(BluB)"), option$7({ value: "wackybox" }, "Wackybox"), option$7({ value: "todbox dark mode" }, "Todbox Dark Mode"), option$7({ value: "mainbox 1.0" }, "Mainbox"), option$7({ value: "microbox" }, "MicroBox"), option$7({ value: "paandorasbox" }, "PaandorasBox"), option$7({ value: "foxbox" }, "FoxBox"), option$7({ value: "midbox" }, "Midbox"), option$7({ value: "gold light" }, "Gold Light"), option$7({ value: "dogebox2" }, "Dogebox2"), option$7({ value: "WeebBox" }, "WeebBox"), option$7({ value: "BoxBeep Dark" }, "BoxBeep Dark"), option$7({ value: "BoxBeep light" }, "BoxBeep Light"), option$7({ value: "birdbox dark" }, "BirdBox Dark"), option$7({ value: "birdbox light" }, "BirdBox Light"), option$7({ value: "ultrabox dark" }, "UltraBox"), option$7({ value: "slarmoosbox" }, "Slarmoo's Box"), option$7({ value: "lemmbox dark" }, "LemmBox Dark")), optgroup$1({ label: "Miscellaneous Themes" }, option$7({ value: "azur lane" }, "Azur Lane"), option$7({ value: "AWeebyssBox" }, "AWeebyssBox"), option$7({ value: "Deuteranopia" }, "Deuteranopia"), option$7({ value: "Protanopia" }, "Protanopia"), option$7({ value: "Tritanopia" }, "Tritanopia"), option$7({ value: "2012 Video Tutorial" }, "2012 Video Tutorial"), option$7({ value: "I am on fire" }, "I am on fire"), option$7({ value: "custom" }, "Custom")));
+            this._cancelButton = button$b({ class: "cancelButton" });
+            this._okayButton = button$b({ class: "okayButton", style: "width:45%;" }, "Okay");
             this.lastTheme = window.localStorage.getItem("colorTheme");
-            this.container = div$c({ class: "prompt noSelection", id: "themeContainerPrompt", style: "width: 220px;" }, div$c({ class: "promptTitle" }, h2$a({ class: "themeExt", style: "text-align: inherit;" }, ""), h2$a({ class: "themeTitle", style: "margin-bottom: 0.5em;" }, "Set Theme")), div$c({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, div$c({ class: "selectContainer", style: "width: 100%;" }, this._themeSelect)), div$c({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton), this._cancelButton);
+            this.container = div$b({ class: "prompt noSelection", id: "themeContainerPrompt", style: "width: 220px;" }, div$b({ class: "promptTitle" }, h2$a({ class: "themeExt", style: "text-align: inherit;" }, ""), h2$a({ class: "themeTitle", style: "margin-bottom: 0.5em;" }, "Set Theme")), div$b({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, div$b({ class: "selectContainer", style: "width: 100%;" }, this._themeSelect)), div$b({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton), this._cancelButton);
             this._whenKeyPressed = (event) => {
                 if (event.target.tagName != "BUTTON" && event.keyCode == 13) {
                     this._saveChanges();
@@ -60134,9 +59285,10 @@ You should be redirected to the song at:<br /><br />
         }
     }
 
-    const t={id:"",classname:"",theme:"light",toggle:!0,popover:!0,position:"bottom-start",margin:4,preset:!0,color:"#000",default:"#000",target:"",disabled:!1,format:"rgb",singleInput:!1,inputs:!0,opacity:!0,preview:!0,copy:!0,swatches:[],toggleSwatches:!1,closeOnScroll:!1,i18n:{palette:"Color picker",buttons:{copy:"Copy color to clipboard",changeFormat:"Change color format",swatch:"Color swatch",toggleSwatches:"Toggle Swatches"},sliders:{hue:"Change hue",alpha:"Change opacity"}}},e="alwan",s=`${e}__container`,o=`${e}__palette`,r=`${e}__marker`,n=`${e}__preview`,i=`${e}__button `,a$2=`${e}__copy-button`,l=`${e}__slider `,h=`${e}__hue`,c=`${e}__alpha`,p$4=`${e}__input`,g=`${e}__inputs`,u=`${e}__swatch`,d=`${e}__swatches`,_=`${e}__reference `,b=`${e}__backdrop`,w=`${e}__toggle-button`,f=`${e}--open`,$$1=`${e}--collapse`,y=parseInt,{min:v,max:m,abs:x,round:A,PI:C}=Math,S=(t,e=100,s=0)=>t>e?e:t<s?s:t,k=t=>A((t%=360)<0?t+360:t),H=document,L=H.documentElement,M="button",O="open",V="close",z="color",B="click",E="pointerdown",I="keydown",j="input",D="change",F="blur",P="rgb",T="hsl",Z=["hex",P,T],K="afterbegin",N="afterend",R="beforeend",U="aria-label",q={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowRight:[1,0],ArrowLeft:[-1,0]},G={deg:1,turn:360,rad:180/C,grad:.9},J=/^#[0-9a-f]{6}$/i,Q=/^hsla?\(\s*([+-]?\d*\.?\d+)(\w*)?\s*[\s,]\s*([+-]?\d*\.?\d+)%?\s*,?\s*([+-]?\d*\.?\d+)%?(?:\s*[\/,]\s*([+-]?\d*\.?\d+)(%)?)?\s*\)?$/,W=(t,e,s,o)=>{t.addEventListener(e,s,o);},X=(t,e,s)=>{t.removeEventListener(e,s);},Y=t=>"string"==typeof t,tt=t=>null!=t,et=t=>t instanceof Element,st=t=>Number.isFinite(Y(t)&&""!==t.trim()?+t:t),{keys:ot,assign:rt,setPrototypeOf:nt,prototype:it}=Object,{from:at,isArray:lt}=Array,ht=t=>tt(t)&&"object"==typeof t&&!lt(t)&&!et(t),ct=(t,e)=>ot(t).forEach((s=>e(s,t[s]))),pt=(t,e)=>(ht(t)||(t={}),ct(e,((e,s)=>{tt(s)&&rt(t,{[e]:ht(s)?pt(t[e]||{},s):s});})),t),gt=()=>H.body,ut=(t,e=gt())=>Y(t)&&t.trim()?at(e.querySelectorAll(t)):et(t)&&gt().contains(t)&&t!==gt()?[t]:[],dt=t=>ut(`${j},${M},[tabindex]`,t),_t=(t,e,s=R)=>{t&&e&&e.insertAdjacentElement(s,t);},bt=(t,e)=>{t.innerHTML=e;},wt=(t,e,s)=>{t&&t.setAttribute(e,s+"");},ft=(t,e,s,o,r,n)=>{const i=H.createElement(t);return e&&(i.className=e),o&&bt(i,o),ct(r||{},((t,e)=>{tt(e)&&wt(i,t,e);})),s&&_t(i,s,n),i},$t=(t,e,s,o)=>ft("div",t,e,"",s,o),yt=t=>(t&&t.remove(),null),vt=(t,e)=>(t.replaceWith(e),e),mt=(t,e,s,o,r,n,a)=>ft(M,i+t,e,s,rt({type:M,[U]:r,title:n||r},o),a),xt=(t,e,s,o=1)=>ft(j,l+t,e,"",{max:s,step:o,type:"range"}),At=(t,e)=>$t(s,t,{},e),Ct=(t,e,s)=>{t&&t.style.setProperty("--"+e,s+"");},St=(t,e,s)=>t.classList.toggle(e,s),kt=(t,e,s)=>{t.style.transform=`translate(${e}px,${s}px)`;},Ht=(t,e=[H])=>(t&&(t=t.parentElement),t&&t!==gt()?(/auto|scroll|overflow|clip|hidden/.test(getComputedStyle(t).overflow)&&e.push(t),Ht(t,e)):e),Lt=t=>{let e,s,o,r,n,i;return et(t)?({x:e,y:s,width:o,height:r,right:n,bottom:i}=t.getBoundingClientRect()):(e=s=0,o=n=L.clientWidth,r=i=L.clientHeight),[e,s,o,r,n,i]},Mt='<svg width="18" height="18" viewBox="0 0 24 24" aria-role="none"><path d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg>',Ot=(t,e=P)=>{let s=t.a,o="",r=e;return s<1&&(o+=", "+s,r+="a"),e===P?r+`(${t.r}, ${t.g}, ${t.b+o})`:r+`(${t.h}, ${t.s}%, ${t.l}%${o})`},Vt=ft("canvas").getContext("2d");function zt(t,e){let s,o,r="";Y(t)?r=t.trim():ht(t)&&(s=[P,T].find((e=>e.split("").every((e=>st(t[e]))))),s&&(r=Ot(t,s)));const[n,i,a,l,h,c="1",p]=Q.exec(r)||[];if(n)o={h:k(+i*(G[a]?G[a]:1)),s:S(+l),l:S(+h),a:S(+c/(p?100:1),1)},s=T;else if(s=P,Vt.fillStyle="#000",Vt.fillStyle=r,r=Vt.fillStyle,J.test(r))o={r:y(r.slice(1,3),16),g:y(r.slice(3,5),16),b:y(r.slice(5,7),16),a:1};else {const[t,e,s,n]=/\((.+)\)/.exec(r)[1].split(",").map((t=>+t));o={r:t,g:e,b:s,a:n};}return o.a=A(100*o.a)/100,r=Ot(o,s),e?r:[o,s,r]}const Bt={top:[1,5,4,0],bottom:[5,1,4,0],right:[4,0,1,5],left:[0,4,1,5]},Et={start:[0,1,2],center:[1,0,2],end:[2,1,0]},It=(t,e,s,{margin:o,position:r,toggle:n,closeOnScroll:i},{t:a,o:l})=>{o=st(o)?+o:0;const[h,c]=Y(r)?r.split("-"):[],p=Bt[h]||Bt.bottom,g=Et[c]||Et.center,u=Ht(t),d=e.style,_=()=>{d.height="";const s=Lt(H),r=Lt(t),n=Lt(e),i=[null,null];p.some((t=>{let e=t%2;const a=s[t],l=r[t],h=o+n[e+2];if(h<=x(a-l)){i[e]=l+(t<=1?-h:o),e=(e+1)%2;const a=n[e+2],c=r[e],p=r[e+4],u=s[e+4]-c,d=(a+r[e+2])/2;return g.some((t=>0===t&&a<=u?(i[e]=c,!0):1===t&&d<=p&&d<=u?(i[e]=p-d,!0):2===t&&a<=p&&(i[e]=p-a,!0))),!0}})),kt(e,...i.map(((t,e)=>(e&&null===t&&n[3]>s[5]&&(d.height=s[5]-6+"px",n[3]=s[5]-3),A(tt(t)?t:(s[e+4]-n[e+2])/2)))));},b=()=>{!a()&&n||(((t,e)=>e.every((e=>{const[s,o,,,r,n]=Lt(t),[i,a,,,l,h]=Lt(e);return o<h&&n>a&&s<l&&r>i})))(t,u)?a()?(_(),i&&l(!1)):l(!0,!0):l(!1,!0));},w=t=>{if(a()){const{target:o,key:r,shiftKey:n}=t;if("Escape"===r)l(!1);else if("Tab"===r){const r=dt(e),i=r[0],a=r.pop(),l=o!==s||n?n&&o===i||!n&&o===a?s:null:i;l&&(t.preventDefault(),l.focus());}}},f=({target:t})=>{!a()||t===s||e.contains(t)||at(s.labels||[]).some((e=>e.contains(t)))||l(!1);},$=t=>{u.forEach((e=>{t(e,"scroll",b);})),t(window,"resize",b),t(H,I,w),t(H,E,f);};return _(),$(W),{i:_,p:()=>{$(X),e.style.transform="";}}},jt=(t,s)=>{const l=t.config,y=$t(e,gt()),x=((t,e)=>{let s=e||mt("",gt());const o=()=>{t.u.o();};return {_:()=>s,$({preset:t,classname:r}){e&&t!==(e!==s)&&(t?(s=vt(e,mt()),e.id&&(s.id=e.id)):s=vt(s,e)),W(s,B,o),e&&!t||!Y(r)||(s.className=(i+_+r).trim());},p(){e?e!==s&&vt(s,e):yt(s);}}})(t,ut(s)[0]),A=(({v:t},e)=>{let s,n,i,a;const l=$t(o,e),h=$t(r,l),c=(e,[o,r]=[0,0])=>{let a,l,[c,p,g,u]=i;e?(s=e.clientX-c,n=e.clientY-p):(s+=o*g/100,n+=r*u/100),s=S(s,g),n=S(n,u),kt(h,s,n),a=1-n/u,l=a*(1-s/(2*g)),t.i({s:1===l||0===l?0:(a-l)/v(l,1-l)*100,l:100*l},1);},p=t=>{t.buttons?c(t):d(!1);},g=()=>{t.m(),d(!1);},u=()=>{t.m();},d=t=>{St(L,b,t),(t?W:X)(H,"pointermove",p),(t?W:X)(window,F,u);};return W(l,E,(e=>{a||(t.A(),i=Lt(l),c(e),d(!0),W(H,"pointerup",g,{once:!0}));})),W(l,I,(e=>{const s=q[e.key];s&&(e.preventDefault(),i=Lt(l),t.A(),c(null,s),t.m());})),{el:l,$({i18n:t,disabled:e}){wt(l,U,t.palette),wt(l,"tabindex",e?"":0),a=e;},C(t,e){let o=e+t*v(e,1-e);i=Lt(l),s=(o?2*(1-e/o):0)*i[2],n=(1-o)*i[3],kt(h,s,n);}}})(t,y),C=At(y),k=((t,e)=>{let s,o,r=!1;const i=t=>{r=t,bt(o,t?'<svg width="18" height="18" viewBox="0 0 24 24" aria-role="none"><path d="M9,20.42L2.79,14.21L5.62,11.38L9,14.77L18.88,4.88L21.71,7.71L9,20.42Z"></path></svg>':Mt);},l=t=>{const e=ft(j,"",L,"",{value:t});e.select(),H.execCommand("copy"),yt(e),o.focus(),i(!0);},h=()=>{if(!r){const e=navigator.clipboard,s=t.v.S();e?e.writeText(s).then((()=>i(!0))).catch((()=>l(s))):l(s);}};return {$({preview:t,copy:l,i18n:c}){s=yt(s),o=yt(o),t&&(s=$t(n,e,{},K)),l&&(o=mt(a$2,s||e,Mt,{},c.buttons.copy,"",K),W(o,B,h),W(o,F,(()=>r&&i(!1))),W(o,"mouseout",(()=>o.blur())));}}})(t,C),M=(({v:t,k:e},s)=>{let o;const r=$t("",s),n=xt(h,r,360);return W(n,j,(()=>t.i({h:+n.value},2))),W(r,D,(()=>e.H(D))),{$({opacity:e,i18n:{sliders:s}}){o=yt(o),e?(o=xt(c,r,1,.01),W(o,j,(()=>t.i({a:+o.value},2)))):t.i({a:1}),wt(n,U,s.hue),wt(o,U,s.alpha);},L(t,e){n.value=t+"",o&&(o.value=e+"");}}})(t,C),T=((t,e)=>{let s,o,r,n,i,{config:a,v:l}=t,h=[],c=!1;const u=()=>a.singleInput||"hex"===h[n],d=t=>{let e=t.target.value,s={};c||(l.A(),c=!0),u()||(ct(i,((t,e)=>{s[t]=+e.value;})),e=Ot(s,h[n])),l.M(e,3,!1,!0);},_=()=>{i={},yt(o),o=$t(g,s,{},K);const e=h[n],r=u()?[e]:(e+(a.opacity?"a":"")).split(""),_=l.O;r.forEach((t=>{const e=ft("label","",o);i[t]=ft(j,p$4,e,"",{type:"text",value:_[t]}),ft("span","",e,t);})),W(o,j,d),W(o,D,(()=>{l.m(),c=!1;})),W(o,"focusin",(t=>t.target.select())),W(o,I,(e=>"Enter"===e.key&&t.u.o(!1)));},b=()=>{n=(n+1)%h.length,l.V(h[n]),_();};return {$({inputs:t,format:o,i18n:i}){s=yt(s),r=yt(r),h=Z,!0!==t&&(t=t||{},h=h.filter((e=>t[e])));const a=h.length;a||(h=Z),n=m(h.indexOf(o),0),l.V(h[n]),a&&(s=At(e,N),_(),a>1&&(r=mt("",s,'<svg width="15" height="15" viewBox="0 0 20 20" aria-role="none"><path d="M10 1L5 8h10l-5-7zm0 18l5-7H5l5 7z"></path></svg>',{},i.buttons.changeFormat),W(r,B,b)));},L(t){ct(i||{},((e,s)=>{s.value=t[e]+"";}));}}})(t,C),G=((t,e)=>{let s,o;return {$({swatches:r,toggleSwatches:n,i18n:{buttons:i}}){lt(r)&&(s=yt(s),o=yt(o),r.length&&(s=$t(d,e),r.forEach((t=>{Ct(mt(u,s,"",{},i.swatch,Y(t)?t:zt(t,!0)),z,zt(t,!0));})),n&&(o=mt(w,e,'<svg width="20" height="20" viewBox="0 0 24 24" aria-role="none"><path d="M6.984 14.016l5.016-5.016 5.016 5.016h-10.031z"></path></svg>',{},i.toggleSwatches),W(o,B,(()=>{St(s,$$1),t.u.B();}))),W(s,B,(({target:e})=>{e!==s&&t.v.M(e.style.getPropertyValue("--"+z),0,!0,!0);}))));}}})(t,y);let J,Q=!1,et=null;return {I(e){e=e||{};const s=this,o=y.dataset,r=t.v,{id:n,color:i}=e,{theme:a,toggle:h,popover:c,target:p,disabled:g}=pt(l,e);[x,A,k,M,T,G].forEach((t=>t.$(l))),J=x._();let u=ut(p)[0]||J;Y(n)&&(y.id=n),o.theme=a,o.display=c?"popover":"block",h||s.o(!0,!0),J.style.display=c||h?"":"none",et&&(et.p(),et=null),c?et=It(u,y,J,l,s):_t(y,u,u===J?N:R),tt(i)?r.M(i):r.i({}),[J,...dt(y)].forEach((t=>{t.disabled=!!g;})),g&&(c?s.o(!1,!0):h||s.o(!0,!0));},i(t,e){const{r:s,g:o,b:r,a:n,h:i,s:a,l:l,rgb:h}=t;Ct(J,z,h),Ct(y,P,`${s},${o},${r}`),Ct(y,"a",n),Ct(A.el,"h",i),1!==e&&2!==e&&(A.C(a/100,l/100),M.L(i,n)),3!==e&&T.L(t);},o(e=!Q,s=!1){e===Q||l.disabled&&(!s||e&&l.popover)||!l.toggle&&!s||(e&&et&&et.i(),Q=e,St(y,f,e),t.k.H(Q?O:V));},t:()=>Q,B(){et&&et.i();},p(){yt(y),et&&et.p(),x.p();}}},Dt=t=>(t<16?"0":"")+t.toString(16),Ft=(t,e,s)=>(t%=12,A(255*(s-e*v(s,1-s)*m(-1,v(t-3,9-t,1))))),Pt=t=>{const e={h:0,s:0,l:0,r:0,g:0,b:0,a:1,rgb:"",hsl:"",hex:""},s=t.k.H;let o,r,n;return {O:e,i(o,r,i=!0,a){n=e.hex,rt(e,o),rt(e,a||(({h:t,s:e,l:s})=>({r:Ft(t/=30,e/=100,s/=100),g:Ft(t+8,e,s),b:Ft(t+4,e,s)}))(e)),e.s=A(e.s),e.l=A(e.l),e.rgb=Ot(e),e.hsl=Ot(e,T),e.hex=(({r:t,g:e,b:s,a:o})=>"#"+Dt(t)+Dt(e)+Dt(s)+(o<1?Dt(A(255*o)):""))(e),t.u.i(e,r),i&&n!==e.hex&&s(z,e);},M(t,o,r,n){const[i,a,l]=zt(t);let h,c;e[a]!==l&&(a===P?(h=i,c=(({r:t,g:e,b:s,a:o})=>{const r=m(t/=255,e/=255,s/=255),n=v(t,e,s),i=r-n,a=(r+n)/2;return {h:k(60*(0===i?0:r===t?(e-s)/i%6:r===e?(s-t)/i+2:r===s?(t-e)/i+4:0)),s:i?i/(1-x(2*a-1))*100:0,l:100*a,a:o}})(h)):c=i,this.i(c,o,n,h),r&&s(D,e));},A(){r=e[o];},m(){r!==e[o]&&s(D,e);},V(e){o=t.config.format=e;},S:()=>e[o]}};class Tt{static version(){return "2.0.2"}static setDefaults(e){pt(t,e);}constructor(e,s){this.config=pt({},t),this.k=(t=>{const e={[O]:[],[V]:[],[D]:[],[z]:[]};return {H(s,o=t.v.O){t.config.disabled||(e[s]||[]).forEach((e=>{e(rt({type:s,source:t},o));}));},j(t,s){e[t]&&!e[t].includes(s)&&"function"==typeof s&&e[t].push(s);},D(t,s){tt(t)?e[t]&&(tt(s)?e[t]=e[t].filter((t=>t!==s)):e[t]=[]):ct(e,(t=>{e[t]=[];}));}}})(this),this.v=Pt(this),this.u=jt(this,e),this.u.I(s);}setOptions(t){this.u.I(t);}setColor(t){return this.v.M(t),this}getColor(){return {...this.v.O}}isOpen(){return this.u.t()}open(){this.u.o(!0);}close(){this.u.o(!1);}toggle(){this.u.o();}on(t,e){this.k.j(t,e);}off(t,e){this.k.D(t,e);}addSwatches(...t){this.u.I({swatches:this.config.swatches.concat(t)});}removeSwatches(...t){this.u.I({swatches:this.config.swatches.filter(((e,s)=>!t.some((t=>st(t)?+t===s:t===e))))});}enable(){this.u.I({disabled:!1});}disable(){this.u.I({disabled:!0});}reset(){this.v.M(this.config.default);}reposition(){this.u.B();}trigger(t){this.k.H(t);}destroy(){this.u.p(),ct(this,(t=>delete this[t])),nt(this,it);}}
+    const t={id:"",classname:"",theme:"light",toggle:!0,popover:!0,position:"bottom-start",margin:4,preset:!0,color:"#000",default:"#000",target:"",disabled:!1,format:"rgb",singleInput:!1,inputs:!0,opacity:!0,preview:!0,copy:!0,swatches:[],toggleSwatches:!1,closeOnScroll:!1,i18n:{palette:"Color picker",buttons:{copy:"Copy color to clipboard",changeFormat:"Change color format",swatch:"Color swatch",toggleSwatches:"Toggle Swatches"},sliders:{hue:"Change hue",alpha:"Change opacity"}}},e="alwan",s=`${e}__container`,o=`${e}__palette`,r=`${e}__marker`,n=`${e}__preview`,i=`${e}__button `,a$1=`${e}__copy-button`,l=`${e}__slider `,h=`${e}__hue`,c=`${e}__alpha`,p$4=`${e}__input`,g=`${e}__inputs`,u=`${e}__swatch`,d=`${e}__swatches`,_=`${e}__reference `,b=`${e}__backdrop`,w=`${e}__toggle-button`,f=`${e}--open`,$$1=`${e}--collapse`,y=parseInt,{min:v,max:m,abs:x,round:A,PI:C}=Math,S=(t,e=100,s=0)=>t>e?e:t<s?s:t,k=t=>A((t%=360)<0?t+360:t),H=document,L=H.documentElement,M="button",O="open",V="close",z="color",B="click",E="pointerdown",I="keydown",j="input",D="change",F="blur",P="rgb",T="hsl",Z=["hex",P,T],K="afterbegin",N="afterend",R="beforeend",U="aria-label",q={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowRight:[1,0],ArrowLeft:[-1,0]},G={deg:1,turn:360,rad:180/C,grad:.9},J=/^#[0-9a-f]{6}$/i,Q=/^hsla?\(\s*([+-]?\d*\.?\d+)(\w*)?\s*[\s,]\s*([+-]?\d*\.?\d+)%?\s*,?\s*([+-]?\d*\.?\d+)%?(?:\s*[\/,]\s*([+-]?\d*\.?\d+)(%)?)?\s*\)?$/,W=(t,e,s,o)=>{t.addEventListener(e,s,o);},X=(t,e,s)=>{t.removeEventListener(e,s);},Y=t=>"string"==typeof t,tt=t=>null!=t,et=t=>t instanceof Element,st=t=>Number.isFinite(Y(t)&&""!==t.trim()?+t:t),{keys:ot,assign:rt,setPrototypeOf:nt,prototype:it}=Object,{from:at,isArray:lt}=Array,ht=t=>tt(t)&&"object"==typeof t&&!lt(t)&&!et(t),ct=(t,e)=>ot(t).forEach((s=>e(s,t[s]))),pt=(t,e)=>(ht(t)||(t={}),ct(e,((e,s)=>{tt(s)&&rt(t,{[e]:ht(s)?pt(t[e]||{},s):s});})),t),gt=()=>H.body,ut=(t,e=gt())=>Y(t)&&t.trim()?at(e.querySelectorAll(t)):et(t)&&gt().contains(t)&&t!==gt()?[t]:[],dt=t=>ut(`${j},${M},[tabindex]`,t),_t=(t,e,s=R)=>{t&&e&&e.insertAdjacentElement(s,t);},bt=(t,e)=>{t.innerHTML=e;},wt=(t,e,s)=>{t&&t.setAttribute(e,s+"");},ft=(t,e,s,o,r,n)=>{const i=H.createElement(t);return e&&(i.className=e),o&&bt(i,o),ct(r||{},((t,e)=>{tt(e)&&wt(i,t,e);})),s&&_t(i,s,n),i},$t=(t,e,s,o)=>ft("div",t,e,"",s,o),yt=t=>(t&&t.remove(),null),vt=(t,e)=>(t.replaceWith(e),e),mt=(t,e,s,o,r,n,a)=>ft(M,i+t,e,s,rt({type:M,[U]:r,title:n||r},o),a),xt=(t,e,s,o=1)=>ft(j,l+t,e,"",{max:s,step:o,type:"range"}),At=(t,e)=>$t(s,t,{},e),Ct=(t,e,s)=>{t&&t.style.setProperty("--"+e,s+"");},St=(t,e,s)=>t.classList.toggle(e,s),kt=(t,e,s)=>{t.style.transform=`translate(${e}px,${s}px)`;},Ht=(t,e=[H])=>(t&&(t=t.parentElement),t&&t!==gt()?(/auto|scroll|overflow|clip|hidden/.test(getComputedStyle(t).overflow)&&e.push(t),Ht(t,e)):e),Lt=t=>{let e,s,o,r,n,i;return et(t)?({x:e,y:s,width:o,height:r,right:n,bottom:i}=t.getBoundingClientRect()):(e=s=0,o=n=L.clientWidth,r=i=L.clientHeight),[e,s,o,r,n,i]},Mt='<svg width="18" height="18" viewBox="0 0 24 24" aria-role="none"><path d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg>',Ot=(t,e=P)=>{let s=t.a,o="",r=e;return s<1&&(o+=", "+s,r+="a"),e===P?r+`(${t.r}, ${t.g}, ${t.b+o})`:r+`(${t.h}, ${t.s}%, ${t.l}%${o})`},Vt=ft("canvas").getContext("2d");function zt(t,e){let s,o,r="";Y(t)?r=t.trim():ht(t)&&(s=[P,T].find((e=>e.split("").every((e=>st(t[e]))))),s&&(r=Ot(t,s)));const[n,i,a,l,h,c="1",p]=Q.exec(r)||[];if(n)o={h:k(+i*(G[a]?G[a]:1)),s:S(+l),l:S(+h),a:S(+c/(p?100:1),1)},s=T;else if(s=P,Vt.fillStyle="#000",Vt.fillStyle=r,r=Vt.fillStyle,J.test(r))o={r:y(r.slice(1,3),16),g:y(r.slice(3,5),16),b:y(r.slice(5,7),16),a:1};else {const[t,e,s,n]=/\((.+)\)/.exec(r)[1].split(",").map((t=>+t));o={r:t,g:e,b:s,a:n};}return o.a=A(100*o.a)/100,r=Ot(o,s),e?r:[o,s,r]}const Bt={top:[1,5,4,0],bottom:[5,1,4,0],right:[4,0,1,5],left:[0,4,1,5]},Et={start:[0,1,2],center:[1,0,2],end:[2,1,0]},It=(t,e,s,{margin:o,position:r,toggle:n,closeOnScroll:i},{t:a,o:l})=>{o=st(o)?+o:0;const[h,c]=Y(r)?r.split("-"):[],p=Bt[h]||Bt.bottom,g=Et[c]||Et.center,u=Ht(t),d=e.style,_=()=>{d.height="";const s=Lt(H),r=Lt(t),n=Lt(e),i=[null,null];p.some((t=>{let e=t%2;const a=s[t],l=r[t],h=o+n[e+2];if(h<=x(a-l)){i[e]=l+(t<=1?-h:o),e=(e+1)%2;const a=n[e+2],c=r[e],p=r[e+4],u=s[e+4]-c,d=(a+r[e+2])/2;return g.some((t=>0===t&&a<=u?(i[e]=c,!0):1===t&&d<=p&&d<=u?(i[e]=p-d,!0):2===t&&a<=p&&(i[e]=p-a,!0))),!0}})),kt(e,...i.map(((t,e)=>(e&&null===t&&n[3]>s[5]&&(d.height=s[5]-6+"px",n[3]=s[5]-3),A(tt(t)?t:(s[e+4]-n[e+2])/2)))));},b=()=>{!a()&&n||(((t,e)=>e.every((e=>{const[s,o,,,r,n]=Lt(t),[i,a,,,l,h]=Lt(e);return o<h&&n>a&&s<l&&r>i})))(t,u)?a()?(_(),i&&l(!1)):l(!0,!0):l(!1,!0));},w=t=>{if(a()){const{target:o,key:r,shiftKey:n}=t;if("Escape"===r)l(!1);else if("Tab"===r){const r=dt(e),i=r[0],a=r.pop(),l=o!==s||n?n&&o===i||!n&&o===a?s:null:i;l&&(t.preventDefault(),l.focus());}}},f=({target:t})=>{!a()||t===s||e.contains(t)||at(s.labels||[]).some((e=>e.contains(t)))||l(!1);},$=t=>{u.forEach((e=>{t(e,"scroll",b);})),t(window,"resize",b),t(H,I,w),t(H,E,f);};return _(),$(W),{i:_,p:()=>{$(X),e.style.transform="";}}},jt=(t,s)=>{const l=t.config,y=$t(e,gt()),x=((t,e)=>{let s=e||mt("",gt());const o=()=>{t.u.o();};return {_:()=>s,$({preset:t,classname:r}){e&&t!==(e!==s)&&(t?(s=vt(e,mt()),e.id&&(s.id=e.id)):s=vt(s,e)),W(s,B,o),e&&!t||!Y(r)||(s.className=(i+_+r).trim());},p(){e?e!==s&&vt(s,e):yt(s);}}})(t,ut(s)[0]),A=(({v:t},e)=>{let s,n,i,a;const l=$t(o,e),h=$t(r,l),c=(e,[o,r]=[0,0])=>{let a,l,[c,p,g,u]=i;e?(s=e.clientX-c,n=e.clientY-p):(s+=o*g/100,n+=r*u/100),s=S(s,g),n=S(n,u),kt(h,s,n),a=1-n/u,l=a*(1-s/(2*g)),t.i({s:1===l||0===l?0:(a-l)/v(l,1-l)*100,l:100*l},1);},p=t=>{t.buttons?c(t):d(!1);},g=()=>{t.m(),d(!1);},u=()=>{t.m();},d=t=>{St(L,b,t),(t?W:X)(H,"pointermove",p),(t?W:X)(window,F,u);};return W(l,E,(e=>{a||(t.A(),i=Lt(l),c(e),d(!0),W(H,"pointerup",g,{once:!0}));})),W(l,I,(e=>{const s=q[e.key];s&&(e.preventDefault(),i=Lt(l),t.A(),c(null,s),t.m());})),{el:l,$({i18n:t,disabled:e}){wt(l,U,t.palette),wt(l,"tabindex",e?"":0),a=e;},C(t,e){let o=e+t*v(e,1-e);i=Lt(l),s=(o?2*(1-e/o):0)*i[2],n=(1-o)*i[3],kt(h,s,n);}}})(t,y),C=At(y),k=((t,e)=>{let s,o,r=!1;const i=t=>{r=t,bt(o,t?'<svg width="18" height="18" viewBox="0 0 24 24" aria-role="none"><path d="M9,20.42L2.79,14.21L5.62,11.38L9,14.77L18.88,4.88L21.71,7.71L9,20.42Z"></path></svg>':Mt);},l=t=>{const e=ft(j,"",L,"",{value:t});e.select(),H.execCommand("copy"),yt(e),o.focus(),i(!0);},h=()=>{if(!r){const e=navigator.clipboard,s=t.v.S();e?e.writeText(s).then((()=>i(!0))).catch((()=>l(s))):l(s);}};return {$({preview:t,copy:l,i18n:c}){s=yt(s),o=yt(o),t&&(s=$t(n,e,{},K)),l&&(o=mt(a$1,s||e,Mt,{},c.buttons.copy,"",K),W(o,B,h),W(o,F,(()=>r&&i(!1))),W(o,"mouseout",(()=>o.blur())));}}})(t,C),M=(({v:t,k:e},s)=>{let o;const r=$t("",s),n=xt(h,r,360);return W(n,j,(()=>t.i({h:+n.value},2))),W(r,D,(()=>e.H(D))),{$({opacity:e,i18n:{sliders:s}}){o=yt(o),e?(o=xt(c,r,1,.01),W(o,j,(()=>t.i({a:+o.value},2)))):t.i({a:1}),wt(n,U,s.hue),wt(o,U,s.alpha);},L(t,e){n.value=t+"",o&&(o.value=e+"");}}})(t,C),T=((t,e)=>{let s,o,r,n,i,{config:a,v:l}=t,h=[],c=!1;const u=()=>a.singleInput||"hex"===h[n],d=t=>{let e=t.target.value,s={};c||(l.A(),c=!0),u()||(ct(i,((t,e)=>{s[t]=+e.value;})),e=Ot(s,h[n])),l.M(e,3,!1,!0);},_=()=>{i={},yt(o),o=$t(g,s,{},K);const e=h[n],r=u()?[e]:(e+(a.opacity?"a":"")).split(""),_=l.O;r.forEach((t=>{const e=ft("label","",o);i[t]=ft(j,p$4,e,"",{type:"text",value:_[t]}),ft("span","",e,t);})),W(o,j,d),W(o,D,(()=>{l.m(),c=!1;})),W(o,"focusin",(t=>t.target.select())),W(o,I,(e=>"Enter"===e.key&&t.u.o(!1)));},b=()=>{n=(n+1)%h.length,l.V(h[n]),_();};return {$({inputs:t,format:o,i18n:i}){s=yt(s),r=yt(r),h=Z,!0!==t&&(t=t||{},h=h.filter((e=>t[e])));const a=h.length;a||(h=Z),n=m(h.indexOf(o),0),l.V(h[n]),a&&(s=At(e,N),_(),a>1&&(r=mt("",s,'<svg width="15" height="15" viewBox="0 0 20 20" aria-role="none"><path d="M10 1L5 8h10l-5-7zm0 18l5-7H5l5 7z"></path></svg>',{},i.buttons.changeFormat),W(r,B,b)));},L(t){ct(i||{},((e,s)=>{s.value=t[e]+"";}));}}})(t,C),G=((t,e)=>{let s,o;return {$({swatches:r,toggleSwatches:n,i18n:{buttons:i}}){lt(r)&&(s=yt(s),o=yt(o),r.length&&(s=$t(d,e),r.forEach((t=>{Ct(mt(u,s,"",{},i.swatch,Y(t)?t:zt(t,!0)),z,zt(t,!0));})),n&&(o=mt(w,e,'<svg width="20" height="20" viewBox="0 0 24 24" aria-role="none"><path d="M6.984 14.016l5.016-5.016 5.016 5.016h-10.031z"></path></svg>',{},i.toggleSwatches),W(o,B,(()=>{St(s,$$1),t.u.B();}))),W(s,B,(({target:e})=>{e!==s&&t.v.M(e.style.getPropertyValue("--"+z),0,!0,!0);}))));}}})(t,y);let J,Q=!1,et=null;return {I(e){e=e||{};const s=this,o=y.dataset,r=t.v,{id:n,color:i}=e,{theme:a,toggle:h,popover:c,target:p,disabled:g}=pt(l,e);[x,A,k,M,T,G].forEach((t=>t.$(l))),J=x._();let u=ut(p)[0]||J;Y(n)&&(y.id=n),o.theme=a,o.display=c?"popover":"block",h||s.o(!0,!0),J.style.display=c||h?"":"none",et&&(et.p(),et=null),c?et=It(u,y,J,l,s):_t(y,u,u===J?N:R),tt(i)?r.M(i):r.i({}),[J,...dt(y)].forEach((t=>{t.disabled=!!g;})),g&&(c?s.o(!1,!0):h||s.o(!0,!0));},i(t,e){const{r:s,g:o,b:r,a:n,h:i,s:a,l:l,rgb:h}=t;Ct(J,z,h),Ct(y,P,`${s},${o},${r}`),Ct(y,"a",n),Ct(A.el,"h",i),1!==e&&2!==e&&(A.C(a/100,l/100),M.L(i,n)),3!==e&&T.L(t);},o(e=!Q,s=!1){e===Q||l.disabled&&(!s||e&&l.popover)||!l.toggle&&!s||(e&&et&&et.i(),Q=e,St(y,f,e),t.k.H(Q?O:V));},t:()=>Q,B(){et&&et.i();},p(){yt(y),et&&et.p(),x.p();}}},Dt=t=>(t<16?"0":"")+t.toString(16),Ft=(t,e,s)=>(t%=12,A(255*(s-e*v(s,1-s)*m(-1,v(t-3,9-t,1))))),Pt=t=>{const e={h:0,s:0,l:0,r:0,g:0,b:0,a:1,rgb:"",hsl:"",hex:""},s=t.k.H;let o,r,n;return {O:e,i(o,r,i=!0,a){n=e.hex,rt(e,o),rt(e,a||(({h:t,s:e,l:s})=>({r:Ft(t/=30,e/=100,s/=100),g:Ft(t+8,e,s),b:Ft(t+4,e,s)}))(e)),e.s=A(e.s),e.l=A(e.l),e.rgb=Ot(e),e.hsl=Ot(e,T),e.hex=(({r:t,g:e,b:s,a:o})=>"#"+Dt(t)+Dt(e)+Dt(s)+(o<1?Dt(A(255*o)):""))(e),t.u.i(e,r),i&&n!==e.hex&&s(z,e);},M(t,o,r,n){const[i,a,l]=zt(t);let h,c;e[a]!==l&&(a===P?(h=i,c=(({r:t,g:e,b:s,a:o})=>{const r=m(t/=255,e/=255,s/=255),n=v(t,e,s),i=r-n,a=(r+n)/2;return {h:k(60*(0===i?0:r===t?(e-s)/i%6:r===e?(s-t)/i+2:r===s?(t-e)/i+4:0)),s:i?i/(1-x(2*a-1))*100:0,l:100*a,a:o}})(h)):c=i,this.i(c,o,n,h),r&&s(D,e));},A(){r=e[o];},m(){r!==e[o]&&s(D,e);},V(e){o=t.config.format=e;},S:()=>e[o]}};class Tt{static version(){return "2.0.2"}static setDefaults(e){pt(t,e);}constructor(e,s){this.config=pt({},t),this.k=(t=>{const e={[O]:[],[V]:[],[D]:[],[z]:[]};return {H(s,o=t.v.O){t.config.disabled||(e[s]||[]).forEach((e=>{e(rt({type:s,source:t},o));}));},j(t,s){e[t]&&!e[t].includes(s)&&"function"==typeof s&&e[t].push(s);},D(t,s){tt(t)?e[t]&&(tt(s)?e[t]=e[t].filter((t=>t!==s)):e[t]=[]):ct(e,(t=>{e[t]=[];}));}}})(this),this.v=Pt(this),this.u=jt(this,e),this.u.I(s);}setOptions(t){this.u.I(t);}setColor(t){return this.v.M(t),this}getColor(){return {...this.v.O}}isOpen(){return this.u.t()}open(){this.u.o(!0);}close(){this.u.o(!1);}toggle(){this.u.o();}on(t,e){this.k.j(t,e);}off(t,e){this.k.D(t,e);}addSwatches(...t){this.u.I({swatches:this.config.swatches.concat(t)});}removeSwatches(...t){this.u.I({swatches:this.config.swatches.filter(((e,s)=>!t.some((t=>st(t)?+t===s:t===e))))});}enable(){this.u.I({disabled:!1});}disable(){this.u.I({disabled:!0});}reset(){this.v.M(this.config.default);}reposition(){this.u.B();}trigger(t){this.k.H(t);}destroy(){this.u.p(),ct(this,(t=>delete this[t])),nt(this,it);}}
 
-    const { button: button$b, div: div$b, h2: h2$9, input: input$6, p: p$3, option: option$6, select: select$6 } = HTML;
+    const { button: button$a, div: div$a, h2: h2$9, input: input$6, p: p$3, option: option$6, select: select$6 } = HTML;
+    const opacityValue = "1";
     const longText = `:root {
 	--page-margin: black;
 	--editor-background: black;
@@ -60291,11 +59443,11 @@ You should be redirected to the song at:<br /><br />
             this._fileInput = input$6({ type: "file", accept: ".png,.jpg,.jpeg,.gif", text: "choose editor background image" });
             this._fileInput2 = input$6({ type: "file", accept: ".png,.jpg,.jpeg,.gif", text: "choose website background image" });
             this._advancedSettings = select$6({ style: "width: 100%; margin-top: 1.5em; margin-bottom: 1.5em;" }, option$6({ value: "basic" }, "Templates"), option$6({ value: "editor" }, "Editor"), option$6({ value: "css" }, "Import/Export"));
-            this._basicCatagoryButton = button$b({ style: "border-image-source: none !important; height: auto; min-height: var(--button-size); margin: 0.5em; width: 34%; border-bottom: solid; border-bottom-color: var(--link-accent);" }, "Templates");
-            this._editorCatagoryButton = button$b({ style: "border-image-source: none !important; height: auto; min-height: var(--button-size); margin: 0.5em; width:34%; color: var(--secondary-text);" }, "Editor");
-            this._cssCatagoryButton = button$b({ style: "border-image-source: none !important; height: auto; min-height: var(--button-size); margin: 0.5em; width:34%; color: var(--secondary-text);" }, "Import/Export");
+            this._basicCatagoryButton = button$a({ style: "border-image-source: none !important; height: auto; min-height: var(--button-size); margin: 0.5em; width: 34%; border-bottom: solid; border-bottom-color: var(--link-accent);" }, "Templates");
+            this._editorCatagoryButton = button$a({ style: "border-image-source: none !important; height: auto; min-height: var(--button-size); margin: 0.5em; width:34%; color: var(--secondary-text);" }, "Editor");
+            this._cssCatagoryButton = button$a({ style: "border-image-source: none !important; height: auto; min-height: var(--button-size); margin: 0.5em; width:34%; color: var(--secondary-text);" }, "Import/Export");
             this._fullThemeSelect = select$6({ style: "width: 100%;", id: "themeSelect" }, option$6({ selected: true, disabled: true, hidden: false }, "Pick a Base Theme"), option$6({ value: "AbyssBox Classic" }, "AbyssBox Classic"), option$6({ value: "AbyssBox Competitive" }, "AbyssBox Competitive"), option$6({ value: "AbyssBox Light" }, "AbyssBox Light"), option$6({ value: "AbyssBox 0.8" }, "AbyssBox 0.8"), option$6({ value: "AbyssBox Piano" }, "AbyssBox Piano"), option$6({ value: "Half-Life" }, "Half-Life"), option$6({ value: "Half-Life: Source" }, "Half-Life: Source"), option$6({ value: "Doom 1993" }, "Doom 1993"), option$6({ value: "Undertale" }, "Undertale"), option$6({ value: "Yume Nikki" }, "Yume Nikki [!]"), option$6({ value: "Scratch" }, "Scratch"), option$6({ value: "Scratch Addons" }, "Scratch Addons"), option$6({ value: "Windows Xp" }, "Windows Xp"), option$6({ value: "Frutiger Aero" }, "Frutiger Aero"), option$6({ value: "Frutiger Aero Night" }, "Frutiger Aero Night"), option$6({ value: "Skeuomorphic" }, "Skeuomorphic/Early 2000's (LeoV)"), option$6({ value: "woodland" }, "Woodland"), option$6({ value: "corporate dark" }, "Corporate Dark"), option$6({ value: "corporate light" }, "Corporate Light"), option$6({ value: "Glyde" }, "Glyde"), option$6({ value: "starry studio" }, "Starry Studio"), option$6({ value: "Terminal 2.0 (AB)" }, "Terminal 2.0 (AB)"), option$6({ value: "Slushie" }, "Slushie"), option$6({ value: "Slushie Pixel" }, "Slushie 2"), option$6({ value: "dark classic" }, "BeepBox Dark"), option$6({ value: "light classic" }, "BeepBox Light"), option$6({ value: "dark competition" }, "BeepBox Competition Dark"), option$6({ value: "BeepBox Pixel" }, "BeepBox Pixel"), option$6({ value: "jummbox classic" }, "JummBox Dark"), option$6({ value: "jummbox light" }, "JummBox Light"), option$6({ value: "gold light" }, "Gold Light"), option$6({ value: "forest" }, "Forest"), option$6({ value: "forest 2" }, "Forest 2"), option$6({ value: "canyon" }, "Canyon"), option$6({ value: "canyon 2" }, "Canyon 2"), option$6({ value: "midnight" }, "Midnight"), option$6({ value: "beachcombing" }, "Beachcombing"), option$6({ value: "violet verdant" }, "Violet Verdant"), option$6({ value: "sunset" }, "Sunset"), option$6({ value: "autumn" }, "Autumn"), option$6({ value: "fruit" }, "Shadowfruit"), option$6({ value: "toxic" }, "Toxic"), option$6({ value: "roe" }, "Roe"), option$6({ value: "moonlight" }, "Moonlight"), option$6({ value: "portal" }, "Portal"), option$6({ value: "fusion" }, "Fusion"), option$6({ value: "inverse" }, "Inverse"), option$6({ value: "nebula" }, "Nebula"), option$6({ value: "Nebula 2" }, "Nebula 2"), option$6({ value: "roe light" }, "Roe Light"), option$6({ value: "amoled dark" }, "High Contrast Dark"), option$6({ value: "energized" }, "Energized"), option$6({ value: "neapolitan" }, "Neapolitan"), option$6({ value: "mono" }, "Poly"), option$6({ value: "blutonium" }, "Blutonium"), option$6({ value: "modbox classic" }, "Modbox"), option$6({ value: "modbox 2" }, "Modbox 2.0"), option$6({ value: "modbox artic" }, "Artic"), option$6({ value: "modbox cinnamon" }, "Cinnamon Roll [!]"), option$6({ value: "modbox ocean" }, "Ocean"), option$6({ value: "modbox rainbow" }, "Rainbow [!]"), option$6({ value: "modbox float" }, "Float [!]"), option$6({ value: "modbox windows" }, "Windows"), option$6({ value: "modbox grassland" }, "Grassland"), option$6({ value: "modbox dessert" }, "Dessert"), option$6({ value: "modbox kahoot" }, "Kahootiest"), option$6({ value: "modbox bitbeam" }, "Beam to the Bit [!]"), option$6({ value: "modbox egg" }, "Pretty Egg"), option$6({ value: "modbox pony" }, "Poniryoshka"), option$6({ value: "modbox gameboy" }, "Gameboy [!]"), option$6({ value: "modbox woodkid" }, "Woodkid [!]"), option$6({ value: "modbox midnight" }, "Midnight [!]"), option$6({ value: "modbox snedbox" }, "Snedbox"), option$6({ value: "modbox unnamed" }, "unnamed [!]"), option$6({ value: "modbox piano" }, "Piano [!]"), option$6({ value: "modbox halloween" }, "Halloween [!]"), option$6({ value: "modbox frozen" }, "FrozenOver❄️ [!]"), option$6({ value: "Ghost House" }, "Ghost House"), option$6({ value: "Ghost House 2" }, "Ghost House 2"), option$6({ value: "azur lane" }, "Azur Lane"), option$6({ value: "sandbox classic" }, "Sandbox"), option$6({ value: "harrybox" }, "Haileybox"), option$6({ value: "brucebox" }, "Brucebox"), option$6({ value: "shitbox 1.0" }, "Shitbox 1.0"), option$6({ value: "shitbox 2.0" }, "Shitbox 2.0"), option$6({ value: "shitbox 3.0" }, "Shitbox 3.0/shitbox4"), option$6({ value: "shitbox ModBox 2.0" }, "Shitbox ModBox 2.0"), option$6({ value: "shitbox Realm" }, "Shitbox Realm [!]"), option$6({ value: "nerdbox" }, "NerdBox"), option$6({ value: "zefbox" }, "Zefbox"), option$6({ value: "cardboardbox classic" }, "Cardboardbox"), option$6({ value: "blubox classic" }, "Blubox"), option$6({ value: "dogebox classic" }, "Dogebox"), option$6({ value: "wackybox" }, "Wackybox"), option$6({ value: "todbox dark mode" }, "Todbox Dark Mode"), option$6({ value: "mainbox 1.0" }, "Mainbox"), option$6({ value: "microbox" }, "MicroBox"), option$6({ value: "paandorasbox" }, "PaandorasBox"), option$6({ value: "foxbox" }, "FoxBox"), option$6({ value: "midbox" }, "Midbox"), option$6({ value: "dogebox2" }, "Dogebox2"), option$6({ value: "nepbox" }, "Nepbox"), option$6({ value: "nepbox laffey" }, "Laffey"), option$6({ value: "nepbox snedbox" }, "Snedbox (Nb) [!]"), option$6({ value: "nepbox piano" }, "Piano (Nb) [!]"), option$6({ value: "WeebBox" }, "WeebBox"), option$6({ value: "BoxBeep Dark" }, "BoxBeep Dark"), option$6({ value: "BoxBeep light" }, "BoxBeep Light"), option$6({ value: "AWeebyssBox" }, "AWeebyssBox"), option$6({ value: "Deuteranopia" }, "Deuteranopia"), option$6({ value: "Protanopia" }, "Protanopia"), option$6({ value: "Tritanopia" }, "Tritanopia"), option$6({ value: "2012 Video Tutorial" }, "2012 Video Tutorial"), option$6({ value: "I am on fire" }, "I am on fire"), option$6({ value: "custom" }, "Custom"));
-            this._baseColorSelect = select$6({ style: "width: 100%; display:none; margin: 0.5em 0;", id: "baseColorSelect" }, option$6({ selected: true, disabled: true, hidden: false }, "Pick a Base Color Palette"), option$6({ value: "AbyssBox Classic" }, "AbyssBox Classic"), option$6({ value: "AbyssBox Competitive" }, "AbyssBox Competitive"), option$6({ value: "AbyssBox Light" }, "AbyssBox Light"), option$6({ value: "Half-Life" }, "Half-Life"), option$6({ value: "Doom 1993" }, "Doom 1993"), option$6({ value: "Undertale" }, "Undertale"), option$6({ value: "Yume Nikki" }, "Yume Nikki [!]"), option$6({ value: "Scratch" }, "Scratch"), option$6({ value: "Scratch Addons" }, "Scratch Addons"), option$6({ value: "Windows Xp" }, "Windows Xp"), option$6({ value: "Frutiger Aero" }, "Frutiger Aero"), option$6({ value: "Skeuomorphic" }, "Skeuomorphic/Early 2000's (LeoV)"), option$6({ value: "corporate dark" }, "Corporate Dark"), option$6({ value: "corporate light" }, "Corporate Light"), option$6({ value: "Glyde" }, "Glyde"), option$6({ value: "starry studio" }, "Starry Studio"), option$6({ value: "Terminal 2.0 (AB)" }, "Terminal 2.0 (AB)"), option$6({ value: "Slushie" }, "Slushie"), option$6({ value: "dark classic" }, "BeepBox Dark"), option$6({ value: "light classic" }, "BeepBox Light"), option$6({ value: "dark competition" }, "BeepBox Competition Dark"), option$6({ value: "jummbox classic" }, "JummBox Dark"), option$6({ value: "jummbox light" }, "JummBox Light"), option$6({ value: "gold light" }, "Gold Light"), option$6({ value: "forest" }, "Forest"), option$6({ value: "forest 2" }, "Forest 2"), option$6({ value: "canyon" }, "Canyon"), option$6({ value: "canyon 2" }, "Canyon 2"), option$6({ value: "midnight" }, "Midnight"), option$6({ value: "beachcombing" }, "Beachcombing"), option$6({ value: "violet verdant" }, "Violet Verdant"), option$6({ value: "sunset" }, "Sunset"), option$6({ value: "autumn" }, "Autumn"), option$6({ value: "fruit" }, "Shadowfruit"), option$6({ value: "toxic" }, "Toxic"), option$6({ value: "roe" }, "Roe"), option$6({ value: "moonlight" }, "Moonlight"), option$6({ value: "portal" }, "Portal"), option$6({ value: "fusion" }, "Fusion"), option$6({ value: "inverse" }, "Inverse"), option$6({ value: "nebula" }, "Nebula"), option$6({ value: "Nebula 2" }, "Nebula 2"), option$6({ value: "roe light" }, "Roe Light"), option$6({ value: "amoled dark" }, "High Contrast Dark"), option$6({ value: "energized" }, "Energized"), option$6({ value: "neapolitan" }, "Neapolitan"), option$6({ value: "mono" }, "Poly"), option$6({ value: "blutonium" }, "Blutonium"), option$6({ value: "modbox classic" }, "Modbox"), option$6({ value: "modbox 2" }, "Modbox 2.0"), option$6({ value: "modbox artic" }, "Artic"), option$6({ value: "modbox cinnamon" }, "Cinnamon Roll [!]"), option$6({ value: "modbox ocean" }, "Ocean"), option$6({ value: "modbox rainbow" }, "Rainbow [!]"), option$6({ value: "modbox float" }, "Float [!]"), option$6({ value: "modbox windows" }, "Windows"), option$6({ value: "modbox grassland" }, "Grassland"), option$6({ value: "modbox dessert" }, "Dessert"), option$6({ value: "modbox kahoot" }, "Kahootiest"), option$6({ value: "modbox bitbeam" }, "Beam to the Bit [!]"), option$6({ value: "modbox egg" }, "Pretty Egg"), option$6({ value: "modbox pony" }, "Poniryoshka"), option$6({ value: "modbox gameboy" }, "Gameboy [!]"), option$6({ value: "modbox woodkid" }, "Woodkid [!]"), option$6({ value: "modbox midnight" }, "Midnight [!]"), option$6({ value: "modbox snedbox" }, "Snedbox"), option$6({ value: "modbox unnamed" }, "unnamed [!]"), option$6({ value: "modbox piano" }, "Piano [!]"), option$6({ value: "modbox halloween" }, "Halloween [!]"), option$6({ value: "modbox frozen" }, "FrozenOver❄️ [!]"), option$6({ value: "Ghost House" }, "Ghost House"), option$6({ value: "azur lane" }, "Azur Lane"), option$6({ value: "modbox classic" }, "Modbox"), option$6({ value: "sandbox classic" }, "Sandbox"), option$6({ value: "harrybox" }, "Haileybox"), option$6({ value: "brucebox" }, "Brucebox"), option$6({ value: "shitbox 3.0" }, "Shitbox 1.0/3.0"), option$6({ value: "shitbox 2.0" }, "Shitbox 2.0"), option$6({ value: "nerdbox" }, "NerdBox"), option$6({ value: "zefbox" }, "Zefbox"), option$6({ value: "cardboardbox classic" }, "Cardboardbox"), option$6({ value: "blubox classic" }, "Blubox"), option$6({ value: "dogebox classic" }, "Dogebox"), option$6({ value: "wackybox" }, "Wackybox"), option$6({ value: "todbox dark mode" }, "Todbox Dark Mode"), option$6({ value: "mainbox 1.0" }, "Mainbox"), option$6({ value: "microbox" }, "MicroBox"), option$6({ value: "paandorasbox" }, "PaandorasBox"), option$6({ value: "foxbox" }, "FoxBox"), option$6({ value: "midbox" }, "Midbox"), option$6({ value: "dogebox2" }, "Dogebox2"), option$6({ value: "nepbox" }, "Nepbox"), option$6({ value: "BoxBeep Dark" }, "BoxBeep Dark"), option$6({ value: "BoxBeep light" }, "BoxBeep Light"), option$6({ value: "Deuteranopia" }, "Deuteranopia"), option$6({ value: "Protanopia" }, "Protanopia"), option$6({ value: "Tritanopia" }, "Tritanopia"), option$6({ value: "custom" }, "Custom"));
+            this._baseColorSelect = select$6({ style: "width: 100%; display:none; margin: 0.5em 0;", id: "baseColorSelect" }, option$6({ selected: true, disabled: true, hidden: false }, "Pick a Base Color Palette"), option$6({ value: "AbyssBox Classic" }, "AbyssBox Classic"), option$6({ value: "AbyssBox Competitive" }, "AbyssBox Competitive"), option$6({ value: "AbyssBox Light" }, "AbyssBox Light"), option$6({ value: "Half-Life" }, "Half-Life"), option$6({ value: "Doom 1993" }, "Doom 1993"), option$6({ value: "Undertale" }, "Undertale"), option$6({ value: "Yume Nikki" }, "Yume Nikki [!]"), option$6({ value: "Scratch" }, "Scratch"), option$6({ value: "Scratch Addons" }, "Scratch Addons"), option$6({ value: "Windows Xp" }, "Windows Xp"), option$6({ value: "Frutiger Aero" }, "Frutiger Aero"), option$6({ value: "Skeuomorphic" }, "Skeuomorphic/Early 2000's (LeoV)"), option$6({ value: "corporate dark" }, "Corporate Dark"), option$6({ value: "corporate light" }, "Corporate Light"), option$6({ value: "Glyde" }, "Glyde"), option$6({ value: "starry studio" }, "Starry Studio"), option$6({ value: "Terminal 2.0 (AB)" }, "Terminal 2.0 (AB)"), option$6({ value: "Slushie" }, "Slushie"), option$6({ value: "dark classic" }, "BeepBox Dark"), option$6({ value: "light classic" }, "BeepBox Light"), option$6({ value: "dark competition" }, "BeepBox Competition Dark"), option$6({ value: "jummbox classic" }, "JummBox Dark"), option$6({ value: "jummbox light" }, "JummBox Light"), option$6({ value: "gold light" }, "Gold Light"), option$6({ value: "forest" }, "Forest"), option$6({ value: "forest 2" }, "Forest 2"), option$6({ value: "canyon" }, "Canyon"), option$6({ value: "canyon 2" }, "Canyon 2"), option$6({ value: "midnight" }, "Midnight"), option$6({ value: "beachcombing" }, "Beachcombing"), option$6({ value: "violet verdant" }, "Violet Verdant"), option$6({ value: "sunset" }, "Sunset"), option$6({ value: "autumn" }, "Autumn"), option$6({ value: "fruit" }, "Shadowfruit"), option$6({ value: "toxic" }, "Toxic"), option$6({ value: "roe" }, "Roe"), option$6({ value: "moonlight" }, "Moonlight"), option$6({ value: "portal" }, "Portal"), option$6({ value: "fusion" }, "Fusion"), option$6({ value: "inverse" }, "Inverse"), option$6({ value: "nebula" }, "Nebula"), option$6({ value: "Nebula 2" }, "Nebula 2"), option$6({ value: "roe light" }, "Roe Light"), option$6({ value: "amoled dark" }, "High Contrast Dark"), option$6({ value: "energized" }, "Energized"), option$6({ value: "neapolitan" }, "Neapolitan"), option$6({ value: "mono" }, "Poly"), option$6({ value: "blutonium" }, "Blutonium"), option$6({ value: "modbox classic" }, "Modbox"), option$6({ value: "modbox 2" }, "Modbox 2.0"), option$6({ value: "modbox artic" }, "Artic"), option$6({ value: "modbox cinnamon" }, "Cinnamon Roll [!]"), option$6({ value: "modbox ocean" }, "Ocean"), option$6({ value: "modbox rainbow" }, "Rainbow [!]"), option$6({ value: "modbox float" }, "Float [!]"), option$6({ value: "modbox windows" }, "Windows"), option$6({ value: "modbox grassland" }, "Grassland"), option$6({ value: "modbox dessert" }, "Dessert"), option$6({ value: "modbox kahoot" }, "Kahootiest"), option$6({ value: "modbox bitbeam" }, "Beam to the Bit [!]"), option$6({ value: "modbox egg" }, "Pretty Egg"), option$6({ value: "modbox pony" }, "Poniryoshka"), option$6({ value: "modbox gameboy" }, "Gameboy [!]"), option$6({ value: "modbox woodkid" }, "Woodkid [!]"), option$6({ value: "modbox midnight" }, "Midnight [!]"), option$6({ value: "modbox snedbox" }, "Snedbox"), option$6({ value: "modbox unnamed" }, "unnamed [!]"), option$6({ value: "modbox piano" }, "Piano [!]"), option$6({ value: "modbox halloween" }, "Halloween [!]"), option$6({ value: "modbox frozen" }, "FrozenOver❄️ [!]"), option$6({ value: "Ghost House" }, "Ghost House"), option$6({ value: "azur lane" }, "Azur Lane"), option$6({ value: "modbox classic" }, "Modbox"), option$6({ value: "sandbox classic" }, "Sandbox"), option$6({ value: "harrybox" }, "Haileybox"), option$6({ value: "brucebox" }, "Brucebox"), option$6({ value: "shitbox 3.0" }, "Shitbox 1.0/3.0"), option$6({ value: "shitbox 2.0" }, "Shitbox 2.0"), option$6({ value: "nerdbox" }, "NerdBox"), option$6({ value: "zefbox" }, "Zefbox"), option$6({ value: "cardboardbox classic" }, "Cardboardbox"), option$6({ value: "blubox classic" }, "Blubox"), option$6({ value: "dogebox classic" }, "Dogebox"), option$6({ value: "wackybox" }, "Wackybox"), option$6({ value: "todbox dark mode" }, "Todbox Dark Mode"), option$6({ value: "mainbox 1.0" }, "Mainbox"), option$6({ value: "microbox" }, "MicroBox"), option$6({ value: "paandorasbox" }, "PaandorasBox"), option$6({ value: "foxbox" }, "FoxBox"), option$6({ value: "midbox" }, "Midbox"), option$6({ value: "dogebox2" }, "Dogebox2"), option$6({ value: "nepbox" }, "Nepbox"), option$6({ value: "BoxBeep Dark" }, "BoxBeep Dark"), option$6({ value: "BoxBeep light" }, "BoxBeep Light"), option$6({ value: "birdbox dark" }, "BirdBox Dark"), option$6({ value: "birdbox light" }, "BirdBox Light"), option$6({ value: "ultrabox dark" }, "UltraBox"), option$6({ value: "slarmoosbox" }, "Slarmoo's Box"), option$6({ value: "lemmbox dark" }, "LemmBox Dark"), option$6({ value: "Deuteranopia" }, "Deuteranopia"), option$6({ value: "Protanopia" }, "Protanopia"), option$6({ value: "Tritanopia" }, "Tritanopia"), option$6({ value: "custom" }, "Custom"));
             this._backgroundSelect = select$6({ style: "width: 100%; display:none; margin: 0.5em 0;", id: "backgroundSelect" }, option$6({ selected: true, disabled: true, hidden: false }, "Pick a Background"), option$6({ value: "none" }, "None"), option$6({ value: "AbyssBox Classic" }, "AbyssBox Classic"), option$6({ value: "AbyssBox Light" }, "AbyssBox Light"), option$6({ value: "Undertale" }, "Undertale"), option$6({ value: "Windows Xp" }, "Windows Xp"), option$6({ value: "Frutiger Aero" }, "Frutiger Aero"), option$6({ value: "Skeuomorphic" }, "Skeuomorphic/Early 2000's (LeoV)"), option$6({ value: "Glyde" }, "Glyde"), option$6({ value: "starry studio" }, "Starry Studio"), option$6({ value: "Slushie 2" }, "Slushie 2"), option$6({ value: "BeepBox Pixel" }, "BeepBox Pixel"), option$6({ value: "Forest 2" }, "Forest 2"), option$6({ value: "Canyon 2" }, "Canyon 2"), option$6({ value: "Nebula 2" }, "Nebula 2"), option$6({ value: "Ghost House 2" }, "Ghost House 2"), option$6({ value: "azur lane" }, "Azur Lane"));
             this._borderSelect = select$6({ style: "width: 100%; display:none; margin: 0.5em 0;", id: "borderSelect" }, option$6({ selected: true, disabled: true, hidden: false }, "Pick a Border"), option$6({ value: "none" }, "None"), option$6({ value: "AbyssBox Classic" }, "AbyssBox Classic"), option$6({ value: "AbyssBox Competitive" }, "AbyssBox Competitive"), option$6({ value: "AbyssBox Light" }, "AbyssBox Light"), option$6({ value: "Scratch" }, "Scratch"), option$6({ value: "Scratch Addons" }, "Scratch Addons"), option$6({ value: "Undertale" }, "Undertale"), option$6({ value: "Windows Xp" }, "Windows Xp"), option$6({ value: "Frutiger Aero" }, "Frutiger Aero"), option$6({ value: "Skeuomorphic" }, "Skeuomorphic/Early 2000's (LeoV)"), option$6({ value: "Glyde" }, "Glyde"), option$6({ value: "Slushie 2" }, "Slushie 2"), option$6({ value: "BeepBox Pixel" }, "BeepBox Pixel"), option$6({ value: "Forest 2" }, "Forest 2"), option$6({ value: "Canyon 2" }, "Canyon 2"), option$6({ value: "Nebula 2" }, "Nebula 2"), option$6({ value: "Ghost House 2" }, "Ghost House 2"));
             this._overlaySelect = select$6({ style: "width: 100%; display:none; margin: 0.5em 0;", id: "overlaySelect" }, option$6({ selected: true, disabled: true, hidden: false }, "Pick an Overlay"), option$6({ value: "none" }, "None"), option$6({ value: "scanlines" }, "Scanlines"), option$6({ value: "bandicam" }, "Bandicam"), option$6({ value: "fire" }, "Fire"), option$6({ value: "invert" }, "Screen Color Inversion"), option$6({ value: "480p" }, '"Low Quality" Blur (Mimics 480p)'), option$6({ value: "contrast" }, 'High Contrast'), option$6({ value: "Sepia" }, 'Sepia'), option$6({ value: "grayscale" }, 'Grayscale/Black and White'));
@@ -60306,21 +59458,21 @@ You should be redirected to the song at:<br /><br />
             this._fileNameInput = input$6({ type: "text", value: "Your Theme" });
             this._colorpickerInput = input$6({ type: "color", id: "colorPicker", value: "#000000", style: "width: 50%; height: 30px;" });
             this._hexColorInput = input$6({ type: "text", value: "#000000", style: "width: 25%; height: 30px;" });
-            this._resetButton = button$b({ style: "height: auto; min-height: var(--button-size);" }, "Reset to defaults");
-            this._removeFirstImageButton = button$b({ style: "height: auto; min-height: var(--button-size); margin-bottom: 0.5em;" }, "Remove First Image");
-            this._removeSecondImageButton = button$b({ style: "height: auto; min-height: var(--button-size); margin-bottom: 0.5em;" }, "Remove Second Image");
-            this._basicButton = button$b({ style: "height: auto; min-height: var(--button-size); margin: 0.5em; width: 50%; border-bottom: solid; border-bottom-color: var(--link-accent);" }, "Basic Template Editor");
-            this._advancedButton = button$b({ style: "height: auto; min-height: var(--button-size); margin: 0.5em; width: 50%; border-bottom-color: var(--link-accent); color: var(--secondary-text);" }, "Advanced Template Editor");
-            this._cancelButton = button$b({ class: "cancelButton" });
-            this._okayButton = button$b({ class: "okayButton", style: "width:45%;" }, "Okay");
-            this.editorContainer = div$b({ class: "editorContainer", id: "editorContainer", style: "display:none;" }, div$b({ class: "promptTitle" }, h2$9({ class: "customThemeExt", style: "text-align: inherit;" }, ""), h2$9({ class: "customThemeTitle", style: "margin-bottom: 0.5em;" }, "Custom Theme Editor")), p$3({ style: "text-align: left; margin: 0.5em 0;" }, "Thank you to leoV on discord for basically writing the whole system on how this works, without him this wouldn't be possible!"), p$3({ style: "text-align: left; margin: 0.5em 0;" }, "To use the custom theme editor, simply use the options below!"), div$b(), p$3({ style: "text-align: center; margin: 1em 0;" }, this._colorMenu), p$3({ style: "text-align: center; margin: 1em 0;" }, "Pick a color: ", this._colorpickerInput), div$b({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between; width: 30%; align-self: end; margin: 0.5em;" }, this._resetButton));
-            this.fullThemeContainer = div$b({ class: "fullThemeContainer", style: "" }, p$3({ style: "text-align: left; margin: 1em 0;" }, "Basics", this._fullThemeSelect));
-            this._exportButton = button$b({ style: "height: auto; min-height: var(--button-size);", id: "exportThemeButton" }, "Export Theme");
+            this._resetButton = button$a({ style: "height: auto; min-height: var(--button-size);" }, "Reset to defaults");
+            this._removeFirstImageButton = button$a({ style: "height: auto; min-height: var(--button-size); margin-bottom: 0.5em;" }, "Remove First Image");
+            this._removeSecondImageButton = button$a({ style: "height: auto; min-height: var(--button-size); margin-bottom: 0.5em;" }, "Remove Second Image");
+            this._basicButton = button$a({ style: "height: auto; min-height: var(--button-size); margin: 0.5em; width: 50%; border-bottom: solid; border-bottom-color: var(--link-accent);" }, "Basic Template Editor");
+            this._advancedButton = button$a({ style: "height: auto; min-height: var(--button-size); margin: 0.5em; width: 50%; border-bottom-color: var(--link-accent); color: var(--secondary-text);" }, "Advanced Template Editor");
+            this._cancelButton = button$a({ class: "cancelButton" });
+            this._okayButton = button$a({ class: "okayButton", style: "width:45%;" }, "Okay");
+            this.editorContainer = div$a({ class: "editorContainer", id: "editorContainer", style: "display:none;" }, div$a({ class: "promptTitle" }, h2$9({ class: "customThemeExt", style: "text-align: inherit;" }, ""), h2$9({ class: "customThemeTitle", style: "margin-bottom: 0.5em;" }, "Custom Theme Editor")), p$3({ style: "text-align: left; margin: 0.5em 0;" }, "Thank you to leoV on discord for basically writing the whole system on how this works, without him this wouldn't be possible!"), p$3({ style: "text-align: left; margin: 0.5em 0;" }, "To use the custom theme editor, simply use the options below!"), div$a(), p$3({ style: "text-align: center; margin: 1em 0;" }, this._colorMenu), p$3({ style: "text-align: center; margin: 1em 0;" }, "Pick a color: ", this._colorpickerInput), div$a({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between; width: 30%; align-self: end; margin: 0.5em;" }, this._resetButton));
+            this.fullThemeContainer = div$a({ class: "fullThemeContainer", style: "" }, p$3({ style: "text-align: left; margin: 1em 0;" }, "Basics", this._fullThemeSelect));
+            this._exportButton = button$a({ style: "height: auto; min-height: var(--button-size);", id: "exportThemeButton" }, "Export Theme");
             this._importButton = input$6({ type: "file", accept: ".css", style: "height: auto; min-height: var(--button-size);", id: "importThemeButton" }, "Import Theme");
-            this.basicContainer = div$b({ class: "basicContainer", style: "" }, div$b({ class: "promptTitle" }, h2$9({ class: "customThemeBasicExt", style: "text-align: inherit;" }, ""), h2$9({ class: "customThemeBasicTitle", style: "margin-bottom: 0.5em;" }, "Template Theme Editor")), p$3({ style: "text-align: left; margin: 1em 0;" }, p$3({ style: "text-align: left; margin: 1em 0; display: flex; flex-direction: row; justify-content: space-between;" }, this._basicButton, this._advancedButton), "Using Template assets from other themes, you can build your own theme easily! Simply input the files below or use assets from the dropdown menus."), p$3({ style: "text-align: left; margin: 1em 0;" }, this.fullThemeContainer, p$3({ style: "text-align: left; margin: 1em 0;" }, "Advanced", this._baseColorSelect, this._backgroundSelect, this._borderSelect, this._iconSelect, this._cursorSelect)), p$3({ style: "text-align: left;" }, "Editor Background Image:", this._fileInput), p$3({ style: "text-align: left;" }, "Website Background Image:", this._fileInput2), div$b({ style: "display: flex; flex-direction: row-reverse;" }, div$b({ style: "display: flex; flex-direction: column; justify-content: space-between; width: 30%; align-self: end; margin: 0.5em;" }, this._removeFirstImageButton, this._removeSecondImageButton)));
-            this.exportContainer = div$b({ class: "exportContainer", style: "display:none;" }, div$b({ class: "promptTitle" }, h2$9({ class: "customThemeExportExt", style: "text-align: inherit;" }, ""), h2$9({ class: "customThemeExportTitle", style: "margin-bottom: 0.5em;" }, "Import/Export Custom Theme")), p$3({ style: "text-align: left; margin: 0.5em 0;" }, "In here, you can export your theme by copying the text input below, or you could import an already existing theme in the same place."), p$3({ style: "text-align: left; margin: 0.5em 0;" }, "Though it's worth noting that exporting themes will not include the template assets that aren't the base colors or basic overall theme."), p$3({ style: "text-align: center; margin: 1em 0;" }, this._colorInput), p$3({ style: "text-align: center; margin: 1em 0;" }), p$3({ style: "text-align: center; margin: 0.5em 0;" }, "Input your file name here: "), p$3({ style: "text-align: center; margin: 1em 0;" }, this._fileNameInput), div$b({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._exportButton, this._importButton));
-            this.customContainer = div$b({ class: "customContainer", id: "customContainer", style: "width: 100%;" }, p$3({ style: "text-align: center; margin: 1em 0; display:flex; flex-direction: row;" }, this._basicCatagoryButton, this._editorCatagoryButton, this._cssCatagoryButton), this.basicContainer, this.editorContainer, this.exportContainer);
-            this.container = div$b({ class: "prompt noSelection", id: "themeContainerPrompt", style: "width: 500px;" }, this.customContainer, div$b({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton), this._cancelButton);
+            this.basicContainer = div$a({ class: "basicContainer", style: "" }, div$a({ class: "promptTitle" }, h2$9({ class: "customThemeBasicExt", style: "text-align: inherit;" }, ""), h2$9({ class: "customThemeBasicTitle", style: "margin-bottom: 0.5em;" }, "Template Theme Editor")), p$3({ style: "text-align: left; margin: 1em 0;" }, p$3({ style: "text-align: left; margin: 1em 0; display: flex; flex-direction: row; justify-content: space-between;" }, this._basicButton, this._advancedButton), "Using Template assets from other themes, you can build your own theme easily! Simply input the files below or use assets from the dropdown menus."), p$3({ style: "text-align: left; margin: 1em 0;" }, this.fullThemeContainer, p$3({ style: "text-align: left; margin: 1em 0;" }, "Advanced", this._baseColorSelect, this._backgroundSelect, this._borderSelect, this._iconSelect, this._cursorSelect)), p$3({ style: "text-align: left;" }, "Editor Background Image:", this._fileInput), p$3({ style: "text-align: left;" }, "Website Background Image:", this._fileInput2), div$a({ style: "display: flex; flex-direction: row-reverse;" }, div$a({ style: "display: flex; flex-direction: column; justify-content: space-between; width: 30%; align-self: end; margin: 0.5em;" }, this._removeFirstImageButton, this._removeSecondImageButton)));
+            this.exportContainer = div$a({ class: "exportContainer", style: "display:none;" }, div$a({ class: "promptTitle" }, h2$9({ class: "customThemeExportExt", style: "text-align: inherit;" }, ""), h2$9({ class: "customThemeExportTitle", style: "margin-bottom: 0.5em;" }, "Import/Export Custom Theme")), p$3({ style: "text-align: left; margin: 0.5em 0;" }, "In here, you can export your theme by copying the text input below, or you could import an already existing theme in the same place."), p$3({ style: "text-align: left; margin: 0.5em 0;" }, "Though it's worth noting that exporting themes will not include the template assets that aren't the base colors or basic overall theme."), p$3({ style: "text-align: center; margin: 1em 0;" }, this._colorInput), p$3({ style: "text-align: center; margin: 1em 0;" }), p$3({ style: "text-align: center; margin: 0.5em 0;" }, "Input your file name here: "), p$3({ style: "text-align: center; margin: 1em 0;" }, this._fileNameInput), div$a({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._exportButton, this._importButton));
+            this.customContainer = div$a({ class: "customContainer", id: "customContainer", style: "width: 100%;" }, p$3({ style: "text-align: center; margin: 1em 0; display:flex; flex-direction: row;" }, this._basicCatagoryButton, this._editorCatagoryButton, this._cssCatagoryButton), this.basicContainer, this.editorContainer, this.exportContainer);
+            this.container = div$a({ class: "prompt noSelection", id: "themeContainerPrompt", style: "width: 500px;" }, this.customContainer, div$a({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton), this._cancelButton);
             this._exportToCSS = () => {
                 const fileContents = window.localStorage.getItem("customColors") || longText;
                 const blob = new Blob([fileContents], { type: "text/css" });
@@ -60534,7 +59686,6 @@ You should be redirected to the song at:<br /><br />
             };
             this._whenFileSelected = () => {
                 const file = this._fileInput.files[0];
-                const opacityValue = "0.2";
                 if (!file)
                     return;
                 const reader = new FileReader();
@@ -60616,7 +59767,7 @@ You should be redirected to the song at:<br /><br />
 
     const textOnIcon = ColorConfig.getComputed("--text-enabled-icon") !== "" ? ColorConfig.getComputed("--text-enabled-icon") : "✓ ";
     const textOffIcon = ColorConfig.getComputed("--text-disabled-icon") !== "" ? ColorConfig.getComputed("--text-disabled-icon") : "　";
-    const { button: button$a, div: div$a, h2: h2$8, option: option$5, select: select$5, p: p$2 } = HTML;
+    const { button: button$9, div: div$9, h2: h2$8, option: option$5, select: select$5, p: p$2 } = HTML;
     var setPresets = new Array();
     var storedPresets = localStorage.getItem("setPresets");
     var totalPresets = new Array("Retro Presets", "Keyboard Presets", "Idiophone Presets", "Guitar Presets", "Picked Bass Presets", "Picked String Presets", "Distortion Presets", "Bellows Presets", "String Presets", "Vocal Presets", "Brass Presets", "Reed Presets", "Flute Presets", "Pad Presets", "Drum Presets", "Novelty Presets", "Modbox Presets", "Sandbox Presets", "Blackbox Presets", "Todbox Presets", "Midbox Misc Presets", "Midbox Dubstep Presets", "Midbox Noise Presets", "UltraBox Presets", "AbyssBox 0.8 to 1.2 Presets", "AbyssBox 1.3+ Presets", "AbyssBox Spooky Presets");
@@ -60629,11 +59780,11 @@ You should be redirected to the song at:<br /><br />
     class PresetPrompt {
         constructor(_doc) {
             this._doc = _doc;
-            this._cancelButton = button$a({ class: "cancelButton" });
-            this._okayButton = button$a({ class: "okayButton", style: "width:45%;" }, "Okay");
+            this._cancelButton = button$9({ class: "cancelButton" });
+            this._okayButton = button$9({ class: "okayButton", style: "width:45%;" }, "Okay");
             this._beepboxMenu = select$5({ style: "width: 100%; margin: 0.5em; margin-left:0;" }, option$5({ selected: true, disabled: true, hidden: false }, "BeepBox Presets"), option$5({ value: "Retro Presets" }, (setPresets.includes("Retro Presets") ? textOnIcon : textOffIcon) + "Retro Presets"), option$5({ value: "Keyboard Presets" }, (setPresets.includes("Keyboard Presets") ? textOnIcon : textOffIcon) + "Keyboard Presets"), option$5({ value: "Idiophone Presets" }, (setPresets.includes("Idiophone Presets") ? textOnIcon : textOffIcon) + "Idiophone Presets"), option$5({ value: "Guitar Presets" }, (setPresets.includes("Guitar Presets") ? textOnIcon : textOffIcon) + "Guitar Presets"), option$5({ value: "Picked Bass Presets" }, (setPresets.includes("Picked Bass Presets") ? textOnIcon : textOffIcon) + "Picked Bass Presets"), option$5({ value: "Picked String Presets" }, (setPresets.includes("Picked String Presets") ? textOnIcon : textOffIcon) + "Picked String Presets"), option$5({ value: "Distortion Presets" }, (setPresets.includes("Distortion Presets") ? textOnIcon : textOffIcon) + "Distortion Presets"), option$5({ value: "Bellows Presets" }, (setPresets.includes("Bellows Presets") ? textOnIcon : textOffIcon) + "Bellows Presets"), option$5({ value: "String Presets" }, (setPresets.includes("String Presets") ? textOnIcon : textOffIcon) + "String Presets"), option$5({ value: "Vocal Presets" }, (setPresets.includes("Vocal Presets") ? textOnIcon : textOffIcon) + "Vocal Presets"), option$5({ value: "Brass Presets" }, (setPresets.includes("Brass Presets") ? textOnIcon : textOffIcon) + "Brass Presets"), option$5({ value: "Reed Presets" }, (setPresets.includes("Reed Presets") ? textOnIcon : textOffIcon) + "Reed Presets"), option$5({ value: "Flute Presets" }, (setPresets.includes("Flute Presets") ? textOnIcon : textOffIcon) + "Flute Presets"), option$5({ value: "Drum Presets" }, (setPresets.includes("Drum Presets") ? textOnIcon : textOffIcon) + "Drum Presets"), option$5({ value: "Novelty Presets" }, (setPresets.includes("Novelty Presets") ? textOnIcon : textOffIcon) + "Novelty Presets"));
             this._otherMenu = select$5({ style: "width: 100%;" }, option$5({ selected: true, disabled: true, hidden: false }, "Other Mod Presets"), option$5({ value: "Modbox Presets" }, (setPresets.includes("Modbox Presets") ? textOnIcon : textOffIcon) + "Modbox Presets"), option$5({ value: "Sandbox Presets" }, (setPresets.includes("Sandbox Presets") ? textOnIcon : textOffIcon) + "Sandbox Presets"), option$5({ value: "Blackbox Presets" }, (setPresets.includes("Blackbox Presets") ? textOnIcon : textOffIcon) + "Blackbox Presets"), option$5({ value: "Todbox Presets" }, (setPresets.includes("Todbox Presets") ? textOnIcon : textOffIcon) + "Todbox Presets"), option$5({ value: "Midbox Misc Presets" }, (setPresets.includes("Midbox Misc Presets") ? textOnIcon : textOffIcon) + "Midbox Misc Presets"), option$5({ value: "Midbox Dubstep Presets" }, (setPresets.includes("Midbox Dubstep Presets") ? textOnIcon : textOffIcon) + "Midbox Dubstep Presets"), option$5({ value: "Midbox Noise Presets" }, (setPresets.includes("Midbox Noise Presets") ? textOnIcon : textOffIcon) + "Midbox Noise Presets"), option$5({ value: "UltraBox Presets" }, (setPresets.includes("UltraBox Presets") ? textOnIcon : textOffIcon) + "UltraBox Presets"), option$5({ value: "AbyssBox 0.8 to 1.2 Presets" }, (setPresets.includes("AbyssBox 0.8 to 1.2 Presets") ? textOnIcon : textOffIcon) + "AbyssBox 0.8 to 1.2 Presets"), option$5({ value: "AbyssBox 1.3+ Presets" }, (setPresets.includes("AbyssBox 1.3+ Presets") ? textOnIcon : textOffIcon) + "AbyssBox 1.3+ Presets"), option$5({ value: "AbyssBox Spooky Presets" }, (setPresets.includes("AbyssBox Spooky Presets") ? textOnIcon : textOffIcon) + "AbyssBox Spooky Presets"));
-            this.container = div$a({ class: "prompt noSelection", id: "presetContainerPrompt", style: "width: 400px;" }, div$a({ class: "promptTitle" }, h2$8({ class: "presetExt", style: "text-align: inherit;" }, ""), h2$8({ class: "presetTitle", style: "margin-bottom: 0.5em;" }, "Select Presets")), p$2({ style: "margin-bottom: 1.5em; margin-top: 0; font-size: 16px; text-align: center;" }, 'Here you can select any preset category and make it visible or not. Which ones you would like are completely up to you.'), div$a({ style: "display: flex; flex-direction: column; align-items: center; height: 2em; justify-content: flex-end;" }, div$a({ class: "beepBox Presets", style: "width: 100%;" }, this._beepboxMenu), div$a({ class: "other Presets", style: "width: 100%;" }, this._otherMenu)), div$a({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton), this._cancelButton);
+            this.container = div$9({ class: "prompt noSelection", id: "presetContainerPrompt", style: "width: 400px;" }, div$9({ class: "promptTitle" }, h2$8({ class: "presetExt", style: "text-align: inherit;" }, ""), h2$8({ class: "presetTitle", style: "margin-bottom: 0.5em;" }, "Select Presets")), p$2({ style: "margin-bottom: 1.5em; margin-top: 0; font-size: 16px; text-align: center;" }, 'Here you can select any preset category and make it visible or not. Which ones you would like are completely up to you.'), div$9({ style: "display: flex; flex-direction: column; align-items: center; height: 2em; justify-content: flex-end;" }, div$9({ class: "beepBox Presets", style: "width: 100%;" }, this._beepboxMenu), div$9({ class: "other Presets", style: "width: 100%;" }, this._otherMenu)), div$9({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton), this._cancelButton);
             this._beepboxMenuHandler = (event) => {
                 const setPresetValue = this._beepboxMenu.value;
                 if (setPresets.includes(setPresetValue)) {
@@ -60682,11 +59833,11 @@ You should be redirected to the song at:<br /><br />
         }
     }
 
-    const { button: button$9, div: div$9, p: p$1, h2: h2$7, h3 } = HTML;
+    const { button: button$8, div: div$8, p: p$1, h2: h2$7, h3 } = HTML;
     class TipPrompt {
         constructor(_doc, type) {
             this._doc = _doc;
-            this._closeButton = button$9({ class: "cancelButton" });
+            this._closeButton = button$8({ class: "cancelButton" });
             this._close = () => {
                 this._doc.undo();
             };
@@ -60697,487 +59848,507 @@ You should be redirected to the song at:<br /><br />
             switch (type) {
                 case "scale":
                     {
-                        message = div$9(h2$7("Scale"), p$1("This setting limits the available pitches for adding notes. You may think that there's no point in limiting your choices, but the set of pitches you use has a strong influence on the mood and feel of your song, and these scales serve as guides to help you choose appropriate pitches. Don't worry, you can change the scale at any time, so you're not locked into it. Try making little melodies using all the available pitches of a scale to get a sense for how it sounds."), p$1("The most common scales are major and minor. Assuming your song uses all pitches in the scale and especially \"tonic\" pitches (the purple rows in the pattern editor) then major scales tend to sound more playful or optimistic, whereas minor scales sound more serious or sad."));
+                        message = div$8(h2$7("Scale"), p$1("This setting limits the available pitches for adding notes. You may think that there's no point in limiting your choices, but the set of pitches you use has a strong influence on the mood and feel of your song, and these scales serve as guides to help you choose appropriate pitches. Don't worry, you can change the scale at any time, so you're not locked into it. Try making little melodies using all the available pitches of a scale to get a sense for how it sounds."), p$1("The most common scales are major and minor. Assuming your song uses all pitches in the scale and especially \"tonic\" pitches (the purple rows in the pattern editor) then major scales tend to sound more playful or optimistic, whereas minor scales sound more serious or sad."));
                     }
                     break;
                 case "key":
                     {
-                        message = div$9(h2$7("Song Key"), p$1("This setting can shift the frequency of every note in your entire song up or down, keeping the \"tonic\" pitches (the brown rows in the pattern editor) aligned with the selected \"key\" pitch."), p$1("If you've already placed some notes but they don't emphasize \"tonic\" pitches then the selected key isn't very meaningful. You can select the \"Detect Key\" option in the key menu to automatically align the most emphasized notes with \"tonic\" pitches."));
+                        message = div$8(h2$7("Song Key"), p$1("This setting can shift the frequency of every note in your entire song up or down, keeping the \"tonic\" pitches (the brown rows in the pattern editor) aligned with the selected \"key\" pitch."), p$1("If you've already placed some notes but they don't emphasize \"tonic\" pitches then the selected key isn't very meaningful. You can select the \"Detect Key\" option in the key menu to automatically align the most emphasized notes with \"tonic\" pitches."));
                     }
                     break;
                 case "key_octave":
                     {
-                        message = div$9(h2$7("Octave"), p$1("This setting can shift the \"key\" by an octave, allowing you to use a B- or C+ key."), p$1(`This goes from ${Config.octaveMin} to ${Config.octaveMax}.`));
+                        message = div$8(h2$7("Octave"), p$1("This setting can shift the \"key\" by an octave, allowing you to use a B- or C+ key."), p$1(`This goes from ${Config.octaveMin} to ${Config.octaveMax}.`));
                     }
                     break;
                 case "tempo":
                     {
-                        message = div$9(h2$7("Song Tempo"), p$1("This setting controls the speed of your song, measured in beats-per-minute. A \"beat\" is the duration of the little gray rectangles in the pattern editor. (In conventional music notation, a \"quarter note\" is usually equivalent to \"beat\".)"));
+                        message = div$8(h2$7("Song Tempo"), p$1("This setting controls the speed of your song, measured in beats-per-minute. A \"beat\" is the duration of the little gray rectangles in the pattern editor. (In conventional music notation, a \"quarter note\" is usually equivalent to \"beat\".)"));
                     }
                     break;
                 case "reverb":
                     {
-                        message = div$9(h2$7("Reverb"), p$1("Reverb is like a continuous echo effect. A little bit helps instruments sound more natural. Adding a lot of reverb can add sense of depth or mystery, but too much reverb can kinda \"smear\" sounds so that it's harder to distinguish notes or instruments, especially for lower \"bass\" notes."));
+                        message = div$8(h2$7("Reverb"), p$1("Reverb is like a continuous echo effect. A little bit helps instruments sound more natural. Adding a lot of reverb can add sense of depth or mystery, but too much reverb can kinda \"smear\" sounds so that it's harder to distinguish notes or instruments, especially for lower \"bass\" notes."));
                     }
                     break;
                 case "rhythm":
                     {
-                        message = div$9(h2$7("Rhythm"), p$1("This setting determines how beats are divided. The pattern editor helps you align notes to fractions of a beat based on this setting."), p$1("If you've already placed some notes but they don't align with the selected rhythm, you can select the \"Snap Notes To Rhythm\" option in the rhythm menu to force the notes in the currently selected pattern(s) to align with the selected rhythm."));
+                        message = div$8(h2$7("Rhythm"), p$1("This setting determines how beats are divided. The pattern editor helps you align notes to fractions of a beat based on this setting."), p$1("If you've already placed some notes but they don't align with the selected rhythm, you can select the \"Snap Notes To Rhythm\" option in the rhythm menu to force the notes in the currently selected pattern(s) to align with the selected rhythm."));
                     }
                     break;
                 case "instrumentIndex":
                     {
-                        message = div$9(h2$7("Instrument Number"), p$1("In the \"Channel Settings\" option from UltraBox's \"Edit\" menu, there are a few ways to enable multiple instruments per channel."), p$1("First, you could enable multiple simultaneous instruments per channel. All of the channel's instruments will play all of the notes in the channel at the same time, and you can click an instrument number to view and edit its settings."), p$1("Second, you could enable different instruments per pattern. Only one of the instruments will play at any given time, but you can click the instrument number to change which instrument is used for the currently selected pattern(s)."), p$1("Finally, you can enable them both, in which case you can click an instrument number once to view it, and again to toggle whether the instrument is used for the currently selected pattern(s)."), p$1("Either way, you can click the + button to add more instruments to a channel, and you can press shift and a number key on your keyboard to select an instrument as if you had clicked the corresponding button here."));
+                        message = div$8(h2$7("Instrument Number"), p$1("In the \"Channel Settings\" option from UltraBox's \"Edit\" menu, there are a few ways to enable multiple instruments per channel."), p$1("First, you could enable multiple simultaneous instruments per channel. All of the channel's instruments will play all of the notes in the channel at the same time, and you can click an instrument number to view and edit its settings."), p$1("Second, you could enable different instruments per pattern. Only one of the instruments will play at any given time, but you can click the instrument number to change which instrument is used for the currently selected pattern(s)."), p$1("Finally, you can enable them both, in which case you can click an instrument number once to view it, and again to toggle whether the instrument is used for the currently selected pattern(s)."), p$1("Either way, you can click the + button to add more instruments to a channel, and you can press shift and a number key on your keyboard to select an instrument as if you had clicked the corresponding button here."));
                     }
                     break;
                 case "instrumentVolume":
                     {
-                        message = div$9(h2$7("Instrument Volume"), p$1("This setting controls the volume of the selected instrument without affecting the volume of the other instruments. This allows you to balance the loudness of each instrument relative to each other."), p$1("Please be careful when using volume settings above 0. This indicates amplification and too much of that can trip the audio limiter built into this tool. This can lead to your song sounding muffled if overused. But when used carefully, amplification can be a powerful tool!"));
+                        message = div$8(h2$7("Instrument Volume"), p$1("This setting controls the volume of the selected instrument without affecting the volume of the other instruments. This allows you to balance the loudness of each instrument relative to each other."), p$1("Please be careful when using volume settings above 0. This indicates amplification and too much of that can trip the audio limiter built into this tool. This can lead to your song sounding muffled if overused. But when used carefully, amplification can be a powerful tool!"));
                     }
                     break;
                 case "pan":
                     {
-                        message = div$9(h2$7("Instrument Panning"), p$1("If you're listening through headphones or some other stereo sound system, this controls the position of the instrument and where the sound is coming from, ranging from left to right."), p$1("As a suggestion, composers often put lead melodies, drums, and basses in the center, and spread other instruments toward either side. If too many instruments seem like they're coming from the same place, it can feel crowded and harder to distinguish individual sounds, especially if they cover a similar pitch range."));
+                        message = div$8(h2$7("Instrument Panning"), p$1("If you're listening through headphones or some other stereo sound system, this controls the position of the instrument and where the sound is coming from, ranging from left to right."), p$1("As a suggestion, composers often put lead melodies, drums, and basses in the center, and spread other instruments toward either side. If too many instruments seem like they're coming from the same place, it can feel crowded and harder to distinguish individual sounds, especially if they cover a similar pitch range."));
                     }
                     break;
                 case "panDelay":
                     {
-                        message = div$9(h2$7("Stereo Delay"), p$1("When panning, a slight delay is often added between the left and right ear to help make a sound feel more 'directional'. For example, in the real world your left ear will hear a sound coming from the left just slightly before the right ear."), p$1("This setting controls how much delay is added. When this is set to minimum, panning only affects the volume of the left/right ear without changing the delay. This can help to get a more 'uniform' feeling sound, which can be desirable for making 8-bit music."));
+                        message = div$8(h2$7("Stereo Delay"), p$1("When panning, a slight delay is often added between the left and right ear to help make a sound feel more 'directional'. For example, in the real world your left ear will hear a sound coming from the left just slightly before the right ear."), p$1("This setting controls how much delay is added. When this is set to minimum, panning only affects the volume of the left/right ear without changing the delay. This can help to get a more 'uniform' feeling sound, which can be desirable for making 8-bit music."));
                     }
                     break;
                 case "arpeggioSpeed":
                     {
-                        message = div$9(h2$7("Arpeggio Speed"), p$1("This setting affects how fast your chord will 'arpeggiate', or cycle between notes. With a fast arpeggio speed it will sound rapid-fire, with a slow speed you can hear each note one after another."));
+                        message = div$8(h2$7("Arpeggio Speed"), p$1("This setting affects how fast your chord will 'arpeggiate', or cycle between notes. With a fast arpeggio speed it will sound rapid-fire, with a slow speed you can hear each note one after another."));
                     }
                     break;
                 case "twoNoteArpeggio":
                     {
-                        message = div$9(h2$7("Faster Two-Note Arpeggio"), p$1("This setting makes arpeggios with only two notes in them happen twice as fast. Arpeggios with more notes in them are unaffected."));
+                        message = div$8(h2$7("Faster Two-Note Arpeggio"), p$1("This setting makes arpeggios with only two notes in them happen twice as fast. Arpeggios with more notes in them are unaffected."));
                     }
                     break;
                 case "detune":
                     {
-                        message = div$9(h2$7("Detune"), p$1("This setting can be used to finely control the pitch of your instrument. It is in units of 'cents', 100 of which equal a pitch shift of one semitone."), p$1("Careful - you can quickly get very dissonant sounding songs by using this setting."));
+                        message = div$8(h2$7("Detune"), p$1("This setting can be used to finely control the pitch of your instrument. It is in units of 'cents', 100 of which equal a pitch shift of one semitone."), p$1("Careful - you can quickly get very dissonant sounding songs by using this setting."));
                     }
                     break;
                 case "instrumentType":
                     {
-                        message = div$9(h2$7("Instrument Type"), p$1("UltraBox comes with many instrument presets, try them out! You can also create your own custom instruments!"), p$1("There are also options for copying and pasting instrument settings and for generating random instruments at the top of the instrument type menu."));
+                        message = div$8(h2$7("Instrument Type"), p$1("UltraBox comes with many instrument presets, try them out! You can also create your own custom instruments!"), p$1("There are also options for copying and pasting instrument settings and for generating random instruments at the top of the instrument type menu."));
                     }
                     break;
                 case "eqFilter":
                     {
-                        message = div$9(h2$7("EQ Filter"), p$1("Filters are a way of emphasizing or diminishing different parts of a sound. Musical notes have a fundamental (base) frequency, but the sound of a musical note also has parts at higher frequencies and filters can adjust the volume of each of these parts based on their frequency."), p$1("Click in the filter editor to insert, delete, or drag a filter control point. The horizontal position of the point determines which frequencies it affects, and the vertical position determines how the volume is affected at that frequency."), p$1("Insert a new point on the left side of the filter editor to add a \"high-pass\" filter point, which additionally reduces the volume of lower frequencies, or insert a new point on the right side to add a \"low-pass\" filter point which reduces the volume of higher frequencies."), p$1("You can also enable a \"Note Filter\" as an effect. EQ and note filters are mostly the same, but have different purposes. EQ filters are for overall adjustments, whereas note filters are for dynamic control and can be moved with envelopes. Note filters also change how the distortion effect sounds."));
+                        message = div$8(h2$7("EQ Filter"), p$1("Filters are a way of emphasizing or diminishing different parts of a sound. Musical notes have a fundamental (base) frequency, but the sound of a musical note also has parts at higher frequencies and filters can adjust the volume of each of these parts based on their frequency."), p$1("Click in the filter editor to insert, delete, or drag a filter control point. The horizontal position of the point determines which frequencies it affects, and the vertical position determines how the volume is affected at that frequency."), p$1("Insert a new point on the left side of the filter editor to add a \"high-pass\" filter point, which additionally reduces the volume of lower frequencies, or insert a new point on the right side to add a \"low-pass\" filter point which reduces the volume of higher frequencies."), p$1("You can also enable a \"Note Filter\" as an effect. EQ and note filters are mostly the same, but have different purposes. EQ filters are for overall adjustments, whereas note filters are for dynamic control and can be moved with envelopes. Note filters also change how the distortion effect sounds."));
                     }
                     break;
                 case "noteFilter":
                     {
-                        message = div$9(h2$7("Note Filter"), p$1("Note filters are mostly the same as EQ filters, but have a different purpose. EQ filters are for overall adjustments, whereas note filters are for dynamic control and can be moved with envelopes. Note filters also change how the distortion effect sounds."), p$1("Filters are a way of emphasizing or diminishing different parts of a sound. Musical notes have a fundamental (base) frequency, but the sound of a musical note also has parts at higher frequencies and filters can adjust the volume of each of these parts based on their frequency."), p$1("Click in the filter editor to insert, delete, or drag a filter control point. The horizontal position of the point determines which frequencies it affects, and the vertical position determines how the volume is affected at that frequency."), p$1("Insert a new point on the left side of the filter editor to add a \"high-pass\" filter point, which additionally reduces the volume of lower frequencies, or insert a new point on the right side to add a \"low-pass\" filter point which reduces the volume of higher frequencies."));
+                        message = div$8(h2$7("Note Filter"), p$1("Note filters are mostly the same as EQ filters, but have a different purpose. EQ filters are for overall adjustments, whereas note filters are for dynamic control and can be moved with envelopes. Note filters also change how the distortion effect sounds."), p$1("Filters are a way of emphasizing or diminishing different parts of a sound. Musical notes have a fundamental (base) frequency, but the sound of a musical note also has parts at higher frequencies and filters can adjust the volume of each of these parts based on their frequency."), p$1("Click in the filter editor to insert, delete, or drag a filter control point. The horizontal position of the point determines which frequencies it affects, and the vertical position determines how the volume is affected at that frequency."), p$1("Insert a new point on the left side of the filter editor to add a \"high-pass\" filter point, which additionally reduces the volume of lower frequencies, or insert a new point on the right side to add a \"low-pass\" filter point which reduces the volume of higher frequencies."));
                     }
                     break;
                 case "fadeInOut":
                     {
-                        message = div$9(h2$7("Fade In/Out"), p$1("This setting controls how long it takes for notes to reach full volume at the beginning or decay to silence at the end."), p$1("An instant fade-in sounds like instruments that are played by hitting or plucking, whereas slower fade-ins sound like instruments that are played by blowing air."), p$1("You can also make the fade-out start before the note ends to leave a gap before the next note starts, or after the note ends to allow the sound of the end of the note to overlap with the start of the next note."));
+                        message = div$8(h2$7("Fade In/Out"), p$1("This setting controls how long it takes for notes to reach full volume at the beginning or decay to silence at the end."), p$1("An instant fade-in sounds like instruments that are played by hitting or plucking, whereas slower fade-ins sound like instruments that are played by blowing air."), p$1("You can also make the fade-out start before the note ends to leave a gap before the next note starts, or after the note ends to allow the sound of the end of the note to overlap with the start of the next note."));
                     }
                     break;
                 case "transition":
                     {
-                        message = div$9(h2$7("Transition"), p$1("Usually, when one note ends at the same time another begins, the old note will fade out and the new note will fade in based on the fade in/out settings, but this setting can override that, connecting the end of one note to the beginning of the next."), p$1("The \"interrupt\" transition makes the wave suddenly change from the old note's frequency to the new note's frequency without any fading, but still restarts envelopes at the beginning of the new note. The \"continue\" transition is similar but it doesn't even restart envelopes, and can be used to make each of the notes in a chord start or stop at different times!"), p$1("The \"slide\" transition makes the pitch shift quickly but not instantaneously from the old note's frequency to the new note's frequency, and softly restarts envelopes. The \"slide in pattern\" transition is the same except it doesn't connect the last note in a pattern to the first note in the next pattern."));
+                        message = div$8(h2$7("Transition"), p$1("Usually, when one note ends at the same time another begins, the old note will fade out and the new note will fade in based on the fade in/out settings, but this setting can override that, connecting the end of one note to the beginning of the next."), p$1("The \"interrupt\" transition makes the wave suddenly change from the old note's frequency to the new note's frequency without any fading, but still restarts envelopes at the beginning of the new note. The \"continue\" transition is similar but it doesn't even restart envelopes, and can be used to make each of the notes in a chord start or stop at different times!"), p$1("The \"slide\" transition makes the pitch shift quickly but not instantaneously from the old note's frequency to the new note's frequency, and softly restarts envelopes. The \"slide in pattern\" transition is the same except it doesn't connect the last note in a pattern to the first note in the next pattern."));
                     }
                     break;
                 case "chipWave":
                     {
-                        message = div$9(h2$7("Chip Wave"), p$1("UltraBox comes with some sound waves based on classic electronic sound chips, as well as several unique waves. This is the basic source of the sound of the instrument, which is modified by the other instrument settings."));
+                        message = div$8(h2$7("Chip Wave"), p$1("UltraBox comes with some sound waves based on classic electronic sound chips, as well as several unique waves. This is the basic source of the sound of the instrument, which is modified by the other instrument settings."));
                     }
                     break;
                 case "chipNoise":
                     {
-                        message = div$9(h2$7("Noise"), p$1("UltraBox comes with several basic noise sounds. These do not have any distinct musical pitch, and can be used like drums to create beats and emphasize your song's rhythm."));
+                        message = div$8(h2$7("Noise"), p$1("UltraBox comes with several basic noise sounds. These do not have any distinct musical pitch, and can be used like drums to create beats and emphasize your song's rhythm."));
                     }
                     break;
                 case "supersawDynamism":
                     {
-                        message = div$9(h2$7("Supersaw Dynamism"), p$1("A supersaw is a combination of many sawtooth waves, and this setting controls the contribution of extra sawtooth waves."), p$1("At the low end of the slider, only the first wave is contributing to the sound, which sounds like an ordinary static sawtooth wave. At the maximum setting, all of the waves are contributing equally and the resulting tone can randomly shift depending on how the waves line up with each other, similar to the \"unison\" and \"chorus\" settings."));
+                        message = div$8(h2$7("Supersaw Dynamism"), p$1("A supersaw is a combination of many sawtooth waves, and this setting controls the contribution of extra sawtooth waves."), p$1("At the low end of the slider, only the first wave is contributing to the sound, which sounds like an ordinary static sawtooth wave. At the maximum setting, all of the waves are contributing equally and the resulting tone can randomly shift depending on how the waves line up with each other, similar to the \"unison\" and \"chorus\" settings."));
                     }
                     break;
                 case "supersawSpread":
                     {
-                        message = div$9(h2$7("Supersaw Spread"), p$1("A supersaw is a combination of many sawtooth waves, and this setting controls the distance between their frequencies. The dynamism setting must be used for the extra waves to have any effect."), p$1("At the low end of the spread slider, all of the voices have the same frequency but random phase, resulting in a different sound every time a note starts. In the middle, the waves all have slightly different frequencies that shift in and out of phase over time similar to the \"unison\" and \"chorus\" settings, creating a classic supersaw sound. At the extreme end, the frequencies are so far apart they sound dissonant."));
+                        message = div$8(h2$7("Supersaw Spread"), p$1("A supersaw is a combination of many sawtooth waves, and this setting controls the distance between their frequencies. The dynamism setting must be used for the extra waves to have any effect."), p$1("At the low end of the spread slider, all of the voices have the same frequency but random phase, resulting in a different sound every time a note starts. In the middle, the waves all have slightly different frequencies that shift in and out of phase over time similar to the \"unison\" and \"chorus\" settings, creating a classic supersaw sound. At the extreme end, the frequencies are so far apart they sound dissonant."));
                     }
                     break;
                 case "supersawShape":
                     {
-                        message = div$9(h2$7("Supersaw Shape"), p$1("This supersaw instrument includes an option to change the shape of the waves from sawtooth waves to pulse waves. Use this setting to morph between the two shapes."), p$1("When a pulse wave shape is used, you can also control the pulse width with a separate setting."));
+                        message = div$8(h2$7("Supersaw Shape"), p$1("This supersaw instrument includes an option to change the shape of the waves from sawtooth waves to pulse waves. Use this setting to morph between the two shapes."), p$1("When a pulse wave shape is used, you can also control the pulse width with a separate setting."));
                     }
                     break;
                 case "pulseWidth":
                     {
-                        message = div$9(h2$7("Pulse Wave Width"), p$1("This setting controls the shape and sound of a pulse wave. At the minimum width, it sounds light and buzzy. At the maximum width, it is shaped like a classic square wave."));
+                        message = div$8(h2$7("Pulse Wave Width"), p$1("This setting controls the shape and sound of a pulse wave. At the minimum width, it sounds light and buzzy. At the maximum width, it is shaped like a classic square wave."));
                     }
                     break;
                 case "unison":
                     {
-                        message = div$9(h2$7("Unison"), p$1("This instrument can play two identical waves at different frequencies. When two waves play at slightly different frequencies, they move in and out of phase with each other over time as different parts of the waves line up. This creates a dynamic, shifting sound. Pianos are a common example of this kind of sound, because each piano key strikes multiple strings that are tuned to slightly different frequencies."), p$1("The distance between two frequencies is called an \"interval\", and this setting controls how large it is. If the interval is too wide, then the waves may sound out-of-tune and \"dissonant\". However, if the interval is even larger, then the two frequencies can even be distinct pitches."));
+                        message = div$8(h2$7("Unison"), p$1("This instrument can play two identical waves at different frequencies. When two waves play at slightly different frequencies, they move in and out of phase with each other over time as different parts of the waves line up. This creates a dynamic, shifting sound. Pianos are a common example of this kind of sound, because each piano key strikes multiple strings that are tuned to slightly different frequencies."), p$1("The distance between two frequencies is called an \"interval\", and this setting controls how large it is. If the interval is too wide, then the waves may sound out-of-tune and \"dissonant\". However, if the interval is even larger, then the two frequencies can even be distinct pitches."));
                     }
                     break;
                 case "chords":
                     {
-                        message = div$9(h2$7("Chords"), p$1("When multiple different notes occur at the same time, this is called a chord. Chords can be created in UltraBox's pattern editor by adding notes above or below another note."), p$1("This setting determines how chords are played. The standard option is \"simultaneous\" which starts playing all of the pitches in a chord at the same instant. The \"strum\" option is similar, but plays the notes starting at slightly different times. The \"arpeggio\" option is used in \"chiptune\" style music and plays a single tone that rapidly alternates between all of the pitches in the chord."), p$1("Some UltraBox instruments have an option called \"custom interval\" which uses the chord notes to control the interval between the waves of a single tone. This can create strange sound effects when combined with FM modulators."));
+                        message = div$8(h2$7("Chords"), p$1("When multiple different notes occur at the same time, this is called a chord. Chords can be created in UltraBox's pattern editor by adding notes above or below another note."), p$1("This setting determines how chords are played. The standard option is \"simultaneous\" which starts playing all of the pitches in a chord at the same instant. The \"strum\" option is similar, but plays the notes starting at slightly different times. The \"arpeggio\" option is used in \"chiptune\" style music and plays a single tone that rapidly alternates between all of the pitches in the chord."), p$1("Some UltraBox instruments have an option called \"custom interval\" which uses the chord notes to control the interval between the waves of a single tone. This can create strange sound effects when combined with FM modulators."));
                     }
                     break;
                 case "vibrato":
                     {
-                        message = div$9(h2$7("Vibrato"), p$1("This setting causes the frequency of a note to wobble slightly. Singers and violinists often use vibrato."));
+                        message = div$8(h2$7("Vibrato"), p$1("This setting causes the frequency of a note to wobble slightly. Singers and violinists often use vibrato."));
                     }
                     break;
                 case "vibratoDepth":
                     {
-                        message = div$9(h2$7("Vibrato Depth"), p$1("This setting affects the depth of your instrument's vibrato, making the wobbling effect sound stronger or weaker."));
+                        message = div$8(h2$7("Vibrato Depth"), p$1("This setting affects the depth of your instrument's vibrato, making the wobbling effect sound stronger or weaker."));
                     }
                     break;
                 case "vibratoDelay":
                     {
-                        message = div$9(h2$7("Vibrato Delay"), p$1("This setting changes when vibrato starts to kick in after a note is played. Vibrato is most common for long held notes and less common in short notes, so this can help you achieve that effect."));
+                        message = div$8(h2$7("Vibrato Delay"), p$1("This setting changes when vibrato starts to kick in after a note is played. Vibrato is most common for long held notes and less common in short notes, so this can help you achieve that effect."));
                     }
                     break;
                 case "vibratoSpeed":
                     {
-                        message = div$9(h2$7("Vibrato Speed"), p$1("This setting determines how fast the vibrato's up-and-down wobble effect will happen for your instrument."));
+                        message = div$8(h2$7("Vibrato Speed"), p$1("This setting determines how fast the vibrato's up-and-down wobble effect will happen for your instrument."));
                     }
                     break;
                 case "vibratoType":
                     {
-                        message = div$9(h2$7("Vibrato Type"), p$1("This determines the way vibrato causes your instrument's pitch to wobble. The normal type is smooth up and down, the shaky type is chaotic."));
+                        message = div$8(h2$7("Vibrato Type"), p$1("This determines the way vibrato causes your instrument's pitch to wobble. The normal type is smooth up and down, the shaky type is chaotic."));
                     }
                     break;
                 case "algorithm":
                     {
-                        message = div$9(h2$7("FM Algorithm"), p$1('FM Synthesis is a mysterious but powerful technique for crafting sounds, popularized by Yamaha keyboards and the Sega Genesis/Mega Drive. It may seem confusing, but try playing around with the options until you get a feel for it, or check out some of the preset examples!'), p$1('This FM synthesizer uses up to four waves, numbered 1, 2, 3, and 4. Each wave may have its own frequency and volume.'), p$1('There are two kinds of waves: "carrier" waves play a tone out loud, but "modulator" waves distort other waves instead. Wave 1 is always a carrier and plays a tone, but other waves may distort it. The "Algorithm" setting determines which waves are modulators, and which other waves those modulators distort. For example, "1←2" means that wave 2 modulates wave 1, and wave 1 plays out loud.'));
+                        message = div$8(h2$7("FM Algorithm"), p$1('FM Synthesis is a mysterious but powerful technique for crafting sounds, popularized by Yamaha keyboards and the Sega Genesis/Mega Drive. It may seem confusing, but try playing around with the options until you get a feel for it, or check out some of the preset examples!'), p$1('This FM synthesizer uses up to four waves, numbered 1, 2, 3, and 4. Each wave may have its own frequency and volume.'), p$1('There are two kinds of waves: "carrier" waves play a tone out loud, but "modulator" waves distort other waves instead. Wave 1 is always a carrier and plays a tone, but other waves may distort it. The "Algorithm" setting determines which waves are modulators, and which other waves those modulators distort. For example, "1←2" means that wave 2 modulates wave 1, and wave 1 plays out loud.'));
                     }
                     break;
                 case "feedbackType":
                     {
-                        message = div$9(h2$7("Feedback Type"), p$1('Modulators distort in one direction (like 1←2), but you can also use the feedback setting to make any wave distort in the opposite direction (1→2), or even itself (1⟲).'));
+                        message = div$8(h2$7("Feedback Type"), p$1('Modulators distort in one direction (like 1←2), but you can also use the feedback setting to make any wave distort in the opposite direction (1→2), or even itself (1⟲).'));
                     }
                     break;
                 case "feedbackVolume":
                     {
-                        message = div$9(h2$7("Feedback Distortion"), p$1("This setting controls the amount of feedback distortion based on the feedback type setting."));
+                        message = div$8(h2$7("Feedback Distortion"), p$1("This setting controls the amount of feedback distortion based on the feedback type setting."));
                     }
                     break;
                 case "operatorFrequency":
                     {
-                        message = div$9(h2$7("Operator Frequency"), p$1('This setting controls the frequency of an individual FM wave, relative to the fundamental frequency of the note. The multiplier 1× is the same as the fundamental frequency, whereas 2x would be an octave (12 semitones) above it. The frequencies with a "~" are slightly detuned and shift in and out of phase over time compared to the other frequencies.'), p$1('Try different combinations of a "carrier" wave and a "modulator" wave with different frequencies to get a feel for how they sound together.'));
+                        message = div$8(h2$7("Operator Frequency"), p$1('This setting controls the frequency of an individual FM wave, relative to the fundamental frequency of the note. The multiplier 1× is the same as the fundamental frequency, whereas 2x would be an octave (12 semitones) above it. The frequencies with a "~" are slightly detuned and shift in and out of phase over time compared to the other frequencies.'), p$1('Try different combinations of a "carrier" wave and a "modulator" wave with different frequencies to get a feel for how they sound together.'));
                     }
                     break;
                 case "operatorVolume":
                     {
-                        message = div$9(h2$7("Operator Volume"), p$1("This setting controls the volume of \"carrier\" waves, or the amount of distortion that \"modulator\" waves apply to other waves."));
+                        message = div$8(h2$7("Operator Volume"), p$1("This setting controls the volume of \"carrier\" waves, or the amount of distortion that \"modulator\" waves apply to other waves."));
                     }
                     break;
                 case "spectrum":
                     {
-                        message = div$9(h2$7("Spectrum"), p$1("This setting allows you to draw your own noise spectrum! This is good for making drum sounds."), p$1("If you only use certain frequencies and a soft fade in/out, it's also possible to make howling wind sounds or even musical wind instruments."), p$1("The left side of the spectrum editor controls the noise energy at lower frequencies, and the right side controls higher frequencies."));
+                        message = div$8(h2$7("Spectrum"), p$1("This setting allows you to draw your own noise spectrum! This is good for making drum sounds."), p$1("If you only use certain frequencies and a soft fade in/out, it's also possible to make howling wind sounds or even musical wind instruments."), p$1("The left side of the spectrum editor controls the noise energy at lower frequencies, and the right side controls higher frequencies."));
                     }
                     break;
                 case "harmonics":
                     {
-                        message = div$9(h2$7("Harmonics"), p$1("This setting allows you to design your own sound wave! Most musical waves are actually a combination of sine waves at certain frequencies, and this lets you control the volume of each sine wave individually."), p$1("The left side of the harmonics editor controls the sine wave volumes at lower frequencies, and the right side controls higher frequencies."));
+                        message = div$8(h2$7("Harmonics"), p$1("This setting allows you to design your own sound wave! Most musical waves are actually a combination of sine waves at certain frequencies, and this lets you control the volume of each sine wave individually."), p$1("The left side of the harmonics editor controls the sine wave volumes at lower frequencies, and the right side controls higher frequencies."));
                     }
                     break;
                 case "effects":
                     {
-                        message = div$9(h2$7("Effects"), p$1("UltraBox has many different kinds of special effects you can add to instruments. You can turn on multiple effects at once, and they can be configured individually. Try them all out!"));
+                        message = div$8(h2$7("Effects"), p$1("UltraBox has many different kinds of special effects you can add to instruments. You can turn on multiple effects at once, and they can be configured individually. Try them all out!"));
                     }
                     break;
                 case "drumsetEnvelope":
                     {
-                        message = div$9(h2$7("Drumset Envelope"), p$1("This drumset comes with a low-pass filter, and this setting can dynamically change the low-pass filter frequency over time. Each row in the pattern editor can have a different envelope shape."));
+                        message = div$8(h2$7("Drumset Envelope"), p$1("This drumset comes with a low-pass filter, and this setting can dynamically change the low-pass filter frequency over time. Each row in the pattern editor can have a different envelope shape."));
                     }
                     break;
                 case "drumsetSpectrum":
                     {
-                        message = div$9(h2$7("Drumset Spectrum"), p$1("This setting allows you to draw your own noise spectrum! This is good for making drumsets. Each row in the pattern editor gets its own spectrum."), p$1("The left side of the spectrum editor controls the noise energy at lower frequencies, and the right side controls higher frequencies."));
+                        message = div$8(h2$7("Drumset Spectrum"), p$1("This setting allows you to draw your own noise spectrum! This is good for making drumsets. Each row in the pattern editor gets its own spectrum."), p$1("The left side of the spectrum editor controls the noise energy at lower frequencies, and the right side controls higher frequencies."));
                     }
                     break;
                 case "chorus":
                     {
-                        message = div$9(h2$7("Chorus"), p$1("The chorus effect combines multiple copies of the instrument's sound and adds a bit of vibrato to simulate an ensemble of instruments or voices. Drag the slider to control how much chorus is added."));
+                        message = div$8(h2$7("Chorus"), p$1("The chorus effect combines multiple copies of the instrument's sound and adds a bit of vibrato to simulate an ensemble of instruments or voices. Drag the slider to control how much chorus is added."));
                     }
                     break;
                 case "echoSustain":
                     {
-                        message = div$9(h2$7("Echo Volume"), p$1("The echo effect repeats the instrument's sound after a delay. Each echo is a little bit quieter than the last, and this setting controls how much quieter."));
+                        message = div$8(h2$7("Echo Volume"), p$1("The echo effect repeats the instrument's sound after a delay. Each echo is a little bit quieter than the last, and this setting controls how much quieter."));
                     }
                     break;
                 case "echoDelay":
                     {
-                        message = div$9(h2$7("Echo Delay"), p$1("The echo effect repeats the instrument's sound after a delay, and this setting controls how long the delay is."));
+                        message = div$8(h2$7("Echo Delay"), p$1("The echo effect repeats the instrument's sound after a delay, and this setting controls how long the delay is."));
                     }
                     break;
                 case "pitchShift":
                     {
-                        message = div$9(h2$7("Pitch Shift"), p$1("This setting makes instruments play higher or lower pitches than the ones displayed in the pattern editor. Be careful that you don't confuse yourself!"), p$1("You can combine this with envelopes to bend pitch over time, or play multiple simultaneous instruments with different pitch shifts for interesting layered sounds."), p$1("The intervals created by this setting are in \"just intonation\" which means they stay in phase with the original pitch instead of shifting in and out of phase over time. If you want the shifting, add the detune effect!"));
+                        message = div$8(h2$7("Pitch Shift"), p$1("This setting makes instruments play higher or lower pitches than the ones displayed in the pattern editor. Be careful that you don't confuse yourself!"), p$1("You can combine this with envelopes to bend pitch over time, or play multiple simultaneous instruments with different pitch shifts for interesting layered sounds."), p$1("The intervals created by this setting are in \"just intonation\" which means they stay in phase with the original pitch instead of shifting in and out of phase over time. If you want the shifting, add the detune effect!"));
                     }
                     break;
                 case "detune":
                     {
-                        message = div$9(h2$7("Detune"), p$1("This setting slightly adjusts the frequency of notes played by the instrument. You can use a little bit to add a pleasing shifting sound similar to the \"unison\" feature when combined with other instruments. If you use too much, then the instrument may sound unpleasantly out-of-tune."));
+                        message = div$8(h2$7("Detune"), p$1("This setting slightly adjusts the frequency of notes played by the instrument. You can use a little bit to add a pleasing shifting sound similar to the \"unison\" feature when combined with other instruments. If you use too much, then the instrument may sound unpleasantly out-of-tune."));
                     }
                     break;
                 case "distortion":
                     {
-                        message = div$9(h2$7("Distortion"), p$1("This is the famous electric guitar effect! However, there are some things to be aware of."), p$1("First, most chords don't sound right when combined with heavy distortion. The only chords commonly used with distorted electric guitars are \"power chords\" which consist of a root note, a \"fifth\" note above that, and/or any octaves of those two notes."), p$1("Second, the distortion sound depends a lot on filtering. In particular, I recommend enabling the note filter effect, and adding both high-pass and low-pass points to the note filter. (Note filters are applied first, then distortion which transforms the sound based on that filtering, then the EQ filter is applied last.)"), p$1("Finally, I recommend adjusting the fade-out setting to allow the end of each note to overlap a little bit with the beginning of the next, but not too much!"));
+                        message = div$8(h2$7("Distortion"), p$1("This is the famous electric guitar effect! However, there are some things to be aware of."), p$1("First, most chords don't sound right when combined with heavy distortion. The only chords commonly used with distorted electric guitars are \"power chords\" which consist of a root note, a \"fifth\" note above that, and/or any octaves of those two notes."), p$1("Second, the distortion sound depends a lot on filtering. In particular, I recommend enabling the note filter effect, and adding both high-pass and low-pass points to the note filter. (Note filters are applied first, then distortion which transforms the sound based on that filtering, then the EQ filter is applied last.)"), p$1("Finally, I recommend adjusting the fade-out setting to allow the end of each note to overlap a little bit with the beginning of the next, but not too much!"));
                     }
                     break;
                 case "bitcrusherQuantization":
                     {
-                        message = div$9(h2$7("Bitcrusher Quantization"), p$1("This effect makes stuff sounds harsher, artificial, and \"low quality\", which is great if that's what you're going for!"));
+                        message = div$8(h2$7("Bitcrusher Quantization"), p$1("This effect makes stuff sounds harsher, artificial, and \"low quality\", which is great if that's what you're going for!"));
                     }
                     break;
                 case "bitcrusherFreq":
                     {
-                        message = div$9(h2$7("Frequency Quantization"), p$1("The bitcrusher effect comes with an additional frequency quantization effect! This is a fun one to play with, especially when combined with the note filter effect."), p$1("Every other notch on this slider is aligned with the currently selected key of the song, and the in-between notches are aligned with the tritones of the key."));
+                        message = div$8(h2$7("Frequency Quantization"), p$1("The bitcrusher effect comes with an additional frequency quantization effect! This is a fun one to play with, especially when combined with the note filter effect."), p$1("Every other notch on this slider is aligned with the currently selected key of the song, and the in-between notches are aligned with the tritones of the key."));
                     }
                     break;
                 case "envelopes":
                     {
-                        message = div$9(h2$7("Envelopes"), p$1("Envelopes are a way to dynamically adjust various other settings over time, usually based on how long the note lasts. Press the + button to add an envelope, then use the menus below to select which setting to control and the curve of the envelope. Try different combinations to see how they sound!"), p$1("Most envelope curves restart from the beginning every time a new note plays. The \"note size\" option is based on the note width as drawn in the pattern editor."), p$1("Envelope curves move in the range from 0 to 1 (or vice versa), where 0 means as quiet as possible and 1 is the same as the corresponding position selected in the instrument settings above. If multiple envelopes are targetting the same setting, they are multiplied before applying to the setting."));
+                        message = div$8(h2$7("Envelopes"), p$1("Envelopes are a way to dynamically adjust various other settings over time, usually based on how long the note lasts. Press the + button to add an envelope, then use the menus below to select which setting to control and the curve of the envelope. Try different combinations to see how they sound!"), p$1("Most envelope curves restart from the beginning every time a new note plays. The \"note size\" option is based on the note width as drawn in the pattern editor."), p$1("Envelope curves move in the range from 0 to 1 (or vice versa), where 0 means as quiet as possible and 1 is the same as the corresponding position selected in the instrument settings above. If multiple envelopes are targetting the same setting, they are multiplied before applying to the setting."));
                     }
                     break;
                 case "discreteEnvelope":
                     {
-                        message = div$9(h2$7("Use Discrete Envelopes?"), p$1("Envelopes are usually interpolated, meaning they change continuously and smoothly. This setting, when ticked, makes envelopes not interpolate. It's a small difference, but can be helpful for some chip noises, and it's most noticeable with the 'blip' transitions."));
+                        message = div$8(h2$7("Use Discrete Envelopes?"), p$1("Envelopes are usually interpolated, meaning they change continuously and smoothly. This setting, when ticked, makes envelopes not interpolate. It's a small difference, but can be helpful for some chip noises, and it's most noticeable with the 'blip' transitions."));
                     }
                     break;
                 case "envelopeSpeed":
                     {
-                        message = div$9(h2$7("Envelope Speed"), p$1("This setting controls the speed of ALL envelopes for the instrument. Each envelope 'plays' at a certain speed, and this slider can scale it to play faster or slower. Use this to fine-tune your tremolo or how fast something decays to get just the right effect."), p$1("Note that, while this setting is limited in the sense that it controls all envelopes at once, you can still achieve a variety of outcomes by trying combinations of modes of each envelope type, which typically differ only in speed."));
+                        message = div$8(h2$7("Envelope Speed"), p$1("This setting controls the speed of ALL envelopes for the instrument. Each envelope 'plays' at a certain speed, and this slider can scale it to play faster or slower. Use this to fine-tune your tremolo or how fast something decays to get just the right effect."), p$1("Note that, while this setting is limited in the sense that it controls all envelopes at once, you can still achieve a variety of outcomes by trying combinations of modes of each envelope type, which typically differ only in speed."));
                     }
                     break;
                 case "perEnvelopeSpeed":
                     {
-                        message = div$9(h2$7("Individual Envelope Speed"), p$1("This setting is applied per envelope rather than all of them simultaneously, unlike the envelope speed in the top dropdown."), p$1("This controls the speed of this envelope as a multiplier of the global envelope speed and the envelope curve"), p$1("The speed of an envelope changes how fast its runs. In BeepBox, this is equivalent to the numbers beside each envelope type's name."), p$1("You can see an equivalence chart on the ", HTML.a({ href: "./faq.html", target: "_blank" }, "FAQ"), " page"), p$1("This setting will not appear for note size, pitch, punch, or none envelopes"));
+                        message = div$8(h2$7("Individual Envelope Speed"), p$1("This setting is applied per envelope rather than all of them simultaneously, unlike the envelope speed in the top dropdown."), p$1("This controls the speed of this envelope as a multiplier of the global envelope speed and the envelope curve"), p$1("The speed of an envelope changes how fast its runs. In BeepBox, this is equivalent to the numbers beside each envelope type's name."), p$1("You can see an equivalence chart on the ", HTML.a({ href: "./faq.html", target: "_blank" }, "FAQ"), " page"), p$1("This setting will not appear for note size, pitch, punch, or none envelopes"));
                     }
                     break;
                 case "usedInstrument":
                     {
-                        message = div$9(h3("'Is this instrument used somewhere else?'"), p$1("This indicator will light up when the instrument you're currently looking at is used in another place in your song (outside the selection)."), p$1("This can be useful when you're not sure if you've used the instrument before and making edits carelessly could change other parts of the song."));
+                        message = div$8(h3("'Is this instrument used somewhere else?'"), p$1("This indicator will light up when the instrument you're currently looking at is used in another place in your song (outside the selection)."), p$1("This can be useful when you're not sure if you've used the instrument before and making edits carelessly could change other parts of the song."));
                     }
                     break;
                 case "usedPattern":
                     {
-                        message = div$9(h3("'Is this pattern used somewhere else?'"), p$1("This indicator will light up when the pattern you're currently looking at is used in another place in your song (outside the selection)."), p$1("This can be useful when you're not sure if you've used the pattern before and making edits carelessly could change other parts of the song."));
+                        message = div$8(h3("'Is this pattern used somewhere else?'"), p$1("This indicator will light up when the pattern you're currently looking at is used in another place in your song (outside the selection)."), p$1("This can be useful when you're not sure if you've used the pattern before and making edits carelessly could change other parts of the song."));
                     }
                     break;
                 case "modChannel":
                     {
-                        message = div$9(h2$7("Modulator Channel"), p$1("Modulators can be used to change settings in your song automatically over time. This technique is also known as automation."), p$1("This setting controls which channel the modulators will take effect for. If you choose 'Song', you can change song-wide settings too!"));
+                        message = div$8(h2$7("Modulator Channel"), p$1("Modulators can be used to change settings in your song automatically over time. This technique is also known as automation."), p$1("This setting controls which channel the modulators will take effect for. If you choose 'Song', you can change song-wide settings too!"));
                     }
                     break;
                 case "modInstrument":
                     {
-                        message = div$9(h2$7("Modulator Instrument"), p$1("Modulators can be used to change settings in your song automatically over time. This technique is also known as automation."), p$1("This setting controls which instrument your modulator will apply to within the given channel you've chosen."), p$1("If you choose 'all', every instrument in the channel will be affected. If you choose 'active', just the current ones used in this pattern will be instead."), p$1("Note that with 'all' or 'active', effects will only be applied to instruments that the effect is applicable on. For example if an instrument does not have panning effects, modulating panning will not affect it."));
+                        message = div$8(h2$7("Modulator Instrument"), p$1("Modulators can be used to change settings in your song automatically over time. This technique is also known as automation."), p$1("This setting controls which instrument your modulator will apply to within the given channel you've chosen."), p$1("If you choose 'all', every instrument in the channel will be affected. If you choose 'active', just the current ones used in this pattern will be instead."), p$1("Note that with 'all' or 'active', effects will only be applied to instruments that the effect is applicable on. For example if an instrument does not have panning effects, modulating panning will not affect it."));
                     }
                     break;
                 case "modSet":
                     {
-                        message = div$9(h2$7("Modulator Setting"), p$1("This is the parameter that you want to change with this modulator. For example, if you set this to 'Tempo', you can speed up or slow down your song by laying notes in the pattern editor."), p$1("Note that you'll see different options if your channel is set to 'Song' versus a channel number. With 'Song', you'll see song-wide settings such as tempo. With a channel, you'll see specific instrument settings. Adding more effects to the instrument causes modulators for them to be available, so be sure to experiment!"), p$1("Most modulators behave as you'd expect and work just as if you were moving their associated slider. Click the '?' when you have a setting selected to get more info about it!"));
+                        message = div$8(h2$7("Modulator Setting"), p$1("This is the parameter that you want to change with this modulator. For example, if you set this to 'Tempo', you can speed up or slow down your song by laying notes in the pattern editor."), p$1("Note that you'll see different options if your channel is set to 'Song' versus a channel number. With 'Song', you'll see song-wide settings such as tempo. With a channel, you'll see specific instrument settings. Adding more effects to the instrument causes modulators for them to be available, so be sure to experiment!"), p$1("Most modulators behave as you'd expect and work just as if you were moving their associated slider. Click the '?' when you have a setting selected to get more info about it!"));
                     }
                     break;
                 case "modFilter":
                     {
-                        message = div$9(h2$7("Filter Target"), p$1("This setting specifies which parameter of your targeted filter you would like to change."), p$1("With the 'morph' setting, the note value for your modulator represents the number of a subfilter to 'morph' into over time. For example, dragging a note from 0 to 7 will morph from your main filter to the 7th subfilter. To change how your subfilters are set up, click the '+' button on the target filter."), p$1("With a Dot setting, you can fine-tune the exact location of every dot on your filter graph. Note that this is extremely intensive if you want to modulate all dots - a morph is better in that case - but this can come in handy for small adjustments."));
+                        message = div$8(h2$7("Filter Target"), p$1("This setting specifies which parameter of your targeted filter you would like to change."), p$1("With the 'morph' setting, the note value for your modulator represents the number of a subfilter to 'morph' into over time. For example, dragging a note from 0 to 7 will morph from your main filter to the 7th subfilter. To change how your subfilters are set up, click the '+' button on the target filter."), p$1("With a Dot setting, you can fine-tune the exact location of every dot on your filter graph. Note that this is extremely intensive if you want to modulate all dots - a morph is better in that case - but this can come in handy for small adjustments."));
                     }
                     break;
                 case "transitionBar":
                     {
-                        message = div$9(h2$7("Tie Notes Over Bars"), p$1("With this option ticked, notes won't transition across bars if you put notes with the same pitches at the start of the next bar. Instead they will 'tie over' and sound like one long note."));
+                        message = div$8(h2$7("Tie Notes Over Bars"), p$1("With this option ticked, notes won't transition across bars if you put notes with the same pitches at the start of the next bar. Instead they will 'tie over' and sound like one long note."));
                     }
                     break;
                 case "clicklessTransition":
                     {
-                        message = div$9(h2$7("Clickless Transition"), p$1("Sometimes, seamless and other transition types can make audible 'clicks' when changing between notes. Ticking this option will cause those clicks to be silenced as much as possible."));
+                        message = div$8(h2$7("Clickless Transition"), p$1("Sometimes, seamless and other transition types can make audible 'clicks' when changing between notes. Ticking this option will cause those clicks to be silenced as much as possible."));
                     }
                     break;
                 case "aliases":
                     {
-                        message = div$9(h2$7("Aliasing"), p$1("UltraBox applies a technique called 'anti-aliasing' to instruments normally to help them sound cleaner even at high frequencies and low sample rates."), p$1("When this setting is ticked that technique is disabled, so you may hear strange audio artifacts especially at high pitches and when bending notes. However, this can lend a grungy sound to an instrument that could be desirable."));
+                        message = div$8(h2$7("Aliasing"), p$1("UltraBox applies a technique called 'anti-aliasing' to instruments normally to help them sound cleaner even at high frequencies and low sample rates."), p$1("When this setting is ticked that technique is disabled, so you may hear strange audio artifacts especially at high pitches and when bending notes. However, this can lend a grungy sound to an instrument that could be desirable."));
                     }
                     break;
                 case "operatorWaveform":
                     {
-                        message = div$9(h2$7("Operator Waveform"), p$1('This setting controls the what kind of sound wave an individual FM wave uses.'), p$1('By defualt the FM synth uses sinewaves.'));
+                        message = div$8(h2$7("Operator Waveform"), p$1('This setting controls the what kind of sound wave an individual FM wave uses.'), p$1('By defualt the FM synth uses sinewaves.'));
                     }
                     break;
                 case "filterType":
                     {
-                        message = div$9(h2$7("Filter Type"), p$1('Toggling these buttons lets you choose between a simple filter interface with two sliders, or the more advanced filter graph.'), p$1('The two-slider version controls a single low-pass filter and was used in legacy versions. It is not as powerful, but if you feel overwhelmed you can start with this.'), p$1('Note that switching from the simple interface to the advanced interface will convert your current settings, so you can also use it as a basis for later tweaking.'));
+                        message = div$8(h2$7("Filter Type"), p$1('Toggling these buttons lets you choose between a simple filter interface with two sliders, or the more advanced filter graph.'), p$1('The two-slider version controls a single low-pass filter and was used in legacy versions. It is not as powerful, but if you feel overwhelmed you can start with this.'), p$1('Note that switching from the simple interface to the advanced interface will convert your current settings, so you can also use it as a basis for later tweaking.'));
                     }
                     break;
                 case "filterCutoff":
                     {
-                        message = div$9(h2$7("Low-Pass Filter Cutoff Frequency"), p$1("The lowest setting feels \"muffled\" or \"dark\", and the highest setting feels \"harsh\" or \"bright\"."), p$1("Most sounds include a range of frequencies from low to high. UltraBox instruments have a filter that allows the lowest frequencies to pass through at full volume, but can reduce the volume of the higher frequencies that are above a cutoff frequency. This setting controls the cutoff frequency and thus the range of higher frequencies that are reduced."), p$1("This cutoff setting also determines which frequency resonates when the resonance peak setting is used."));
+                        message = div$8(h2$7("Low-Pass Filter Cutoff Frequency"), p$1("The lowest setting feels \"muffled\" or \"dark\", and the highest setting feels \"harsh\" or \"bright\"."), p$1("Most sounds include a range of frequencies from low to high. UltraBox instruments have a filter that allows the lowest frequencies to pass through at full volume, but can reduce the volume of the higher frequencies that are above a cutoff frequency. This setting controls the cutoff frequency and thus the range of higher frequencies that are reduced."), p$1("This cutoff setting also determines which frequency resonates when the resonance peak setting is used."));
                     }
                     break;
                 case "filterResonance":
                     {
-                        message = div$9(h2$7("Low-Pass Filter Resonance Peak"), p$1("Increasing this setting emphasizes a narrow range of frequencies, based on the position of the filter cutoff setting. This can be used to imitate the resonant bodies of acoustic instruments and other interesting effects."), p$1("The filter preserves the volume of frequencies that are below the cutoff frequency, and reduces the volume of frequencies that are above the cutoff. If this setting is used, the filter also increases the volume of frequencies that are near the cutoff."));
+                        message = div$8(h2$7("Low-Pass Filter Resonance Peak"), p$1("Increasing this setting emphasizes a narrow range of frequencies, based on the position of the filter cutoff setting. This can be used to imitate the resonant bodies of acoustic instruments and other interesting effects."), p$1("The filter preserves the volume of frequencies that are below the cutoff frequency, and reduces the volume of frequencies that are above the cutoff. If this setting is used, the filter also increases the volume of frequencies that are near the cutoff."));
                     }
                     break;
                 case "loopControls":
                     {
-                        message = div$9(h2$7("Loop Controls"), p$1("This enables the use of parameters that control how a chip wave should repeat."));
+                        message = div$8(h2$7("Loop Controls"), p$1("This enables the use of parameters that control how a chip wave should repeat."));
                     }
                     break;
                 case "loopMode":
                     {
-                        message = div$9(h2$7("Loop Mode"), p$1("This sets the way the chip wave loops when its ends are reached."), p$1("The \"Loop\" mode is the default: when the end of the loop is reached, it will jump back to the starting point of the loop."), p$1("The \"Ping-Pong\" mode starts playing the chip wave backwards when the end of the loop is reached. Once it reaches the start of the loop, it will start playing forwards again, endlessly going back and forth."), p$1("The \"Play Once\" mode stops the chip wave once the end is reached (or the start of the loop, if it's playing backwards)."), p$1("The \"Play Loop Once\" mode stops the chip wave once the end of the loop is reached (or the start of the loop, if it's playing backwards)."));
+                        message = div$8(h2$7("Loop Mode"), p$1("This sets the way the chip wave loops when its ends are reached."), p$1("The \"Loop\" mode is the default: when the end of the loop is reached, it will jump back to the starting point of the loop."), p$1("The \"Ping-Pong\" mode starts playing the chip wave backwards when the end of the loop is reached. Once it reaches the start of the loop, it will start playing forwards again, endlessly going back and forth."), p$1("The \"Play Once\" mode stops the chip wave once the end is reached (or the start of the loop, if it's playing backwards)."), p$1("The \"Play Loop Once\" mode stops the chip wave once the end of the loop is reached (or the start of the loop, if it's playing backwards)."));
                     }
                     break;
                 case "loopStart":
                     {
-                        message = div$9(h2$7("Loop Start Point"), p$1("This specifies where the loop region of the chip wave starts. It's measured in \"samples\", or rather, it refers to a point on a waveform."), p$1("Be careful with tiny loop sizes (especially combined with high pitches), they may re-introduce aliasing even if the \"Aliasing\" checkbox is unchecked."));
+                        message = div$8(h2$7("Loop Start Point"), p$1("This specifies where the loop region of the chip wave starts. It's measured in \"samples\", or rather, it refers to a point on a waveform."), p$1("Be careful with tiny loop sizes (especially combined with high pitches), they may re-introduce aliasing even if the \"Aliasing\" checkbox is unchecked."));
                     }
                     break;
                 case "loopEnd":
                     {
-                        message = div$9(h2$7("Loop End Point"), p$1("This specifies where the loop region of the chip wave ends. It's measured in \"samples\", or rather, it refers to a point on a waveform."), p$1("The button next to the input box sets this to end of the chip wave."), p$1("Be careful with tiny loop sizes (especially combined with high pitches), they may re-introduce aliasing even if the \"Aliasing\" checkbox is unchecked."));
+                        message = div$8(h2$7("Loop End Point"), p$1("This specifies where the loop region of the chip wave ends. It's measured in \"samples\", or rather, it refers to a point on a waveform."), p$1("The button next to the input box sets this to end of the chip wave."), p$1("Be careful with tiny loop sizes (especially combined with high pitches), they may re-introduce aliasing even if the \"Aliasing\" checkbox is unchecked."));
                     }
                     break;
                 case "offset":
                     {
-                        message = div$9(h2$7("Offset"), p$1("This specifies where the chip wave should start playing from. You can use this to chop up a large sample, to say, turn a drum loop into a drum kit! It's measured in \"samples\", or rather, it refers to a point on a waveform."));
+                        message = div$8(h2$7("Offset"), p$1("This specifies where the chip wave should start playing from. You can use this to chop up a large sample, to say, turn a drum loop into a drum kit! It's measured in \"samples\", or rather, it refers to a point on a waveform."));
                     }
                     break;
                 case "backwards":
                     {
-                        message = div$9(h2$7("Backwards"), p$1("When set, the chip wave will start playing backwards. After checking this, you may want to adjust the offset to start from a different point that makes sense for this mode."));
+                        message = div$8(h2$7("Backwards"), p$1("When set, the chip wave will start playing backwards. After checking this, you may want to adjust the offset to start from a different point that makes sense for this mode."));
                     }
                     break;
                 case "decimalOffset":
                     {
-                        message = div$9(h2$7("Decimal Offset"), p$1("The decimal offset is subtracted from the pulse width value, enabling the use of numbers such as 12.5 or 6.25. This could be useful if you're trying to recreate the sound of old soundchips."));
+                        message = div$8(h2$7("Decimal Offset"), p$1("The decimal offset is subtracted from the pulse width value, enabling the use of numbers such as 12.5 or 6.25. This could be useful if you're trying to recreate the sound of old soundchips."));
                     }
                     break;
                 case "unisonVoices":
                     {
-                        message = div$9(h2$7("Unison Voices"), p$1("This setting controls how many voices there are in a unison. Unisons such as \"none\" or \"detune\" use 1 voice, while most other unisons use 2 voices."));
+                        message = div$8(h2$7("Unison Voices"), p$1("This setting controls how many voices there are in a unison. Unisons such as \"none\" or \"detune\" use 1 voice, while most other unisons use 2 voices."));
                     }
                     break;
                 case "unisonSpread":
                     {
-                        message = div$9(h2$7("Unison Spread"), p$1("This setting controls the distance between the two voices, in semitones. A small amount of spread causes the voice's waves to shift in and out from each other, causing a shimmering effect. Larger spread will cause the voices to act like separate notes."), p$1("This setting will only work correctly with two voices."));
+                        message = div$8(h2$7("Unison Spread"), p$1("This setting controls the distance between the two voices, in semitones. A small amount of spread causes the voice's waves to shift in and out from each other, causing a shimmering effect. Larger spread will cause the voices to act like separate notes."), p$1("This setting will only work correctly with two voices."));
                     }
                     break;
                 case "unisonOffset":
                     {
-                        message = div$9(h2$7("Unison Offset"), p$1("This setting controls the detune applied to BOTH voices, in semitones."));
+                        message = div$8(h2$7("Unison Offset"), p$1("This setting controls the detune applied to BOTH voices, in semitones."));
                     }
                     break;
                 case "unisonExpression":
                     {
-                        message = div$9(h2$7("Unison Expression"), p$1("This setting controls the unison volume. Use this if the unison makes your instrument too loud in comparison to other instruments."));
+                        message = div$8(h2$7("Unison Expression"), p$1("This setting controls the unison volume. Use this if the unison makes your instrument too loud in comparison to other instruments."));
                     }
                     break;
                 case "unisonSign":
                     {
-                        message = div$9(h2$7("Unison Sign"), p$1("This setting is a volume multiplier applied to the second voice. This setting will only work correctly with two voices."));
+                        message = div$8(h2$7("Unison Sign"), p$1("This setting is a volume multiplier applied to the second voice. This setting will only work correctly with two voices."));
                     }
                     break;
                 case "pitchRange":
                     {
-                        message = div$9(h2$7("Pitch Envelope Start and End"), p$1("These two settings will adjust where the start and end of the pitch envelope affects. Everything below start envelope will be 0, everything above end envelope will be 1, and everything inbetween will scale linearly based on pitch (the opposite is true if inverted)."), p$1("This will NOT work properly if pitch start is greater than pitch end."), p$1("These values are different than the MIDI numbers. These correspond to how many paino keys from the bottom of the song player a specific pitch is"));
+                        message = div$8(h2$7("Pitch Envelope Start and End"), p$1("These two settings will adjust where the start and end of the pitch envelope affects. Everything below start envelope will be 0, everything above end envelope will be 1, and everything inbetween will scale linearly based on pitch (the opposite is true if inverted)."), p$1("This will NOT work properly if pitch start is greater than pitch end."), p$1("These values are different than the MIDI numbers. These correspond to how many paino keys from the bottom of the song player a specific pitch is"));
                     }
                     break;
                 case "envelopeInvert":
                     {
-                        message = div$9(h2$7("Envelope Inversion"), p$1("This setting will invert the envelope curve. So instead of, for example, lower pitches leading to a smaller output, lower pitches can lead to a greater output."));
+                        message = div$8(h2$7("Envelope Inversion"), p$1("This setting will invert the envelope curve. So instead of, for example, lower pitches leading to a smaller output, lower pitches can lead to a greater output."));
                     }
                     break;
                 case "envelopeRange":
                     {
-                        message = div$9(h2$7("Envelope Bounds"), p$1("These two settings stretch or shrink the envelope vertically, allowing for different ranges of affect."), p$1("This will NOT work properly if lower bound is greater than upper bound."));
+                        message = div$8(h2$7("Envelope Bounds"), p$1("These two settings stretch or shrink the envelope vertically, allowing for different ranges of affect."), p$1("This will NOT work properly if lower bound is greater than upper bound."));
                     }
                     break;
                 case "modEnvelope":
                     {
-                        message = div$9(h2$7("Envelope Target"), p$1("This setting specifies which envelope of the specified instrument you would like to change."));
+                        message = div$8(h2$7("Envelope Target"), p$1("This setting specifies which envelope of the specified instrument you would like to change."));
                     }
                     break;
                 case "randomSteps":
                     {
-                        message = div$9(h2$7("Random Envelope Steps"), p$1("This setting changes how many \"steps\", or different possible values can be outputted. For example, a step size of 2 will output either 0 or 1, and a step size of 3 either 0, 0.5, or 1. Every step is equidistant from each other"));
+                        message = div$8(h2$7("Random Envelope Steps"), p$1("This setting changes how many \"steps\", or different possible values can be outputted. For example, a step size of 2 will output either 0 or 1, and a step size of 3 either 0, 0.5, or 1. Every step is equidistant from each other"));
                     }
                     break;
                 case "randomSeed":
                     {
-                        message = div$9(h2$7("Random Envelope Seed"), p$1("There are 64 seeds, or pseudorandom patterns that you can choose from when enveloping a setting."), p$1("The same seed will output the same value per tick or pitch if the other envelope settings are also the same, meaning that if two different songs use the same seed for their envelope they will have the same \"randomization\"."));
+                        message = div$8(h2$7("Random Envelope Seed"), p$1("There are 64 seeds, or pseudorandom patterns that you can choose from when enveloping a setting."), p$1("The same seed will output the same value per tick or pitch if the other envelope settings are also the same, meaning that if two different songs use the same seed for their envelope they will have the same \"randomization\"."));
                     }
                     break;
                 case "lfoEnvelopeWaveform":
                     {
-                        message = div$9(h2$7("LFO Envelope Waveform"), p$1("LFO envelopes can output a variety of different waveforms, from old tremolo's sine to more complex ones."), p$1("These waves are: sines, squares, triangles, and sawtooths."));
+                        message = div$8(h2$7("LFO Envelope Waveform"), p$1("LFO envelopes can output a variety of different waveforms, from old tremolo's sine to more complex ones."), p$1("These waves are: sines, squares, triangles, and sawtooths."));
                     }
                     break;
                 case "randomEnvelopeType":
                     {
-                        message = div$9(h2$7("Random Envelope Type"), p$1("Random Envelopes can switch between being determined by the time in the song, the pitch of the note, or per note trigger."));
+                        message = div$8(h2$7("Random Envelope Type"), p$1("Random Envelopes can switch between being determined by the time in the song, the pitch of the note, or per note trigger."));
                     }
                     break;
                 case "ringMod":
                     {
-                        message = div$9(h2$7("Ring Modulation"), p$1(`This setting multiplies a selected wave's frequency with an instrument frequency, this is useful for "bell-like" instruments.`));
+                        message = div$8(h2$7("Ring Modulation"), p$1(`This setting multiplies a selected wave's frequency with an instrument frequency, this is useful for "bell-like" instruments.`));
                     }
                     break;
                 case "RingModHz":
                     {
-                        message = div$9(h2$7("Ring Modulation (Hertz)"), p$1(`This setting changes the Hertz of the multiplied frequency.`), p$1(`The offset allows you to increment the Hertz by 1.`));
+                        message = div$8(h2$7("Ring Modulation (Hertz)"), p$1(`This setting changes the Hertz of the multiplied frequency.`), p$1(`The offset allows you to increment the Hertz by 1.`));
                     }
                     break;
                 case "phaserMix":
                     {
-                        message = div$9(h2$7("Phaser Mix"), p$1(`This setting adds holes (aka notches) or peaks in the frequency spectrum to the waveform its given. The placement of these peaks and notches in the waveform can be changed by using envelopes and/or modulators.`));
+                        message = div$8(h2$7("Phaser Mix"), p$1(`This setting adds holes (aka notches) or peaks in the frequency spectrum to the waveform its given. The placement of these peaks and notches in the waveform can be changed by using envelopes and/or modulators.`));
                     }
                     break;
                 case "phaserFreq":
                     {
-                        message = div$9(h2$7("Phaser Frequency"), p$1(`This setting controls the frequency of the the peaks and notches of the phaser.`));
+                        message = div$8(h2$7("Phaser Frequency"), p$1(`This setting controls the frequency of the the peaks and notches of the phaser.`));
                     }
                     break;
                 case "phaserFeedback":
                     {
-                        message = div$9(h2$7("Phaser Feedback"), p$1(`This setting effects how pronounced the Feedback of the Phaser is, this is done by adding the Feedback of the Phaser back into itself.`));
+                        message = div$8(h2$7("Phaser Feedback"), p$1(`This setting effects how pronounced the Feedback of the Phaser is, this is done by adding the Feedback of the Phaser back into itself.`));
                     }
                     break;
                 case "phaserStages":
                     {
-                        message = div$9(h2$7("Phaser Stages"), p$1(`This slider changes how many all-passes there are in the phaser. An all-pass is created by splitting an audio signal into paths, every path after the first one that is created is called an all-pass.`), p$1(`The minimum value of this slider is 1, the reason being that 1 all-pass is the exact same as having no phaser at all, if there were 0 all-passes then the audio would cease to exist.`));
+                        message = div$8(h2$7("Phaser Stages"), p$1(`This slider changes how many all-passes there are in the phaser. An all-pass is created by splitting an audio signal into paths, every path after the first one that is created is called an all-pass.`), p$1(`The minimum value of this slider is 1, the reason being that 1 all-pass is the exact same as having no phaser at all, if there were 0 all-passes then the audio would cease to exist.`));
                     }
                     break;
                 case "unisonBuzzes":
                     {
-                        message = div$9(h2$7("Unison Buzzing"), p$1("This setting controls whether or not there's a buzzing noise when there's only 1 unison voice, and the spread is set to something other than 0."));
+                        message = div$8(h2$7("Unison Buzzing"), p$1("This setting controls whether or not there's a buzzing noise when there's only 1 unison voice, and the spread is set to something other than 0."));
                     }
                     break;
                 case "slideSpeedSlider":
                     {
-                        message = div$9(h2$7("Slide Speed"), p$1("This slider controls how fast/slow the slide transition is. In other audio software, this setting is sometimes referred to as \"Portamento\"."));
+                        message = div$8(h2$7("Slide Speed"), p$1("This slider controls how fast/slow the slide transition is. In other audio software, this setting is sometimes referred to as \"Portamento\"."));
                     }
                     break;
                 case "strumSpeedSlider":
                     {
-                        message = div$9(h2$7("Strum Speed"), p$1("This setting affects how fast your chord will strum."));
+                        message = div$8(h2$7("Strum Speed"), p$1("This setting affects how fast your chord will strum."));
                     }
                     break;
                 case "upperNoteLimit":
                     {
-                        message = div$9(h2$7("Upper Note Limit"), p$1("Defines the upper limit in which notes will play, useful for advanced instruments."));
+                        message = div$8(h2$7("Upper Note Limit"), p$1("Defines the upper limit in which notes will play, useful for advanced instruments."));
                     }
                     break;
                 case "lowerNoteLimit":
                     {
-                        message = div$9(h2$7("Lower Note Limit"), p$1("Defines the lower limit in which notes will play, useful for advanced instruments."));
+                        message = div$8(h2$7("Lower Note Limit"), p$1("Defines the lower limit in which notes will play, useful for advanced instruments."));
+                    }
+                    break;
+                case "granular":
+                    {
+                        message = div$8(h2$7("Granular Synthesis"), p$1(`This effect is based on granular synthesis! It takes random points from a wave and rearranges them to form "sonic clouds".`), p$1(`This particular slider controls the wet/dry mix of the granulation.`));
+                    }
+                    break;
+                case "grainSize":
+                    {
+                        message = div$8(h2$7("Grain Size"), p$1(`This setting controls the size of the grain.`));
+                    }
+                    break;
+                case "grainAmount":
+                    {
+                        message = div$8(h2$7("Grain Freq"), p$1(`This setting controls about how often a grain (a group of audio samples) is added to the output, from rarely to multiple at once.`));
+                    }
+                    break;
+                case "grainRange":
+                    {
+                        message = div$8(h2$7("Grain Range"), p$1(`This setting controls the range of randomization for grain sizes. `));
                     }
                     break;
                 default:
@@ -61192,14 +60363,14 @@ You should be redirected to the song at:<br /><br />
                                 .replace("$HI", "" + (Config.modulators[modulator].convertRealFactor + Config.modulators[modulator].maxRawVol))));
                         }
                         pList[pList.length - 1].style.setProperty("color", "var(--secondary-text)");
-                        message = div$9(h2$7(Config.modulators[modulator].promptName), pList);
+                        message = div$8(h2$7(Config.modulators[modulator].promptName), pList);
                         break;
                     }
                     else {
                         throw new Error("Unhandled TipPrompt type: " + type);
                     }
             }
-            this.container = div$9({ class: "prompt", style: "width: 300px;" }, message, this._closeButton);
+            this.container = div$8({ class: "prompt", style: "width: 300px;" }, message, this._closeButton);
             setTimeout(() => this._closeButton.focus());
             this._closeButton.addEventListener("click", this._close);
         }
@@ -61598,7 +60769,7 @@ You should be redirected to the song at:<br /><br />
         }
     }
 
-    const { div: div$8, input: input$5, button: button$8, h2: h2$6, select: select$4, option: option$4, canvas: canvas$1 } = HTML;
+    const { div: div$7, input: input$5, button: button$7, h2: h2$6, select: select$4, option: option$4, canvas: canvas$1 } = HTML;
     const defaultShapeFunction = (cnv, ctx, x, y, w, h) => {
         ctx.fillRect(x, y, w, h);
     };
@@ -61842,22 +61013,22 @@ You should be redirected to the song at:<br /><br />
             this._waveformContext = null;
             this._overlayCanvas = canvas$1({ width: this._waveformCanvasWidth, height: this._waveformCanvasHeight, style: "cursor: default; position: absolute; top: 0; left: 0; width: 100%;" });
             this._overlayContext = null;
-            this._waveformContainer = div$8({ style: `position: relative; margin-bottom: 0.5em; margin-left: auto; margin-right: auto; width: 100%; outline: 1px solid ${ColorConfig.uiWidgetBackground};` }, this._waveformCanvas, this._overlayCanvas);
+            this._waveformContainer = div$7({ style: `position: relative; margin-bottom: 0.5em; margin-left: auto; margin-right: auto; width: 100%; outline: 1px solid ${ColorConfig.uiWidgetBackground};` }, this._waveformCanvas, this._overlayCanvas);
             this._viewportOffsetSlider = input$5({ style: "width: 100%; flex-grow: 1; margin: 0;", type: "range", min: "0", max: "1", value: "0", step: "0.00001" });
-            this._zoomInButton = button$8({ type: "button", title: "Zoom In", style: "height: var(--button-size); margin-left: 0.5em;" }, SVG.svg({ width: "20", height: "20", viewBox: "-10 -10 20 20", "pointer-events": "none", style: "width: 100%; height: 100%;" }, SVG.circle({ cx: -1, cy: -1, r: 6, "stroke-width": 2, stroke: ColorConfig.primaryText, fill: "none" }), SVG.path({ stroke: ColorConfig.primaryText, "stroke-width": 2, d: "M 3 3 L 7 7 M -1 -4 L -1 2 M -4 -1 L 2 -1", fill: "none" })));
-            this._zoomOutButton = button$8({ type: "button", title: "Zoom Out", style: "height: var(--button-size); margin-left: 0.5em;" }, SVG.svg({ width: "20", height: "20", viewBox: "-10 -10 20 20", "pointer-events": "none", style: "width: 100%; height: 100%;" }, SVG.circle({ cx: -1, cy: -1, r: 6, "stroke-width": 2, stroke: ColorConfig.primaryText, fill: "none" }), SVG.path({ stroke: ColorConfig.primaryText, "stroke-width": 2, d: "M 3 3 L 7 7 M -4 -1 L 2 -1", fill: "none" })));
-            this._zoom100Button = button$8({ type: "button", title: "Zoom 100%", style: "height: var(--button-size); margin-left: 0.5em;" }, "100%");
+            this._zoomInButton = button$7({ type: "button", title: "Zoom In", style: "height: var(--button-size); margin-left: 0.5em;" }, SVG.svg({ width: "20", height: "20", viewBox: "-10 -10 20 20", "pointer-events": "none", style: "width: 100%; height: 100%;" }, SVG.circle({ cx: -1, cy: -1, r: 6, "stroke-width": 2, stroke: ColorConfig.primaryText, fill: "none" }), SVG.path({ stroke: ColorConfig.primaryText, "stroke-width": 2, d: "M 3 3 L 7 7 M -1 -4 L -1 2 M -4 -1 L 2 -1", fill: "none" })));
+            this._zoomOutButton = button$7({ type: "button", title: "Zoom Out", style: "height: var(--button-size); margin-left: 0.5em;" }, SVG.svg({ width: "20", height: "20", viewBox: "-10 -10 20 20", "pointer-events": "none", style: "width: 100%; height: 100%;" }, SVG.circle({ cx: -1, cy: -1, r: 6, "stroke-width": 2, stroke: ColorConfig.primaryText, fill: "none" }), SVG.path({ stroke: ColorConfig.primaryText, "stroke-width": 2, d: "M 3 3 L 7 7 M -4 -1 L 2 -1", fill: "none" })));
+            this._zoom100Button = button$7({ type: "button", title: "Zoom 100%", style: "height: var(--button-size); margin-left: 0.5em;" }, "100%");
             this._loopModeSelect = select$4({ style: "width: 100%; flex-grow: 1; margin-left: 0.5em;" }, option$4({ value: 0 }, "Loop"), option$4({ value: 1 }, "Ping-Pong"), option$4({ value: 2 }, "Play Once"), option$4({ value: 3 }, "Play Loop Once"));
             this._startOffsetStepper = input$5({ style: "flex-grow: 1; margin-left: 1em; width: 100%;", type: "number", value: this._chipWaveStartOffset, min: "0", step: "1" });
             this._loopStartStepper = input$5({ style: "flex-grow: 1; margin-left: 1em; width: 100%;", type: "number", value: this._chipWaveLoopStart, min: "0", step: "1" });
             this._loopEndStepper = input$5({ style: "flex-grow: 1; margin-left: 1em; width: 100%;", type: "number", value: this._chipWaveLoopEnd, min: "0", step: "1" });
             this._playBackwardsBox = input$5({ type: "checkbox", style: "width: 1em; padding: 0; margin-left: auto; margin-right: auto;" });
-            this._playSongButton = button$8({ style: "width: 55%;", type: "button" });
-            this._cancelButton = button$8({ class: "cancelButton" });
-            this._okayButton = button$8({ class: "okayButton", style: "width: 25%;" }, "Okay");
-            this._sampleIsLoadingMessage = div$8({ style: "margin-bottom: 0.5em; display: none;" }, "Sample is loading");
-            this._loopControlsContainer = div$8(div$8({ style: "display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 0.5em;" }, div$8({ style: `width: 100%; margin-bottom: 0.5em; text-align: center; color: ${ColorConfig.secondaryText};` }, "You can also zoom by dragging horizontally on the waveform.")), this._startOffsetHandle.canvas, this._waveformContainer, this._loopStartHandle.canvas, this._loopEndHandle.canvas, div$8({ style: "display: flex; flex-direction: row; align-items: center; justify-content: center; margin-bottom: 0.5em;" }, this._viewportOffsetSlider, this._zoomInButton, this._zoomOutButton, this._zoom100Button), div$8({ style: "display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 0.5em;" }, div$8({ style: "width: 100%; display: flex; flex-direction: row; margin-bottom: 0.5em;" }, div$8({ style: `flex-shrink: 0; text-align: right: color: ${ColorConfig.primaryText}; align-self: center;` }, "Loop Mode"), this._loopModeSelect), div$8({ style: "width: 100%; display: flex; flex-direction: row; margin-bottom: 0.5em;" }, div$8({ style: `flex-shrink: 0; text-align: right; color: ${ColorConfig.primaryText}; align-self: center;` }, "Offset"), this._startOffsetStepper), div$8({ style: "width: 100%; display: flex; flex-direction: row; margin-bottom: 0.5em;" }, div$8({ style: `flex-shrink: 0; text-align: right; color: ${ColorConfig.primaryText}; align-self: center;` }, "Loop Start"), this._loopStartStepper), div$8({ style: "width: 100%; display: flex; flex-direction: row; margin-bottom: 0.5em;" }, div$8({ style: `flex-shrink: 0; text-align: right; color: ${ColorConfig.primaryText}; align-self: center;` }, "Loop End"), this._loopEndStepper), div$8({ style: "width: 100%; display: flex; flex-direction: row; margin-bottom: 0.5em;" }, div$8({ style: `flex-shrink: 0; text-align: right; color: ${ColorConfig.primaryText}; align-self: center;` }, "Backwards"), this._playBackwardsBox), div$8({ style: "width: 100%; display: flex; flex-direction: row; margin-bottom: 0.5em; justify-content: center;" }, this._playSongButton)));
-            this.container = div$8({ class: "prompt noSelection", style: "width: 500px;" }, div$8(div$8({ class: "promptTitle" }, h2$6({ class: "loop-controlsExt", style: "text-align: inherit;" }, ""), h2$6({ class: "loop-controlsTitle" }, "Loop Controls")), this._sampleIsLoadingMessage, this._loopControlsContainer, div$8({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton)), this._cancelButton);
+            this._playSongButton = button$7({ style: "width: 55%;", type: "button" });
+            this._cancelButton = button$7({ class: "cancelButton" });
+            this._okayButton = button$7({ class: "okayButton", style: "width: 25%;" }, "Okay");
+            this._sampleIsLoadingMessage = div$7({ style: "margin-bottom: 0.5em; display: none;" }, "Sample is loading");
+            this._loopControlsContainer = div$7(div$7({ style: "display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 0.5em;" }, div$7({ style: `width: 100%; margin-bottom: 0.5em; text-align: center; color: ${ColorConfig.secondaryText};` }, "You can also zoom by dragging horizontally on the waveform.")), this._startOffsetHandle.canvas, this._waveformContainer, this._loopStartHandle.canvas, this._loopEndHandle.canvas, div$7({ style: "display: flex; flex-direction: row; align-items: center; justify-content: center; margin-bottom: 0.5em;" }, this._viewportOffsetSlider, this._zoomInButton, this._zoomOutButton, this._zoom100Button), div$7({ style: "display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 0.5em;" }, div$7({ style: "width: 100%; display: flex; flex-direction: row; margin-bottom: 0.5em;" }, div$7({ style: `flex-shrink: 0; text-align: right: color: ${ColorConfig.primaryText}; align-self: center;` }, "Loop Mode"), this._loopModeSelect), div$7({ style: "width: 100%; display: flex; flex-direction: row; margin-bottom: 0.5em;" }, div$7({ style: `flex-shrink: 0; text-align: right; color: ${ColorConfig.primaryText}; align-self: center;` }, "Offset"), this._startOffsetStepper), div$7({ style: "width: 100%; display: flex; flex-direction: row; margin-bottom: 0.5em;" }, div$7({ style: `flex-shrink: 0; text-align: right; color: ${ColorConfig.primaryText}; align-self: center;` }, "Loop Start"), this._loopStartStepper), div$7({ style: "width: 100%; display: flex; flex-direction: row; margin-bottom: 0.5em;" }, div$7({ style: `flex-shrink: 0; text-align: right; color: ${ColorConfig.primaryText}; align-self: center;` }, "Loop End"), this._loopEndStepper), div$7({ style: "width: 100%; display: flex; flex-direction: row; margin-bottom: 0.5em;" }, div$7({ style: `flex-shrink: 0; text-align: right; color: ${ColorConfig.primaryText}; align-self: center;` }, "Backwards"), this._playBackwardsBox), div$7({ style: "width: 100%; display: flex; flex-direction: row; margin-bottom: 0.5em; justify-content: center;" }, this._playSongButton)));
+            this.container = div$7({ class: "prompt noSelection", style: "width: 500px;" }, div$7(div$7({ class: "promptTitle" }, h2$6({ class: "loop-controlsExt", style: "text-align: inherit;" }, ""), h2$6({ class: "loop-controlsTitle" }, "Loop Controls")), this._sampleIsLoadingMessage, this._loopControlsContainer, div$7({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton)), this._cancelButton);
             this.gotMouseUp = false;
             this._waveformSampleLookup = (x) => {
                 const n = this._waveformDataLength;
@@ -62374,16 +61545,16 @@ You should be redirected to the song at:<br /><br />
         }
     }
 
-    const { div: div$7, h2: h2$5, span: span$2, input: input$4, button: button$7 } = HTML;
+    const { div: div$6, h2: h2$5, span: span$2, input: input$4, button: button$6 } = HTML;
     class SampleLoadingStatusPrompt {
         constructor(_doc) {
             this._intervalDuration = 2000;
             this._interval = null;
             this._renderedWhenAllHaveStoppedChanging = false;
-            this._cancelButton = button$7({ class: "cancelButton" });
-            this._statusesContainer = div$7();
-            this._noSamplesMessage = div$7({ style: "margin-top: 0.5em; display: none;" }, "There's no custom samples in this song.");
-            this.container = div$7({ class: "prompt noSelection", style: "width: 350px;" }, div$7(h2$5("Sample Loading Status"), div$7({ style: "display: flex; flex-direction: column; align-items: center; margin-bottom: 0.5em;" }, this._noSamplesMessage, div$7({ style: "width: 100%; max-height: 350px; overflow-y: scroll;" }, this._statusesContainer))), this._cancelButton);
+            this._cancelButton = button$6({ class: "cancelButton" });
+            this._statusesContainer = div$6();
+            this._noSamplesMessage = div$6({ style: "margin-top: 0.5em; display: none;" }, "There's no custom samples in this song.");
+            this.container = div$6({ class: "prompt noSelection", style: "width: 350px;" }, div$6(h2$5("Sample Loading Status"), div$6({ style: "display: flex; flex-direction: column; align-items: center; margin-bottom: 0.5em;" }, this._noSamplesMessage, div$6({ style: "width: 100%; max-height: 350px; overflow-y: scroll;" }, this._statusesContainer))), this._cancelButton);
             this._close = () => {
                 this._doc.prompt = null;
                 this._doc.undo();
@@ -62428,11 +61599,11 @@ You should be redirected to the song at:<br /><br />
                     const urlDisplay = input$4({ style: `margin-left: 0.5em; color: ${ColorConfig.primaryText}; background-color: ${ColorConfig.editorBackground}; width: 100%; border: 1px solid ${ColorConfig.uiWidgetBackground}; -webkit-user-select: none; -webkit-touch-callout: none; -moz-user-select: none; -ms-user-select: none; user-select: none;`, value: url, title: url, disabled: true });
                     const loadingStatusColor = loadingStatus === "loaded" ? ColorConfig.indicatorPrimary : ColorConfig.secondaryText;
                     const loadingStatusDisplay = span$2({ style: `margin-left: 0.5em; color: ${loadingStatusColor}` }, loadingStatus);
-                    const chipWaveElement = div$7({ style: `padding: 0.6em; margin: 0.4em; border: 1px solid ${ColorConfig.uiWidgetBackground}; border-radius: 4px;` }, div$7({
+                    const chipWaveElement = div$6({ style: `padding: 0.6em; margin: 0.4em; border: 1px solid ${ColorConfig.uiWidgetBackground}; border-radius: 4px;` }, div$6({
                         class: "add-sample-prompt-sample-name",
                         style: `margin-bottom: 0.5em; color: ${ColorConfig.secondaryText}; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;`,
                         title: sampleName,
-                    }, sampleName), div$7({ style: "display: flex; flex-direction: row; align-items: center; justify-content: center; margin-bottom: 0.5em;" }, div$7({ style: `text-align: right; color: ${ColorConfig.primaryText};` }, "URL"), urlDisplay), div$7({ style: "display: flex; flex-direction: row; align-items: center; justify-content: center; margin-bottom: 0.5em;" }, div$7({ style: `text-align: right; color: ${ColorConfig.primaryText};` }, "Status"), loadingStatusDisplay));
+                    }, sampleName), div$6({ style: "display: flex; flex-direction: row; align-items: center; justify-content: center; margin-bottom: 0.5em;" }, div$6({ style: `text-align: right; color: ${ColorConfig.primaryText};` }, "URL"), urlDisplay), div$6({ style: "display: flex; flex-direction: row; align-items: center; justify-content: center; margin-bottom: 0.5em;" }, div$6({ style: `text-align: right; color: ${ColorConfig.primaryText};` }, "Status"), loadingStatusDisplay));
                     this._statusesContainer.appendChild(chipWaveElement);
                 }
                 if (allHaveStoppedChanging) {
@@ -62446,30 +61617,30 @@ You should be redirected to the song at:<br /><br />
         }
     }
 
-    const { div: div$6, input: input$3, button: button$6, a: a$1, code, textarea: textarea$1, details, summary, span: span$1, ul, li, select: select$3, option: option$3, h2: h2$4 } = HTML;
+    const { div: div$5, input: input$3, button: button$5, a, code, textarea: textarea$1, details, summary, span: span$1, ul, li, select: select$3, option: option$3, h2: h2$4 } = HTML;
     class AddSamplesPrompt {
         constructor(_doc) {
             this._maxSamples = 64;
             this._entries = [];
             this._doReload = false;
             this._entryOptionsDisplayStates = {};
-            this._cancelButton = button$6({ class: "cancelButton" });
-            this._okayButton = button$6({ class: "okayButton", style: "width: 45%;" }, "Okay");
-            this._addSampleButton = button$6({ style: "height: auto; min-height: var(--button-size);" }, "Add sample");
-            this._entryContainer = div$6();
-            this._addMultipleSamplesButton = button$6({ style: "height: auto; min-height: var(--button-size); margin-left: 0.5em;" }, "Add multiple samples");
-            this._addSamplesAreaBottom = div$6({ style: "margin-top: 0.5em;" }, this._addSampleButton, this._addMultipleSamplesButton);
-            this._instructionsLink = a$1({ href: "#" }, "Wanna add your own samples? Click here!");
-            this._description = div$6(div$6({ style: "margin-bottom: 0.5em; -webkit-user-select: text; -moz-user-select: text; -ms-user-select: text; user-select: text; cursor: text;" }, "Before you ask: "), div$6({ style: "margin-bottom: 0.5em; -webkit-user-select: text; -moz-user-select: text; -ms-user-select: text; user-select: text; cursor: text;" }, "legacySamples", " = Pandoras Box's Samples "), div$6({ style: "margin-bottom: 0.5em; -webkit-user-select: text; -moz-user-select: text; -ms-user-select: text; user-select: text; cursor: text;" }, "nintariboxSamples", " = nintaribox's Samples "), div$6({ style: "margin-bottom: 0.5em; -webkit-user-select: text; -moz-user-select: text; -ms-user-select: text; user-select: text; cursor: text;" }, "marioPaintboxSamples", " = MarioPaintBox's Samples."), div$6({ style: "margin-bottom: 0.5em;" }, "The order of these samples is important - if you change it you'll break your song!", "Since they're sorted by which ones you added first, changing the position of the sample in the list will", "change your instruments' sample to a different sample!"), div$6({ style: "margin-bottom: 0.5em;" }, this._instructionsLink));
-            this._closeInstructionsButton = button$6({ style: "height: auto; min-height: var(--button-size); width: 100%;" }, "Close instructions");
-            this._instructionsArea = div$6({ style: "display: none; margin-top: 0; -webkit-user-select: text; -moz-user-select: text; -ms-user-select: text; user-select: text; cursor: text; overflow-y: auto;" }, div$6({ class: "promptTitle" }, h2$4({ class: "samplesExt", style: "text-align: inherit;" }, ""), h2$4({ class: "samplesTitle", style: "margin-bottom: 0.5em;" }, "Add Samples")), div$6({ style: "margin-top: 0.5em; margin-bottom: 0.5em;" }, "In UB and in turn AB, custom samples are loaded from arbitrary URLs."), div$6({ style: `margin-top: 0.5em; margin-bottom: 0.5em; color: ${ColorConfig.secondaryText};` }, "(Technically, the web server behind the URL needs to support ", a$1({ href: "https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS", target: "_blank", }, "CORS"), ", but you don't need to know about that: ", " the sample just won't load if that's not the case)"), div$6({ style: "margin-top: 0.5em; margin-bottom: 0.5em;" }, details(summary("Why arbitrary URLs?"), a$1({ href: "https://pandoras-box-archive.neptendo.repl.co/" }, "A certain BeepBox mod"), " did this with one central server, but it went down, taking down", " the samples with it, though thankfully it got archived.", " This is always an issue with servers: it may run out of space,", " stop working, and so on. With arbitrary URLs, you can always ", " change them to different ones if they stop working.")), div$6({ style: "margin-top: 0.5em; margin-bottom: 0.5em;" }, "As for where to upload your samples, here are some suggestions:", ul({ style: "text-align: left;" }, li(a$1({ href: "https://filegarden.com" }, "File Garden")), li(a$1({ href: "https://github.com/" }, "Github")), li(a$1({ href: "https://www.dropbox.com" }, "Dropbox"), " (domain needs to be ", code("https://dl.dropboxusercontent.com"), ")"))), div$6({ style: "margin-top: 0.5em; margin-bottom: 0.5em;" }, "Static website hosting services may also work (such as ", a$1({ href: "https://pages.github.com" }, "GitHub Pages"), ")", " but those require a bit more setup."), div$6({ style: "margin-top: 0.5em; margin-bottom: 1em;" }, "Finally, if have a soundfont you'd like to get samples from, consider using this ", a$1({ href: "./sample_extractor.html", target: "_blank" }, "sample extractor"), "!"), div$6({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between; margin-top: 0.5em;" }, this._closeInstructionsButton));
-            this._addSamplesArea = div$6({ style: "overflow-y: auto;" }, div$6({ class: "promptTitle" }, h2$4({ class: "samplesExt", style: "text-align: inherit;" }, ""), h2$4({ class: "samplesTitle", style: "margin-bottom: 0.5em;" }, "Add Samples")), div$6({ style: "display: flex; flex-direction: column; align-items: center; margin-bottom: 0.5em;" }, this._description, div$6({ style: "width: 100%; max-height: 450px; overflow-y: scroll;" }, this._entryContainer), this._addSamplesAreaBottom), div$6({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton));
+            this._cancelButton = button$5({ class: "cancelButton" });
+            this._okayButton = button$5({ class: "okayButton", style: "width: 45%;" }, "Okay");
+            this._addSampleButton = button$5({ style: "height: auto; min-height: var(--button-size);" }, "Add sample");
+            this._entryContainer = div$5();
+            this._addMultipleSamplesButton = button$5({ style: "height: auto; min-height: var(--button-size); margin-left: 0.5em;" }, "Add multiple samples");
+            this._addSamplesAreaBottom = div$5({ style: "margin-top: 0.5em;" }, this._addSampleButton, this._addMultipleSamplesButton);
+            this._instructionsLink = a({ href: "#" }, "Wanna add your own samples? Click here!");
+            this._description = div$5(div$5({ style: "margin-bottom: 0.5em; -webkit-user-select: text; -moz-user-select: text; -ms-user-select: text; user-select: text; cursor: text;" }, "Before you ask: "), div$5({ style: "margin-bottom: 0.5em; -webkit-user-select: text; -moz-user-select: text; -ms-user-select: text; user-select: text; cursor: text;" }, "legacySamples", " = Pandoras Box's Samples "), div$5({ style: "margin-bottom: 0.5em; -webkit-user-select: text; -moz-user-select: text; -ms-user-select: text; user-select: text; cursor: text;" }, "nintariboxSamples", " = nintaribox's Samples "), div$5({ style: "margin-bottom: 0.5em; -webkit-user-select: text; -moz-user-select: text; -ms-user-select: text; user-select: text; cursor: text;" }, "marioPaintboxSamples", " = MarioPaintBox's Samples."), div$5({ style: "margin-bottom: 0.5em;" }, "The order of these samples is important - if you change it you'll break your song!", "Since they're sorted by which ones you added first, changing the position of the sample in the list will", "change your instruments' sample to a different sample!"), div$5({ style: "margin-bottom: 0.5em;" }, this._instructionsLink));
+            this._closeInstructionsButton = button$5({ style: "height: auto; min-height: var(--button-size); width: 100%;" }, "Close instructions");
+            this._instructionsArea = div$5({ style: "display: none; margin-top: 0; -webkit-user-select: text; -moz-user-select: text; -ms-user-select: text; user-select: text; cursor: text; overflow-y: auto;" }, div$5({ class: "promptTitle" }, h2$4({ class: "samplesExt", style: "text-align: inherit;" }, ""), h2$4({ class: "samplesTitle", style: "margin-bottom: 0.5em;" }, "Add Samples")), div$5({ style: "margin-top: 0.5em; margin-bottom: 0.5em;" }, "In UB and in turn AB, custom samples are loaded from arbitrary URLs."), div$5({ style: `margin-top: 0.5em; margin-bottom: 0.5em; color: ${ColorConfig.secondaryText};` }, "(Technically, the web server behind the URL needs to support ", a({ href: "https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS", target: "_blank", }, "CORS"), ", but you don't need to know about that: ", " the sample just won't load if that's not the case)"), div$5({ style: "margin-top: 0.5em; margin-bottom: 0.5em;" }, details(summary("Why arbitrary URLs?"), a({ href: "https://pandoras-box-archive.neptendo.repl.co/" }, "A certain BeepBox mod"), " did this with one central server, but it went down, taking down", " the samples with it, though thankfully it got archived.", " This is always an issue with servers: it may run out of space,", " stop working, and so on. With arbitrary URLs, you can always ", " change them to different ones if they stop working.")), div$5({ style: "margin-top: 0.5em; margin-bottom: 0.5em;" }, "As for where to upload your samples, here are some suggestions:", ul({ style: "text-align: left;" }, li(a({ href: "https://filegarden.com" }, "File Garden")), li(a({ href: "https://github.com/" }, "Github")), li(a({ href: "https://www.dropbox.com" }, "Dropbox"), " (domain needs to be ", code("https://dl.dropboxusercontent.com"), ")"))), div$5({ style: "margin-top: 0.5em; margin-bottom: 0.5em;" }, "Static website hosting services may also work (such as ", a({ href: "https://pages.github.com" }, "GitHub Pages"), ")", " but those require a bit more setup."), div$5({ style: "margin-top: 0.5em; margin-bottom: 1em;" }, "Finally, if have a soundfont you'd like to get samples from, consider using this ", a({ href: "./sample_extractor.html", target: "_blank" }, "sample extractor"), "!"), div$5({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between; margin-top: 0.5em;" }, this._closeInstructionsButton));
+            this._addSamplesArea = div$5({ style: "overflow-y: auto;" }, div$5({ class: "promptTitle" }, h2$4({ class: "samplesExt", style: "text-align: inherit;" }, ""), h2$4({ class: "samplesTitle", style: "margin-bottom: 0.5em;" }, "Add Samples")), div$5({ style: "display: flex; flex-direction: column; align-items: center; margin-bottom: 0.5em;" }, this._description, div$5({ style: "width: 100%; max-height: 450px; overflow-y: scroll;" }, this._entryContainer), this._addSamplesAreaBottom), div$5({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton));
             this._bulkAddTextarea = textarea$1({
                 style: "width: 100%; height: 100%; resize: none; box-sizing: border-box;",
             });
-            this._bulkAddConfirmButton = button$6({ style: "height: auto; min-height: var(--button-size); width: 100%;" }, "Add");
-            this._bulkAddArea = div$6({ style: "display: none; overflow-y: auto;" }, h2$4({ style: "margin-bottom: 0.5em;" }, "Add Multiple Samples"), div$6({ style: "display: flex; flex-direction: column; align-items: center;" }, div$6(`Add one URL per line. Remember that you can only have ${this._maxSamples} samples!`), div$6({ style: `color: ${ColorConfig.secondaryText}` }, "(This supports the syntax used to store samples in the song URLs as well)"), div$6({ style: "width: 100%; height: 250px; margin-top: 0.5em; margin-bottom: 0.5em;" }, this._bulkAddTextarea)), div$6({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._bulkAddConfirmButton));
-            this.container = div$6({ class: "prompt noSelection", style: "width: 450px; max-height: calc(100% - 100px);" }, this._addSamplesArea, this._bulkAddArea, this._instructionsArea, this._cancelButton);
+            this._bulkAddConfirmButton = button$5({ style: "height: auto; min-height: var(--button-size); width: 100%;" }, "Add");
+            this._bulkAddArea = div$5({ style: "display: none; overflow-y: auto;" }, h2$4({ style: "margin-bottom: 0.5em;" }, "Add Multiple Samples"), div$5({ style: "display: flex; flex-direction: column; align-items: center;" }, div$5(`Add one URL per line. Remember that you can only have ${this._maxSamples} samples!`), div$5({ style: `color: ${ColorConfig.secondaryText}` }, "(This supports the syntax used to store samples in the song URLs as well)"), div$5({ style: "width: 100%; height: 250px; margin-top: 0.5em; margin-bottom: 0.5em;" }, this._bulkAddTextarea)), div$5({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._bulkAddConfirmButton));
+            this.container = div$5({ class: "prompt noSelection", style: "width: 450px; max-height: calc(100% - 100px);" }, this._addSamplesArea, this._bulkAddArea, this._instructionsArea, this._cancelButton);
             this.cleanUp = () => {
                 while (this._entryContainer.firstChild !== null) {
                     this._entryContainer.removeChild(this._entryContainer.firstChild);
@@ -62490,16 +61661,22 @@ You should be redirected to the song at:<br /><br />
                 }
             };
             this._saveChanges = () => {
-                const urlData = this._generateURLData();
-                EditorConfig.customSamples = urlData.split("|").filter(x => x !== "");
-                Config.willReloadForCustomSamples = true;
-                window.location.hash = this._doc.song.toBase64String();
-                setTimeout(() => { location.reload(); }, 50);
+                if (window.location.href.length + this._generateURLData().length < 180000) {
+                    const urlData = this._generateURLData();
+                    EditorConfig.customSamples = urlData.split("|").filter(x => x !== "");
+                    Config.willReloadForCustomSamples = true;
+                    window.location.hash = this._doc.song.toBase64String();
+                    setTimeout(() => { location.reload(); }, 50);
+                }
+                else {
+                    alert("You have surpassed the 180k character limit for URLs! Your url is " + (window.location.href.length + this._generateURLData().length) + " characters long!\n\nPlease compress or remove samples until you're below the limit.");
+                }
             };
             this._whenAddSampleClicked = (event) => {
                 const entryIndex = this._entries.length;
                 this._entries.push({
                     url: "",
+                    sampleName: "",
                     sampleRate: 44100,
                     rootKey: 60,
                     percussion: false,
@@ -62564,6 +61741,36 @@ You should be redirected to the song at:<br /><br />
                     this._entryOptionsDisplayStates[entryIndex] = false;
                 }
             };
+            this._whenFileSelected = (event) => {
+                const element = event.target;
+                const entryIndex = +(element.dataset.index);
+                const file = element.files[0];
+                if (!file)
+                    return;
+                const reader = new FileReader();
+                reader.addEventListener("load", () => {
+                    var _a, _b, _c, _d, _e, _f;
+                    console.log("FILE: " + reader.result);
+                    this._entries[entryIndex].url = String(reader.result);
+                    this._entries[entryIndex].sampleName = file.name;
+                    const sampleNameElement = (_b = (_a = element.parentNode) === null || _a === void 0 ? void 0 : _a.parentNode) === null || _b === void 0 ? void 0 : _b.querySelector(".add-sample-prompt-sample-name");
+                    if (sampleNameElement != null) {
+                        const sampleName = file.name;
+                        sampleNameElement.innerText = sampleName;
+                        sampleNameElement.title = sampleName;
+                    }
+                    const sampleNameInputElement = (_d = (_c = element.parentNode) === null || _c === void 0 ? void 0 : _c.parentNode) === null || _d === void 0 ? void 0 : _d.querySelector(".add-sample-prompt-name-input-box");
+                    if (sampleNameInputElement != null) {
+                        sampleNameInputElement.value = file.name;
+                    }
+                    const urlInputElement = (_f = (_e = element.parentNode) === null || _e === void 0 ? void 0 : _e.parentNode) === null || _f === void 0 ? void 0 : _f.querySelector(".add-sample-prompt-url-input-box");
+                    if (urlInputElement != null) {
+                        const urlText = String(reader.result);
+                        urlInputElement.value = urlText;
+                    }
+                });
+                reader.readAsDataURL(file);
+            };
             this._whenURLChanges = (event) => {
                 var _a, _b;
                 const element = event.target;
@@ -62576,6 +61783,18 @@ You should be redirected to the song at:<br /><br />
                     sampleNameElement.title = sampleName;
                 }
                 this._doReload = true;
+            };
+            this._whenNameChanges = (event) => {
+                var _a, _b, _c;
+                const element = event.target;
+                const entryIndex = +(element.dataset.index);
+                this._entries[entryIndex].sampleName = element.value;
+                const sampleNameElement = (_c = (_b = (_a = element.parentNode) === null || _a === void 0 ? void 0 : _a.parentNode) === null || _b === void 0 ? void 0 : _b.parentNode) === null || _c === void 0 ? void 0 : _c.querySelector(".add-sample-prompt-sample-name");
+                if (sampleNameElement != null) {
+                    const sampleName = this._getSampleName(this._entries[entryIndex]);
+                    sampleNameElement.innerText = sampleName;
+                    sampleNameElement.title = sampleName;
+                }
             };
             this._whenSampleRateChanges = (event) => {
                 const element = event.target;
@@ -62712,6 +61931,7 @@ You should be redirected to the song at:<br /><br />
                         if (!useLegacySamples) {
                             parsedEntries.push({
                                 url: "legacySamples",
+                                sampleName: "",
                                 sampleRate: 44100,
                                 rootKey: 60,
                                 percussion: false,
@@ -62728,6 +61948,7 @@ You should be redirected to the song at:<br /><br />
                         if (!useNintariboxSamples) {
                             parsedEntries.push({
                                 url: "nintariboxSamples",
+                                sampleName: "",
                                 sampleRate: 44100,
                                 rootKey: 60,
                                 percussion: false,
@@ -62744,6 +61965,7 @@ You should be redirected to the song at:<br /><br />
                         if (!useMarioPaintboxSamples) {
                             parsedEntries.push({
                                 url: "marioPaintboxSamples",
+                                sampleName: "",
                                 sampleRate: 44100,
                                 rootKey: 60,
                                 percussion: false,
@@ -62758,6 +61980,7 @@ You should be redirected to the song at:<br /><br />
                     }
                     else {
                         let urlSliced = url;
+                        let sampleName = "";
                         let sampleRate = 44100;
                         let rootKey = 60;
                         let percussion = false;
@@ -62778,6 +62001,9 @@ You should be redirected to the song at:<br /><br />
                                     const optionData = rawOption.slice(1, rawOption.length);
                                     if (optionCode === "s") {
                                         sampleRate = clamp(8000, 96000 + 1, parseFloatWithDefault(optionData, 44100));
+                                    }
+                                    else if (optionCode === "n") {
+                                        sampleName = optionData;
                                     }
                                     else if (optionCode === "r") {
                                         rootKey = parseFloatWithDefault(optionData, 60);
@@ -62836,6 +62062,7 @@ You should be redirected to the song at:<br /><br />
                         }
                         parsedEntries.push({
                             url: urlSliced,
+                            sampleName: sampleName,
                             sampleRate: sampleRate,
                             rootKey: rootKey,
                             percussion: percussion,
@@ -62852,6 +62079,7 @@ You should be redirected to the song at:<br /><br />
             this._generateURLDataForEntry = (entry) => {
                 const url = entry.url.trim();
                 const sampleRate = entry.sampleRate;
+                const sampleName = entry.sampleName.replaceAll("!", "%21");
                 const rootKey = entry.rootKey;
                 const percussion = entry.percussion;
                 const chipWaveLoopStart = entry.chipWaveLoopStart;
@@ -62866,6 +62094,8 @@ You should be redirected to the song at:<br /><br />
                 const options = [];
                 if (sampleRate !== 44100)
                     options.push("s" + sampleRate);
+                if (sampleName)
+                    options.push("n" + sampleName);
                 if (rootKey !== 60)
                     options.push("r" + rootKey);
                 if (percussion)
@@ -62898,12 +62128,17 @@ You should be redirected to the song at:<br /><br />
                 return output;
             };
             this._getSampleName = (entry) => {
-                try {
-                    const parsedUrl = new URL(entry.url);
-                    return decodeURIComponent(parsedUrl.pathname.replace(/^([^\/]*\/)+/, ""));
+                if (entry.sampleName != "") {
+                    return entry.sampleName;
                 }
-                catch (error) {
-                    return entry.url;
+                else {
+                    try {
+                        const parsedUrl = new URL(entry.url);
+                        return decodeURIComponent(parsedUrl.pathname.replace(/^([^\/]*\/)+/, ""));
+                    }
+                    catch (error) {
+                        return entry.url;
+                    }
                 }
             };
             this._noteNameFromPitchNumber = (n) => {
@@ -62938,7 +62173,9 @@ You should be redirected to the song at:<br /><br />
                     const canMoveDown = this._entries.length >= 2 && entryIndex < this._entries.length - 1;
                     const entry = this._entries[entryIndex];
                     const optionsVisible = Boolean(this._entryOptionsDisplayStates[entryIndex]);
-                    const urlInput = input$3({ style: "flex-grow: 1; margin-left: 1em; width: 100%;", value: entry.url });
+                    const urlInput = input$3({ class: "add-sample-prompt-url-input-box", style: "flex-grow: 1; margin-left: 1em; width: 100%;", value: entry.url });
+                    const fileInput = input$3({ type: "file", accept: "audio,video" });
+                    const nameInput = input$3({ class: "add-sample-prompt-name-input-box", style: "flex-grow: 1; margin-left: 1em; width: 100%;", value: entry.sampleName });
                     const sampleRateStepper = input$3({ style: "flex-grow: 1; margin-left: 1em; width: 100%;", type: "number", value: "" + entry.sampleRate, min: "8000", max: "96000", step: "1" });
                     const rootKeyStepper = input$3({ style: "flex-grow: 1; margin-left: 1em; width: 100%;", type: "number", value: "" + entry.rootKey, min: "0", max: Config.maxPitch + Config.pitchesPerOctave, step: "1" });
                     const rootKeyDisplay = span$1({ class: "add-sample-prompt-root-key-display", style: "margin-left: 0.4em; width: 3em; text-align: left; text-overflow: ellipsis; overflow: hidden; flex-shrink: 0;" }, `(${this._noteNameFromPitchNumber(entry.rootKey)})`);
@@ -62954,12 +62191,14 @@ You should be redirected to the song at:<br /><br />
                     chipWavePlayBackwardsBox.checked = entry.chipWavePlayBackwards;
                     const sampleName = this._getSampleName(entry);
                     percussionBox.checked = entry.percussion;
-                    const copyLinkPresetButton = button$6({ style: "height: auto; min-height: var(--button-size);", title: "For use with \"Add multiple samples\"" }, "Copy link preset");
-                    const removeButton = button$6({ style: "height: auto; min-height: var(--button-size); margin-left: 0.5em;" }, "Remove");
-                    const moveUpButton = button$6({ style: "height: auto; min-height: var(--button-size); margin-left: 0.5em;" }, SVG.svg({ width: "16", height: "16", viewBox: "-13 -14 26 26", "pointer-events": "none", style: "width: 100%; height: 100%;" }, SVG.path({ d: "M -6 6 L 0 -6 L 6 6 z", fill: ColorConfig.primaryText })));
-                    const moveDownButton = button$6({ style: "height: auto; min-height: var(--button-size); margin-left: 0.5em;" }, SVG.svg({ width: "16", height: "16", viewBox: "-13 -14 26 26", "pointer-events": "none", style: "width: 100%; height: 100%;" }, SVG.path({ d: "M -6 -6 L 6 -6 L 0 6 z", fill: ColorConfig.primaryText })));
-                    const optionsContainer = details({ open: optionsVisible, style: "margin-bottom: 2em; margin-top: 1em;" }, summary({ style: "margin-bottom: 1em;" }, "Options"), div$6({ style: "display: flex; flex-direction: row; align-items: center; justify-content: flex-end; margin-bottom: 0.5em;" }, div$6({ style: `flex-shrink: 0; :text-align: right; color: ${ColorConfig.primaryText};` }, span$1({ title: "What rate to resample to" }, "Sample rate")), sampleRateStepper), div$6({ style: "display: flex; flex-direction: row; align-items: center; justify-content: flex-end; margin-bottom: 0.5em;" }, div$6({ style: `text-align: right; color: ${ColorConfig.primaryText}; flex-shrink: 0;` }, span$1({ title: "Pitch where the sample is played as-is" }, "Root key")), rootKeyDisplay, rootKeyStepper), div$6({ style: "display: flex; flex-direction: row; align-items: center; justify-content: space-between; margin-bottom: 0.5em;" }, div$6({ style: `text-align: right; color: ${ColorConfig.primaryText};` }, "Percussion (pitch doesn't change with key)"), percussionBox), div$6({ style: "display: flex; flex-direction: row; align-items: center; justify-content: flex-end; margin-bottom: 0.5em;" }, div$6({ style: `flex-shrink: 0; text-align: right; color: ${ColorConfig.primaryText};` }, span$1({ title: "Applies to the \"Loop Start\" loop control option of the preset created for this sample" }, "Loop Start")), chipWaveLoopStartStepper), div$6({ style: "display: flex; flex-direction: row; align-items: center; justify-content: flex-end; margin-bottom: 0.5em;" }, div$6({ style: `flex-shrink: 0; text-align: right; color: ${ColorConfig.primaryText};` }, span$1({ title: "Applies to the \"Loop End\" loop control option of the preset created for this sample" }, "Loop End")), chipWaveLoopEndStepper), div$6({ style: "display: flex; flex-direction: row; align-items: center; justify-content: flex-end; margin-bottom: 0.5em;" }, div$6({ style: `flex-shrink: 0; text-align: right; color: ${ColorConfig.primaryText};` }, span$1({ title: "Applies to the \"Offset\" loop control option of the preset created for this sample" }, "Sample Start Offset")), chipWaveStartOffsetStepper), div$6({ style: "display: flex; flex-direction: row; align-items: center; justify-content: flex-end; margin-bottom: 0.5em;" }, div$6({ style: `flex-shrink: 0; text-align: right; color: ${ColorConfig.primaryText};` }, span$1({ title: "Applies to the \"Loop Mode\" loop control option of the preset created for this sample" }, "Loop Mode")), chipWaveLoopModeSelect), div$6({ style: "display: flex; flex-direction: row; align-items: center; justify-content: flex-end; margin-bottom: 0.5em;" }, div$6({ style: `flex-shrink: 0; text-align: right; color: ${ColorConfig.primaryText};` }, span$1({ title: "Applies to the \"Backwards\" loop control option of the preset created for this sample" }, "Backwards")), chipWavePlayBackwardsBox));
+                    const copyLinkPresetButton = button$5({ style: "height: auto; min-height: var(--button-size);", title: "For use with \"Add multiple samples\"" }, "Copy link preset");
+                    const removeButton = button$5({ style: "height: auto; min-height: var(--button-size); margin-left: 0.5em;" }, "Remove");
+                    const moveUpButton = button$5({ style: "height: auto; min-height: var(--button-size); margin-left: 0.5em;" }, SVG.svg({ width: "16", height: "16", viewBox: "-13 -14 26 26", "pointer-events": "none", style: "width: 100%; height: 100%;" }, SVG.path({ d: "M -6 6 L 0 -6 L 6 6 z", fill: ColorConfig.primaryText })));
+                    const moveDownButton = button$5({ style: "height: auto; min-height: var(--button-size); margin-left: 0.5em;" }, SVG.svg({ width: "16", height: "16", viewBox: "-13 -14 26 26", "pointer-events": "none", style: "width: 100%; height: 100%;" }, SVG.path({ d: "M -6 -6 L 6 -6 L 0 6 z", fill: ColorConfig.primaryText })));
+                    const optionsContainer = details({ open: optionsVisible, style: "margin-bottom: 2em; margin-top: 1em;" }, summary({ style: "margin-bottom: 1em;" }, "Options"), div$5({ style: "display: flex; flex-direction: row; align-items: center; justify-content: flex-end; margin-bottom: 0.5em;" }, div$5({ style: `flex-shrink: 0; :text-align: right; color: ${ColorConfig.primaryText};` }, span$1({ title: "What your sample is named" }, "Name")), nameInput), div$5({ style: "display: flex; flex-direction: row; align-items: center; justify-content: flex-end; margin-bottom: 0.5em;" }, div$5({ style: `flex-shrink: 0; :text-align: right; color: ${ColorConfig.primaryText};` }, span$1({ title: "What rate to resample to" }, "Sample rate")), sampleRateStepper), div$5({ style: "display: flex; flex-direction: row; align-items: center; justify-content: flex-end; margin-bottom: 0.5em;" }, div$5({ style: `text-align: right; color: ${ColorConfig.primaryText}; flex-shrink: 0;` }, span$1({ title: "Pitch where the sample is played as-is" }, "Root key")), rootKeyDisplay, rootKeyStepper), div$5({ style: "display: flex; flex-direction: row; align-items: center; justify-content: space-between; margin-bottom: 0.5em;" }, div$5({ style: `text-align: right; color: ${ColorConfig.primaryText};` }, "Percussion (pitch doesn't change with key)"), percussionBox), div$5({ style: "display: flex; flex-direction: row; align-items: center; justify-content: flex-end; margin-bottom: 0.5em;" }, div$5({ style: `flex-shrink: 0; text-align: right; color: ${ColorConfig.primaryText};` }, span$1({ title: "Applies to the \"Loop Start\" loop control option of the preset created for this sample" }, "Loop Start")), chipWaveLoopStartStepper), div$5({ style: "display: flex; flex-direction: row; align-items: center; justify-content: flex-end; margin-bottom: 0.5em;" }, div$5({ style: `flex-shrink: 0; text-align: right; color: ${ColorConfig.primaryText};` }, span$1({ title: "Applies to the \"Loop End\" loop control option of the preset created for this sample" }, "Loop End")), chipWaveLoopEndStepper), div$5({ style: "display: flex; flex-direction: row; align-items: center; justify-content: flex-end; margin-bottom: 0.5em;" }, div$5({ style: `flex-shrink: 0; text-align: right; color: ${ColorConfig.primaryText};` }, span$1({ title: "Applies to the \"Offset\" loop control option of the preset created for this sample" }, "Sample Start Offset")), chipWaveStartOffsetStepper), div$5({ style: "display: flex; flex-direction: row; align-items: center; justify-content: flex-end; margin-bottom: 0.5em;" }, div$5({ style: `flex-shrink: 0; text-align: right; color: ${ColorConfig.primaryText};` }, span$1({ title: "Applies to the \"Loop Mode\" loop control option of the preset created for this sample" }, "Loop Mode")), chipWaveLoopModeSelect), div$5({ style: "display: flex; flex-direction: row; align-items: center; justify-content: flex-end; margin-bottom: 0.5em;" }, div$5({ style: `flex-shrink: 0; text-align: right; color: ${ColorConfig.primaryText};` }, span$1({ title: "Applies to the \"Backwards\" loop control option of the preset created for this sample" }, "Backwards")), chipWavePlayBackwardsBox));
+                    fileInput.dataset.index = "" + entryIndex;
                     urlInput.dataset.index = "" + entryIndex;
+                    nameInput.dataset.index = "" + entryIndex;
                     sampleRateStepper.dataset.index = "" + entryIndex;
                     rootKeyStepper.dataset.index = "" + entryIndex;
                     percussionBox.dataset.index = "" + entryIndex;
@@ -62973,20 +62212,22 @@ You should be redirected to the song at:<br /><br />
                     moveUpButton.dataset.index = "" + entryIndex;
                     moveDownButton.dataset.index = "" + entryIndex;
                     optionsContainer.dataset.index = "" + entryIndex;
-                    const bottomButtons = div$6({ style: "display: flex; flex-direction: row; align-items: center; justify-content: flex-end;" }, copyLinkPresetButton, removeButton);
+                    const bottomButtons = div$5({ style: "display: flex; flex-direction: row; align-items: center; justify-content: flex-end;" }, copyLinkPresetButton, removeButton);
                     if (canMoveUp) {
                         bottomButtons.appendChild(moveUpButton);
                     }
                     if (canMoveDown) {
                         bottomButtons.appendChild(moveDownButton);
                     }
-                    const entryElement = div$6({ style: `padding: 0.6em; margin: 0.4em; border: 1px solid ${ColorConfig.uiWidgetBackground}; border-radius: 4px;` }, div$6({
+                    const entryElement = div$5({ style: `padding: 0.6em; margin: 0.4em; border: 1px solid ${ColorConfig.uiWidgetBackground}; border-radius: 4px;` }, div$5({
                         class: "add-sample-prompt-sample-name",
                         style: `margin-bottom: 0.5em; color: ${ColorConfig.secondaryText}; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;`,
                         title: sampleName,
-                    }, sampleName), div$6({ style: "display: flex; flex-direction: row; align-items: center; justify-content: flex-end; margin-bottom: 0.5em;" }, div$6({ style: `text-align: right; color: ${ColorConfig.primaryText};` }, "URL"), urlInput), optionsContainer, bottomButtons);
+                    }, sampleName), div$5({ style: "display: flex; flex-direction: row; align-items: center; justify-content: flex-end; margin-bottom: 0.5em;" }, div$5({ style: `text-align: right; color: ${ColorConfig.primaryText};` }, "URL"), urlInput), div$5({ style: "display: flex; flex-direction: row; align-items: center; justify-content: flex-end; margin-bottom: 0.5em;" }, div$5({ style: `text-align: center; color: ${ColorConfig.primaryText};` }, "File Upload"), fileInput), optionsContainer, bottomButtons);
                     optionsContainer.addEventListener("toggle", this._whenOptionsAreToggled);
+                    fileInput.addEventListener("change", this._whenFileSelected);
                     urlInput.addEventListener("change", this._whenURLChanges);
+                    nameInput.addEventListener("change", this._whenNameChanges);
                     sampleRateStepper.addEventListener("change", this._whenSampleRateChanges);
                     rootKeyStepper.addEventListener("change", this._whenRootKeyChanges);
                     percussionBox.addEventListener("change", this._whenPercussionChanges);
@@ -63046,14 +62287,14 @@ You should be redirected to the song at:<br /><br />
         }
     }
 
-    const { button: button$5, div: div$5, h2: h2$3, select: select$2, option: option$2 } = HTML;
+    const { button: button$4, div: div$4, h2: h2$3, select: select$2, option: option$2 } = HTML;
     class ShortenerConfigPrompt {
         constructor(_doc) {
             this._doc = _doc;
             this._shortenerStrategySelect = select$2({ style: "width: 100%;" }, option$2({ value: "tinyurl" }, "tinyurl.com"), option$2({ value: "isgd" }, "is.gd"));
-            this._cancelButton = button$5({ class: "cancelButton" });
-            this._okayButton = button$5({ class: "okayButton", style: "width:45%;" }, "Okay");
-            this.container = div$5({ class: "prompt noSelection", style: "width: 250px;" }, div$5({ class: "promptTitle" }, h2$3({ class: "configShortenerExt", style: "text-align: inherit;" }, ""), h2$3({ class: "configShortenerTitle" }, "Configure Shortener")), div$5({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, div$5({ class: "selectContainer", style: "width: 100%;" }, this._shortenerStrategySelect)), div$5({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton), this._cancelButton);
+            this._cancelButton = button$4({ class: "cancelButton" });
+            this._okayButton = button$4({ class: "okayButton", style: "width:45%;" }, "Okay");
+            this.container = div$4({ class: "prompt noSelection", style: "width: 250px;" }, div$4({ class: "promptTitle" }, h2$3({ class: "configShortenerExt", style: "text-align: inherit;" }, ""), h2$3({ class: "configShortenerTitle" }, "Configure Shortener")), div$4({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, div$4({ class: "selectContainer", style: "width: 100%;" }, this._shortenerStrategySelect)), div$4({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton), this._cancelButton);
             this._close = () => {
                 this._doc.undo();
             };
@@ -63082,18 +62323,18 @@ You should be redirected to the song at:<br /><br />
         }
     }
 
-    const { button: button$4, div: div$4, h2: h2$2, option: option$1, select: select$1, input: input$2 } = HTML;
+    const { button: button$3, div: div$3, h2: h2$2, option: option$1, select: select$1, input: input$2 } = HTML;
     let doReload = false;
     class FontPrompt {
         constructor(_doc) {
             this._doc = _doc;
             this._fontSelect = select$1({ style: "width: 100%; margin: 0.5em 0;", id: "fontSelect" }, option$1({ selected: true, disabled: true, hidden: false }, "Pick a font"), option$1({ value: "none" }, "Default"), option$1({ value: "Roboto" }, "Roboto"), option$1({ value: "AbyssType" }, "AbyssType"), option$1({ value: "AbyssType Small" }, "AbyssType Small"), option$1({ value: "AbyssType Fusion" }, "AbyssType Fusion"), option$1({ value: "Doom 1993" }, "Doom 1993"), option$1({ value: "Tahoma Pixel" }, "Tahoma (Windows Xp)"), option$1({ value: "Tahoma" }, "Tahoma"), option$1({ value: "Trebuchet" }, "Trebuchet MS"), option$1({ value: "Monospace" }, "Monospace"), option$1({ value: "Frutiger" }, "Frutiger"), option$1({ value: "Workbench" }, "Workbench"), option$1({ value: "Varela" }, "Varela"), option$1({ value: "Arial" }, "Arial"), option$1({ value: "Comic Sans" }, "Comic Sans"), option$1({ value: "custom" }, "Custom"));
-            this._cancelButton = button$4({ class: "cancelButton" });
-            this._okayButton = button$4({ class: "okayButton", style: "width:45%;" }, "Okay");
+            this._cancelButton = button$3({ class: "cancelButton" });
+            this._okayButton = button$3({ class: "okayButton", style: "width:45%;" }, "Okay");
             this.lastFont = window.localStorage.getItem("customFontName");
             this._fileInput = input$2({ type: "file", accept: ".otf, .ttf", text: "Choose Custom Font" });
-            this._reload = div$4({ style: "display:none; font-size: 25px; margin-top: 10px;" }, "Reload Required! Press Okay!");
-            this.container = div$4({ class: "prompt noSelection", id: "fontContainerPrompt", style: "width: 220px;" }, div$4({ class: "promptTitle" }, h2$2({ class: "fontExt", style: "text-align: inherit;" }, ""), h2$2({ class: "fontTitle", style: "margin-bottom: 0.5em;" }, "Set Font")), div$4({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, div$4({ class: "selectContainer", style: "width: 100%;" }, this._fontSelect)), this._fileInput, this._reload, div$4({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton), this._cancelButton);
+            this._reload = div$3({ style: "display:none; font-size: 25px; margin-top: 10px;" }, "Reload Required! Press Okay!");
+            this.container = div$3({ class: "prompt noSelection", id: "fontContainerPrompt", style: "width: 220px;" }, div$3({ class: "promptTitle" }, h2$2({ class: "fontExt", style: "text-align: inherit;" }, ""), h2$2({ class: "fontTitle", style: "margin-bottom: 0.5em;" }, "Set Font")), div$3({ style: "display: flex; flex-direction: row; align-items: center; height: 2em; justify-content: flex-end;" }, div$3({ class: "selectContainer", style: "width: 100%;" }, this._fontSelect)), this._fileInput, this._reload, div$3({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton), this._cancelButton);
             this._whenKeyPressed = (event) => {
                 if (event.target.tagName != "BUTTON" && event.keyCode == 13) {
                     this._saveChanges();
@@ -63159,38 +62400,38 @@ You should be redirected to the song at:<br /><br />
         }
     }
 
-    const { button: button$3, div: div$3, h2: h2$1, p, } = HTML;
+    const { button: button$2, div: div$2, h2: h2$1, p, } = HTML;
     class TutorialPrompt {
         constructor(_doc) {
             this._doc = _doc;
-            this._cancelButton = button$3({ class: "cancelButton", style: "display:none;" });
-            this.okayButton = button$3({ class: "okayButton", style: "width:45%;" }, "Okay");
-            this.yesButton1 = button$3({ class: "yesButton", style: "width:15%;" }, "Yes");
-            this.noButton1 = button$3({ class: "noButton", style: "width:15%;" }, "No");
-            this.yesButton2 = button$3({ class: "yesButton", style: "width:15%;" }, "Yes");
-            this.noButton2 = button$3({ class: "noButton", style: "width:15%;" }, "No");
-            this.yesButton3 = button$3({ class: "yesButton", style: "" }, "I am Certain");
-            this.noButton3 = button$3({ class: "noButton", style: "" }, "Wait, I'll do it");
-            this.learnBeepBox1 = button$3({ class: "tutorialButton", style: "margin:0.5em;" }, "This is my first time using Anything related to BeepBox.");
-            this.learnJummBox1 = button$3({ class: "tutorialButton", style: "margin:0.5em;" }, "I have used BeepBox, but have never used any of its mods.");
-            this.learnUltraBox1 = button$3({ class: "tutorialButton", style: "margin:0.5em;" }, "I have used BeepBox, and it's Mods, but I've never used UltraBox (The mod AbyssBox is built off of).");
-            this.learnAbyssBox1 = button$3({ class: "tutorialButton", style: "margin:0.5em;" }, "I am familiar with BeepBox and its mods, but I'm new to AbyssBox.");
-            this.learnBeepBox2 = button$3({ class: "tutorialButton", style: "margin:0.5em;" }, "Tell me more about BeepBox");
-            this.learnJummBox2 = button$3({ class: "tutorialButton", style: "margin:0.5em;" }, "Tell me more about JummBox");
-            this.learnUltraBox2 = button$3({ class: "tutorialButton", style: "margin:0.5em;" }, "Tell me more about UltraBox");
-            this.learnAbyssBox2 = button$3({ class: "tutorialButton", style: "margin:0.5em;" }, "Tell me more about AbyssBox");
-            this.learningBeepBoxButton1 = button$3({ class: "yesButton", style: "width:25%;" }, "Continue");
-            this.learningBeepBoxPatternEditor = button$3({ class: "yesButton", style: "width:15%;" }, "Pattern Editor");
-            this.learningBeepBoxTrackEditor = button$3({ class: "yesButton", style: "width:15%;" }, "Track Editor");
-            this.learningBeepBoxSettingsEditor = button$3({ class: "yesButton", style: "width:15%;" }, "Settings Editor");
-            this.startingContainer = div$3({ id: "tutorialPrompt" }, div$3({ class: "promptTitle" }, h2$1({ class: "tutorialExt", style: "text-align: inherit;" }, ""), h2$1({ class: "tutorialTitle", style: "margin-bottom: 0.5em;" }, "AbyssBox Tutorial")), p({ style: "margin-bottom: 0.5em; text-align: center; font-size: 15px;" }, "Is this your first time using AbyssBox?"), div$3({ style: "display:flex; flex-direction: row; justify-content: space-evenly;" }, this.yesButton1, this.noButton1));
-            this.afterNo1Container = div$3({ id: "tutorialPrompt", style: "display:none;" }, div$3({ class: "promptTitle" }, h2$1({ class: "tutorialExt", style: "text-align: inherit;" }, ""), h2$1({ class: "tutorialTitle", style: "margin-bottom: 0.5em;" }, "AbyssBox Tutorial")), p({ style: "margin-bottom: 0.5em; text-align: center; font-size: 15px;" }, "Would you like to take the tutorial anyways?"), div$3({ style: "display:flex; flex-direction: row; justify-content: space-evenly; font-size: 15px;" }, this.yesButton2, this.noButton2));
-            this.afterNo2Container = div$3({ id: "tutorialPrompt", style: "display:none;" }, div$3({ class: "promptTitle" }, h2$1({ class: "tutorialExt", style: "text-align: inherit;" }, ""), h2$1({ class: "tutorialTitle", style: "margin-bottom: 0.5em;" }, "AbyssBox Tutorial")), p({ style: "margin-bottom: 0.5em; text-align: center; font-size: 15px;" }, "Even if this is not your first time using AbyssBox, there might still be something worth learning from this. Are you certain you want to skip?"), div$3({ style: "display:flex; flex-direction: row; justify-content: space-evenly;" }, this.noButton3, this.yesButton3));
-            this.afterYes1Container = div$3({ id: "tutorialPrompt", style: "display:none;" }, div$3({ class: "promptTitle" }, h2$1({ class: "tutorialExt", style: "text-align: inherit;" }, ""), h2$1({ class: "tutorialTitle", style: "margin-bottom: 0.5em;" }, "AbyssBox Tutorial")), p({ style: "margin-bottom: 0.5em; text-align: center; font-size: 15px;" }, "Since this is your first time using AbyssBox, we would like to ask how much do you know about BeepBox, its mods, or AbyssBox?"), div$3({ style: "display:flex; flex-direction: column; font-size: 15px;" }, this.learnBeepBox1, this.learnJummBox1, this.learnUltraBox1, this.learnAbyssBox1));
-            this.afterYes3Container = div$3({ id: "tutorialPrompt", style: "display:none;" }, div$3({ class: "promptTitle" }, h2$1({ class: "tutorialExt", style: "text-align: inherit;" }, ""), h2$1({ class: "tutorialTitle", style: "margin-bottom: 0.5em;" }, "AbyssBox Tutorial")), p({ style: "margin-bottom: 0.5em; text-align: center; font-size: 15px;" }, "Even though this isn't your first time using AbyssBox, What would you like to learn about?"), div$3({ style: "display:flex; flex-direction: column; font-size: 15px;" }, this.learnBeepBox2, this.learnJummBox2, this.learnUltraBox2, this.learnAbyssBox2));
-            this.learningBeepBox1 = div$3({ id: "tutorialPrompt" }, div$3({ class: "promptTitle" }, h2$1({ class: "tutorialExt", style: "text-align: inherit;" }, ""), h2$1({ class: "tutorialTitle", style: "margin-bottom: 0.5em;" }, "AbyssBox Tutorial")), p({ style: "margin-bottom: 0.5em; text-align: center; font-size: 15px;" }, "BeepBox is an online tool used to create songs, using simple shapes and sounds you can make many unique creations all within the editor. "), div$3({ style: "display:flex; flex-direction: row; justify-content: space-evenly;" }, this.learningBeepBoxButton1));
-            this.learningBeepBox2 = div$3({ id: "tutorialPrompt" }, div$3({ class: "promptTitle" }, h2$1({ class: "tutorialExt", style: "text-align: inherit;" }, ""), h2$1({ class: "tutorialTitle", style: "margin-bottom: 0.5em;" }, "AbyssBox Tutorial")), p({ style: "margin-bottom: 0.5em; text-align: center; font-size: 15px;" }, "In BeepBox there are three major sections you will interact with throughout the entirety of your music making journey, these sections are:", p({ style: "margin-bottom: 0.5em; text-align: center; font-size: 15px;" }), "The Pattern Editor, The Track Editor, and the Settings Editor.", p({ style: "margin-bottom: 0.5em; text-align: center; font-size: 15px;" }), "Each of these areas are very important, which of these would you like to learn about first?"), div$3({ style: "display:flex; flex-direction: row; justify-content: space-evenly;" }, this.learningBeepBoxPatternEditor, this.learningBeepBoxTrackEditor, this.learningBeepBoxSettingsEditor));
-            this.container = div$3({ class: "prompt noSelection", id: "tutorialContainerPrompt", style: "width: 350px;" }, this.startingContainer, this.afterNo1Container, this.afterNo2Container, this.afterYes1Container, this.afterYes3Container, this._cancelButton);
+            this._cancelButton = button$2({ class: "cancelButton", style: "display:none;" });
+            this.okayButton = button$2({ class: "okayButton", style: "width:45%;" }, "Okay");
+            this.yesButton1 = button$2({ class: "yesButton", style: "width:15%;" }, "Yes");
+            this.noButton1 = button$2({ class: "noButton", style: "width:15%;" }, "No");
+            this.yesButton2 = button$2({ class: "yesButton", style: "width:15%;" }, "Yes");
+            this.noButton2 = button$2({ class: "noButton", style: "width:15%;" }, "No");
+            this.yesButton3 = button$2({ class: "yesButton", style: "" }, "I am Certain");
+            this.noButton3 = button$2({ class: "noButton", style: "" }, "Wait, I'll do it");
+            this.learnBeepBox1 = button$2({ class: "tutorialButton", style: "margin:0.5em;" }, "This is my first time using Anything related to BeepBox.");
+            this.learnJummBox1 = button$2({ class: "tutorialButton", style: "margin:0.5em;" }, "I have used BeepBox, but have never used any of its mods.");
+            this.learnUltraBox1 = button$2({ class: "tutorialButton", style: "margin:0.5em;" }, "I have used BeepBox, and it's Mods, but I've never used UltraBox (The mod AbyssBox is built off of).");
+            this.learnAbyssBox1 = button$2({ class: "tutorialButton", style: "margin:0.5em;" }, "I am familiar with BeepBox and its mods, but I'm new to AbyssBox.");
+            this.learnBeepBox2 = button$2({ class: "tutorialButton", style: "margin:0.5em;" }, "Tell me more about BeepBox");
+            this.learnJummBox2 = button$2({ class: "tutorialButton", style: "margin:0.5em;" }, "Tell me more about JummBox");
+            this.learnUltraBox2 = button$2({ class: "tutorialButton", style: "margin:0.5em;" }, "Tell me more about UltraBox");
+            this.learnAbyssBox2 = button$2({ class: "tutorialButton", style: "margin:0.5em;" }, "Tell me more about AbyssBox");
+            this.learningBeepBoxButton1 = button$2({ class: "yesButton", style: "width:25%;" }, "Continue");
+            this.learningBeepBoxPatternEditor = button$2({ class: "yesButton", style: "width:15%;" }, "Pattern Editor");
+            this.learningBeepBoxTrackEditor = button$2({ class: "yesButton", style: "width:15%;" }, "Track Editor");
+            this.learningBeepBoxSettingsEditor = button$2({ class: "yesButton", style: "width:15%;" }, "Settings Editor");
+            this.startingContainer = div$2({ id: "tutorialPrompt" }, div$2({ class: "promptTitle" }, h2$1({ class: "tutorialExt", style: "text-align: inherit;" }, ""), h2$1({ class: "tutorialTitle", style: "margin-bottom: 0.5em;" }, "AbyssBox Tutorial")), p({ style: "margin-bottom: 0.5em; text-align: center; font-size: 15px;" }, "Is this your first time using AbyssBox?"), div$2({ style: "display:flex; flex-direction: row; justify-content: space-evenly;" }, this.yesButton1, this.noButton1));
+            this.afterNo1Container = div$2({ id: "tutorialPrompt", style: "display:none;" }, div$2({ class: "promptTitle" }, h2$1({ class: "tutorialExt", style: "text-align: inherit;" }, ""), h2$1({ class: "tutorialTitle", style: "margin-bottom: 0.5em;" }, "AbyssBox Tutorial")), p({ style: "margin-bottom: 0.5em; text-align: center; font-size: 15px;" }, "Would you like to take the tutorial anyways?"), div$2({ style: "display:flex; flex-direction: row; justify-content: space-evenly; font-size: 15px;" }, this.yesButton2, this.noButton2));
+            this.afterNo2Container = div$2({ id: "tutorialPrompt", style: "display:none;" }, div$2({ class: "promptTitle" }, h2$1({ class: "tutorialExt", style: "text-align: inherit;" }, ""), h2$1({ class: "tutorialTitle", style: "margin-bottom: 0.5em;" }, "AbyssBox Tutorial")), p({ style: "margin-bottom: 0.5em; text-align: center; font-size: 15px;" }, "Even if this is not your first time using AbyssBox, there might still be something worth learning from this. Are you certain you want to skip?"), div$2({ style: "display:flex; flex-direction: row; justify-content: space-evenly;" }, this.noButton3, this.yesButton3));
+            this.afterYes1Container = div$2({ id: "tutorialPrompt", style: "display:none;" }, div$2({ class: "promptTitle" }, h2$1({ class: "tutorialExt", style: "text-align: inherit;" }, ""), h2$1({ class: "tutorialTitle", style: "margin-bottom: 0.5em;" }, "AbyssBox Tutorial")), p({ style: "margin-bottom: 0.5em; text-align: center; font-size: 15px;" }, "Since this is your first time using AbyssBox, we would like to ask how much do you know about BeepBox, its mods, or AbyssBox?"), div$2({ style: "display:flex; flex-direction: column; font-size: 15px;" }, this.learnBeepBox1, this.learnJummBox1, this.learnUltraBox1, this.learnAbyssBox1));
+            this.afterYes3Container = div$2({ id: "tutorialPrompt", style: "display:none;" }, div$2({ class: "promptTitle" }, h2$1({ class: "tutorialExt", style: "text-align: inherit;" }, ""), h2$1({ class: "tutorialTitle", style: "margin-bottom: 0.5em;" }, "AbyssBox Tutorial")), p({ style: "margin-bottom: 0.5em; text-align: center; font-size: 15px;" }, "Even though this isn't your first time using AbyssBox, What would you like to learn about?"), div$2({ style: "display:flex; flex-direction: column; font-size: 15px;" }, this.learnBeepBox2, this.learnJummBox2, this.learnUltraBox2, this.learnAbyssBox2));
+            this.learningBeepBox1 = div$2({ id: "tutorialPrompt" }, div$2({ class: "promptTitle" }, h2$1({ class: "tutorialExt", style: "text-align: inherit;" }, ""), h2$1({ class: "tutorialTitle", style: "margin-bottom: 0.5em;" }, "AbyssBox Tutorial")), p({ style: "margin-bottom: 0.5em; text-align: center; font-size: 15px;" }, "BeepBox is an online tool used to create songs, using simple shapes and sounds you can make many unique creations all within the editor. "), div$2({ style: "display:flex; flex-direction: row; justify-content: space-evenly;" }, this.learningBeepBoxButton1));
+            this.learningBeepBox2 = div$2({ id: "tutorialPrompt" }, div$2({ class: "promptTitle" }, h2$1({ class: "tutorialExt", style: "text-align: inherit;" }, ""), h2$1({ class: "tutorialTitle", style: "margin-bottom: 0.5em;" }, "AbyssBox Tutorial")), p({ style: "margin-bottom: 0.5em; text-align: center; font-size: 15px;" }, "In BeepBox there are three major sections you will interact with throughout the entirety of your music making journey, these sections are:", p({ style: "margin-bottom: 0.5em; text-align: center; font-size: 15px;" }), "The Pattern Editor, The Track Editor, and the Settings Editor.", p({ style: "margin-bottom: 0.5em; text-align: center; font-size: 15px;" }), "Each of these areas are very important, which of these would you like to learn about first?"), div$2({ style: "display:flex; flex-direction: row; justify-content: space-evenly;" }, this.learningBeepBoxPatternEditor, this.learningBeepBoxTrackEditor, this.learningBeepBoxSettingsEditor));
+            this.container = div$2({ class: "prompt noSelection", id: "tutorialContainerPrompt", style: "width: 350px;" }, this.startingContainer, this.afterNo1Container, this.afterNo2Container, this.afterYes1Container, this.afterYes3Container, this._cancelButton);
             this._close = () => {
                 window.localStorage.setItem("tutorialComplete", "true");
                 this._doc.prompt = null;
@@ -63234,19 +62475,19 @@ You should be redirected to the song at:<br /><br />
         }
     }
 
-    const { button: button$2, div: div$2, h2, input: input$1, br, textarea } = HTML;
+    const { button: button$1, div: div$1, h2, input: input$1, br, textarea } = HTML;
     class SongDetailsPrompt {
         constructor(_doc) {
             this._doc = _doc;
-            this._cancelButton = button$2({ class: "cancelButton" });
-            this._okayButton = button$2({ class: "okayButton", style: "width:45%;" }, "Okay");
+            this._cancelButton = button$1({ class: "cancelButton" });
+            this._okayButton = button$1({ class: "okayButton", style: "width:45%;" }, "Okay");
             this._songTitle = input$1({ placeholder: "Enter Title Here", type: "text", style: "width: 100%;", value: this._doc.song.title, maxlength: 30, "autofocus": "autofocus" });
             this._songAuthor = input$1({ placeholder: "Enter Name Here", type: "text", style: "width: 100%;", value: this._doc.song.author, maxlength: 30 });
             this._songDescription = textarea({ placeholder: "Enter Description Here", style: "width: 100%; resize: none; background: var(--editor-background); color: white; height: 64px; border: 0.5px solid var(--input-box-outline); font-size: 14px;", maxlength: 1200 }, this._doc.song.description);
             this._showSongDetailsBox = input$1({ style: "width: 3em; margin-left: 1em;", type: "checkbox" });
-            this._computedSamplesLabel = div$2({ style: "width: 10em;" }, new Text("0:00"));
-            this._cantShortenLabel = div$2({}, "You cannot shorten this url!");
-            this.container = div$2({ class: "prompt noSelection", style: "width: 250px;" }, h2("Song Details"), div$2({ style: "display: flex; flex-direction: row; align-items: baseline; gap: 10px;" }, "Title: ", this._songTitle), div$2({ style: "display: flex; flex-direction: row; align-items: baseline; gap: 10px;" }, "Author: ", this._songAuthor), div$2({ style: "display: flex; flex-direction: column; align-items: baseline;" }, "Description: ", this._songDescription), div$2({ style: "vertical-align: middle; align-items: center; justify-content: space-between;" }, "Show info on load: ", this._showSongDetailsBox), div$2({ style: "display: flex; flex-direction: column; align-items: baseline;" }, "Song Theme: ", this._doc.song.setSongTheme), div$2({ style: "text-align: left;" }, div$2({ style: "display:flex; gap: 3px; margin-bottom: 1em;" }, "Song Length: ", this._computedSamplesLabel), div$2({ style: "margin-bottom: 0.5em;" }, "Pitch Channels: " + this._doc.song.pitchChannelCount), div$2({ style: "margin-bottom: 0.5em;" }, "Noise Channels: " + this._doc.song.noiseChannelCount), div$2({}, "Mod Channels: " + this._doc.song.modChannelCount), br(), "URL Length: " + location.href.length, this._cantShortenLabel, br()), div$2({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton), this._cancelButton);
+            this._computedSamplesLabel = div$1({ style: "width: 10em;" }, new Text("0:00"));
+            this._cantShortenLabel = div$1({}, "You cannot shorten this url!");
+            this.container = div$1({ class: "prompt noSelection", style: "width: 250px;" }, h2("Song Details"), div$1({ style: "display: flex; flex-direction: row; align-items: baseline; gap: 10px;" }, "Title: ", this._songTitle), div$1({ style: "display: flex; flex-direction: row; align-items: baseline; gap: 10px;" }, "Author: ", this._songAuthor), div$1({ style: "display: flex; flex-direction: column; align-items: baseline;" }, "Description: ", this._songDescription), div$1({ style: "vertical-align: middle; align-items: center; justify-content: space-between;" }, "Show info on load: ", this._showSongDetailsBox), div$1({ style: "display: flex; flex-direction: column; align-items: baseline;" }, "Song Theme: ", this._doc.song.setSongTheme), div$1({ style: "text-align: left;" }, div$1({ style: "display:flex; gap: 3px; margin-bottom: 1em;" }, "Song Length: ", this._computedSamplesLabel), div$1({ style: "margin-bottom: 0.5em;" }, "Pitch Channels: " + this._doc.song.pitchChannelCount), div$1({ style: "margin-bottom: 0.5em;" }, "Noise Channels: " + this._doc.song.noiseChannelCount), div$1({}, "Mod Channels: " + this._doc.song.modChannelCount), br(), "URL Length: " + location.href.length, this._cantShortenLabel, br()), div$1({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" }, this._okayButton), this._cancelButton);
             this._close = () => {
                 this._doc.undo();
             };
@@ -63268,40 +62509,6 @@ You should be redirected to the song at:<br /><br />
             this._computedSamplesLabel.firstChild.textContent = this._doc.samplesToTime(this._doc.synth.getTotalSamples(true, true, 0));
             this._okayButton.addEventListener("click", this._saveChanges);
             this._cancelButton.addEventListener("click", this._close);
-        }
-    }
-
-    const { button: button$1, div: div$1, a } = HTML;
-    const theFunni = [
-        "Okay",
-        "Whatever",
-        "Go Away",
-        "Who asked",
-        "Close",
-        "Hush",
-        "Exodia!! OBLITERATE!!!!",
-        "滅びる",
-        "Who cares",
-        "Yep",
-        "Uh huh",
-        "Nobody asked",
-        "X",
-        "Shut up",
-        "Thank you",
-        "Thanks",
-        "Alright"
-    ];
-    var funnyText = Math.floor(Math.random() * theFunni.length);
-    class UpdatePopup {
-        constructor() {
-            this.closeButton = button$1({}, theFunni[funnyText]);
-            this.patchNotesLink = a({ href: "https://choptop84.github.io/abyssbox-app/patch-notes/", target: "_blank", }, "Patch Notes!");
-            this.updatePopupDiv = div$1({ class: "updatePopup load" }, div$1({}, "Seems that AbyssBox has gotten an update. You can check it out what it adds in the ", this.patchNotesLink), this.closeButton);
-            this._close = () => {
-                window.localStorage.setItem("curVer", "1.5.1");
-                this.updatePopupDiv.style.display = "none";
-            };
-            this.closeButton.addEventListener("click", this._close);
         }
     }
 
@@ -63861,10 +63068,10 @@ You should be redirected to the song at:<br /><br />
             this.prompt = null;
             this._menuMode = 1;
             this._instSettingMode = 1;
-            this._mobilePatternButton = button({ class: "mobilePatternButton", type: "button", style: "display:none; width: 33vw; height: 75%; left: 0; position: absolute; bottom: 0px;" });
-            this._mobileTrackButton = button({ class: "mobileTrackButton", type: "button", style: "display:none; width: 34vw; height: 60%; right: 33vw; position: absolute; bottom: 0px;" });
-            this._mobileSettingsButton = button({ class: "mobileSettingsButton", type: "button", style: "display:none; width: 33vw; height: 60%; right: 0; position: absolute; bottom: 0px;" });
-            this._mobileMenu = div({ class: "mobileMenu", style: "position: fixed; bottom: 0px; height: 20vh; width: 100vw; display:none; background: var(--editor-background); z-index: 5;" });
+            this._mobilePatternButton = button({ class: "mobilePatternButton", type: "button", style: "display:none; width: 33vw; height: 75%;" });
+            this._mobileTrackButton = button({ class: "mobileTrackButton", type: "button", style: "display:none; width: 34vw; height: 60%;" });
+            this._mobileSettingsButton = button({ class: "mobileSettingsButton", type: "button", style: "display:none; width: 33vw; height: 60%;" });
+            this.mobileMenu = div({ class: "mobileMenu", style: "position: fixed; bottom: 0px; height: 20vh; width: 100vw; display:none; background: var(--editor-background); z-index: 5;" });
             this._mobileEditMenuIcon = div({ class: "mobileEditMenuIcon" });
             this._mobileTrackMenuIcon = div({ class: "mobileTrackMenuIcon" });
             this._mobileSettingsMenuIcon = div({ class: "mobileSettingsMenuIcon" });
@@ -63898,7 +63105,7 @@ You should be redirected to the song at:<br /><br />
             this._defs = SVG.defs({}, this._gradient);
             this._volumeBarContainer = SVG.svg({ style: `touch-action: none; overflow: visible; margin: auto; max-width: 20vw;`, width: "160px", height: "100%", preserveAspectRatio: "none", viewBox: "0 0 160 12" }, this._defs, this._outVolumeBarBg, this._outVolumeBar, this._outVolumeCap);
             this._volumeBarBox = div({ class: "playback-volume-bar", style: "height: 12px; align-self: center;" }, this._volumeBarContainer);
-            this._fileMenu = select({ style: "width: 100%;" }, option({ selected: true, disabled: true, hidden: false }, "File"), option({ value: "new" }, "+ New Blank Song"), option({ value: "import" }, "↑ > Import/Export Song (" + EditorConfig.ctrlSymbol + "S)"), option({ value: "copyUrl" }, "⎘ Copy Song URL"), option({ value: "shareUrl" }, "⤳ Share Song URL"), option({ value: "shortenUrl" }, "… Shorten Song URL"), option({ value: "configureShortener" }, "🛠 > Customize Url Shortener"), option({ value: "viewPlayer" }, "▶ View in Song Player"), option({ value: "copyEmbed" }, "⎘ Copy HTML Embed Code"), option({ value: "songRecovery" }, "⚠ > Recover Recent Song"));
+            this._fileMenu = select({ style: "width: 100%;" }, option({ selected: true, disabled: true, hidden: false }, "File"), option({ value: "new" }, "+ New Blank Song"), option({ value: "import" }, "↑ > Import/Export Song (" + EditorConfig.ctrlSymbol + "S/" + EditorConfig.ctrlSymbol + "O)"), option({ value: "copyUrl" }, "⎘ Copy Song URL"), option({ value: "shareUrl" }, "⤳ Share Song URL"), option({ value: "shortenUrl" }, "… Shorten Song URL"), option({ value: "configureShortener" }, "🛠 > Customize Url Shortener"), option({ value: "viewPlayer" }, "▶ View in Song Player"), option({ value: "copyEmbed" }, "⎘ Copy HTML Embed Code"), option({ value: "songRecovery" }, "⚠ > Recover Recent Song"), option({ value: "openManual" }, "🕮 > Open Manual"));
             this._editMenu = select({ style: "width: 100%;" }, option({ selected: true, disabled: true, hidden: false }, "Edit"), option({ value: "undo" }, "Undo (Z)"), option({ value: "redo" }, "Redo (Y)"), option({ value: "copy" }, "Copy Pattern (C)"), option({ value: "pasteNotes" }, "Paste Pattern Notes (V)"), option({ value: "pasteNumbers" }, "Paste Pattern Numbers (" + EditorConfig.ctrlSymbol + "⇧V)"), option({ value: "insertBars" }, "Insert Bar (⏎)"), option({ value: "deleteBars" }, "Delete Selected Bars (⌫)"), option({ value: "insertChannel" }, "Insert Channel (" + EditorConfig.ctrlSymbol + "⏎)"), option({ value: "deleteChannel" }, "Delete Selected Channels (" + EditorConfig.ctrlSymbol + "⌫)"), option({ value: "selectChannel" }, "Select Channel (⇧A)"), option({ value: "selectAll" }, "Select All (A)"), option({ value: "duplicatePatterns" }, "Duplicate Reused Patterns (D)"), option({ value: "transposeUp" }, "Move Notes Up (+ or ⇧+)"), option({ value: "transposeDown" }, "Move Notes Down (- or ⇧-)"), option({ value: "moveNotesSideways" }, "> Move All Notes Sideways (W)"), option({ value: "generateEuclideanRhythm" }, "> Generate Euclidean Rhythm (E)"), option({ value: "beatsPerBar" }, "> Change Beats Per Bar (B)"), option({ value: "barCount" }, "> Change Song Length (L)"), option({ value: "channelSettings" }, "> Channel Settings (Q)"), option({ value: "limiterSettings" }, "> Limiter Settings (⇧L)"), option({ value: "addExternal" }, "> Add Custom Samples (⇧Q)"), option({ value: "songTheme" }, "> Set Theme For Song"), option({ value: "presetsPrompt" }, "> Select Presets"));
             this._optionsMenu = select({ style: "width: 100%;" }, option({ selected: true, disabled: true, hidden: false }, "Preferences"), optgroup({ label: "Technical" }, option({ value: "autoPlay" }, "Auto Play on Load"), option({ value: "autoFollow" }, "Auto Follow Playhead"), option({ value: "enableNotePreview" }, "Hear Added Notes"), option({ value: "notesOutsideScale" }, "Place Notes Out of Scale"), option({ value: "setDefaultScale" }, "Set Current Scale as Default"), option({ value: "alwaysFineNoteVol" }, "Always Fine Note Volume"), option({ value: "enableChannelMuting" }, "Enable Channel Muting"), option({ value: "instrumentCopyPaste" }, "Enable Copy/Paste Buttons"), option({ value: "instrumentImportExport" }, "Enable Import/Export Buttons"), option({ value: "displayBrowserUrl" }, "Enable Song Data in URL"), option({ value: "closePromptByClickoff" }, "Close prompts on click off"), option({ value: "oldMobileLayout" }, "Use the Old mobile layout (Reload)"), option({ value: "instrumentSettingsSimplifier" }, "Use Instrument Setting Tabs"), option({ value: "promptSongDetails" }, "Prompt Song Details on Load"), option({ value: "recordingSetup" }, "Note Recording...")), optgroup({ label: "Appearance" }, option({ value: "showThird" }, 'Highlight "Third" Note (SandBox)'), option({ value: "showFifth" }, 'Highlight "Fifth" Note'), option({ value: "advancedColorScheme" }, "Advanced Color Scheme (ModBox)"), option({ value: "notesFlashWhenPlayed" }, "Notes Flash When Played (DB2)"), option({ value: "showChannels" }, "Show All Channels"), option({ value: "showScrollBar" }, "Show Octave Scroll Bar"), option({ value: "showLetters" }, "Show Piano Keys"), option({ value: "displayVolumeBar" }, "Show Playback Volume"), option({ value: "showOscilloscope" }, "Show Oscilloscope"), option({ value: "showSampleLoadingStatus" }, "Show Sample Loading Status"), option({ value: "showDescription" }, "Show Description"), option({ value: "frostedGlassBackground" }, "Use Frosted Glass Prompt Backdrops"), option({ value: "displayShortcutButtons" }, "Display Mobile Shortcut Buttons"), option({ value: "oldModNotes" }, 'Use Old Mod Notes'), option({ value: "selectionCounter" }, 'Selection Counter'), option({ value: "layout" }, "> Set Layout"), option({ value: "colorTheme" }, "> Set Theme"), option({ value: "customFont" }, "> Set Font"), option({ value: "customTheme" }, "> Custom Theme")));
             this._scaleSelect = buildOptions(select(), Config.scales.map(scale => scale.name));
@@ -63921,6 +63128,17 @@ You should be redirected to the song at:<br /><br />
             this._ringModWaveText = span({ class: "tip", onclick: () => this._openPrompt("chipWave") }, "Wave: ");
             this._ringModWaveSelectRow = div({ class: "selectRow", style: "width: 100%;" }, this._ringModWaveText, this._ringModPulsewidthSlider.container, div({ class: "selectContainer", style: "width:40%;" }, this._ringModWaveSelect));
             this._ringModContainerRow = div({ class: "selectRow", style: "display:flex; flex-direction:column; height: 128px;" }, this._ringModRow, this._ringModHzSliderRow, this._rmOffsetHzSliderRow, this._ringModWaveSelectRow);
+            this._granularSlider = new Slider(input({ style: "margin: 0;", type: "range", min: "0", max: Config.granularRange, value: "0", step: "1" }), this._doc, (oldValue, newValue) => new ChangeGranular(this._doc, oldValue, newValue), false);
+            this._granularRow = div({ class: "selectRow" }, span({ class: "tip", onclick: () => this._openPrompt("granular") }, "Granular:"), this._granularSlider.container);
+            this._grainSizeSlider = new Slider(input({ style: "margin: 0;", type: "range", min: Config.grainSizeMin / Config.grainSizeStep, max: Config.grainSizeMax / Config.grainSizeStep, value: Config.grainSizeMin / Config.grainSizeStep, step: "1" }), this._doc, (oldValue, newValue) => new ChangeGrainSize(this._doc, oldValue, newValue), false);
+            this.grainSizeNum = div({ style: "font-size: 80%; ", id: "grainSizeNum" });
+            this._grainSizeSliderRow = div({ class: "selectRow", style: "width:100%;" }, div({ style: "display:flex; flex-direction:column; align-items:center;" }, span({ class: "tip", style: "font-size: smaller;", onclick: () => this._openPrompt("grainSize") }, "Grain: "), div({ style: `color: ${ColorConfig.secondaryText}; ` }, this.grainSizeNum)), this._grainSizeSlider.container);
+            this._grainAmountsSlider = new Slider(input({ style: "margin: 0;", type: "range", min: "0", max: Config.grainAmountsMax, value: 8, step: "1" }), this._doc, (oldValue, newValue) => new ChangeGrainAmounts(this._doc, oldValue, newValue), false);
+            this._grainAmountsRow = div({ class: "selectRow" }, span({ class: "tip", onclick: () => this._openPrompt("grainAmount") }, "Grain Freq:"), this._grainAmountsSlider.container);
+            this._grainRangeSlider = new Slider(input({ style: "margin: 0;", type: "range", min: "0", max: Config.grainRangeMax / Config.grainSizeStep, value: "0", step: "1" }), this._doc, (oldValue, newValue) => new ChangeGrainRange(this._doc, oldValue, newValue), false);
+            this.grainRangeNum = div({ style: "font-size: 80%; ", id: "grainRangeNum" });
+            this._grainRangeSliderRow = div({ class: "selectRow", style: "width:100%;" }, div({ style: "display:flex; flex-direction:column; align-items:center;" }, span({ class: "tip", style: "font-size: smaller;", onclick: () => this._openPrompt("grainRange") }, "Range: "), div({ style: `color: ${ColorConfig.secondaryText}; ` }, this.grainRangeNum)), this._grainRangeSlider.container);
+            this._granularContainerRow = div({ class: "", style: "display:flex; flex-direction:column;" }, this._granularRow, this._grainAmountsRow, this._grainSizeSliderRow, this._grainRangeSliderRow);
             this._reverbSlider = new Slider(input({ style: "margin: 0; position: sticky,", type: "range", min: "0", max: Config.reverbRange - 1, value: "0", step: "1" }), this._doc, (oldValue, newValue) => new ChangeReverb(this._doc, oldValue, newValue), false);
             this._reverbRow = div({ class: "selectRow" }, span({ class: "tip", onclick: () => this._openPrompt("reverb") }, "Reverb:"), this._reverbSlider.container);
             this._echoSustainSlider = new Slider(input({ style: "margin: 0;", type: "range", min: "0", max: Config.echoSustainRange - 1, value: "0", step: "1" }), this._doc, (oldValue, newValue) => new ChangeEchoSustain(this._doc, oldValue, newValue), false);
@@ -64090,7 +63308,7 @@ You should be redirected to the song at:<br /><br />
             this._harmonicsEditor = new HarmonicsEditor(this._doc);
             this._harmonicsZoom = button({ style: "padding-left:0.2em; height:1.5em; max-width: 12px;", onclick: () => this._openPrompt("harmonicsSettings") }, "+");
             this._harmonicsRow = div({ class: "selectRow" }, span({ class: "tip", onclick: () => this._openPrompt("harmonics"), style: "font-size: smaller" }, "Harmonics:"), this._harmonicsZoom, this._harmonicsEditor.container);
-            this.envelopeEditor = new EnvelopeEditor(this._doc, (id, submenu, subtype) => this._toggleDropdownMenu(id, submenu, subtype), (name) => this._openPrompt(name));
+            this._envelopeEditor = new EnvelopeEditor(this._doc);
             this._discreteEnvelopeBox = input({ type: "checkbox", style: "width: 1em; padding: 0; margin-right: 4em;" });
             this._discreteEnvelopeRow = div({ class: "selectRow dropFader" }, span({ class: "tip", style: "margin-left:4px;", onclick: () => this._openPrompt("discreteEnvelope") }, "‣ Discrete:"), this._discreteEnvelopeBox);
             this._envelopeSpeedDisplay = span({ style: `color: ${ColorConfig.secondaryText}; font-size: smaller; text-overflow: clip;` }, "x1");
@@ -64138,8 +63356,8 @@ You should be redirected to the song at:<br /><br />
             this._feedbackRow2 = div({ class: "selectRow" }, span({ class: "tip", onclick: () => this._openPrompt("feedbackVolume") }, "Fdback Vol:"), this._feedbackAmplitudeSlider.container);
             this._addEnvelopeButton = button({ type: "button", class: "add-envelope" });
             this._instrumentDiv = div({ id: "InstrumentDiv" }, this._panSliderRow, this._panDropdownGroup, this._chipWaveSelectRow, this._chipNoiseSelectRow, this._useChipWaveAdvancedLoopControlsRow, this._chipWaveLoopModeSelectRow, this._chipWaveLoopStartRow, this._chipWaveLoopEndRow, this._chipWaveStartOffsetRow, this._chipWavePlayBackwardsRow, this._customWaveDraw, this._eqFilterTypeRow, this._eqFilterRow, this._eqFilterSimpleCutRow, this._eqFilterSimplePeakRow, this._fadeInOutRow, this._algorithmSelectRow, this._algorithm6OpSelectRow, this._phaseModGroup, this._feedbackRow1, this._feedback6OpRow1, this._feedbackRow2, this._spectrumRow, this._harmonicsRow, this._drumsetGroup, this._supersawDynamismRow, this._supersawSpreadRow, this._supersawShapeRow, this._pulseWidthRow, this._pulseWidthDropdownGroup, this._stringSustainRow, div({ style: "" }, this._unisonSelectRow), this._unisonDropdownGroup);
-            this._effectDiv = div({ id: "effectsDiv" }, div({ class: "effectsNameDiv", style: `padding: 2px 0; margin-left: 2em; display: flex; align-items: center;` }, span({ style: `flex-grow: 1; text-align: center;` }, span({ class: "tip", onclick: () => this._openPrompt("effects") }, "Effects")), div({ class: "effects-menu" }, this._effectsSelect)), div({ class: "effectsOpDiv" }, this._transitionRow, this._transitionDropdownGroup, this._chordSelectRow, this._chordDropdownGroup, this._pitchShiftRow, this._detuneSliderRow, this._vibratoSelectRow, this._vibratoDropdownGroup, this._noteFilterTypeRow, this._noteFilterRow, this._noteFilterSimpleCutRow, this._noteFilterSimplePeakRow, this._distortionRow, this._aliasingRow, this._bitcrusherQuantizationRow, this._bitcrusherFreqRow, this._chorusRow, this._echoSustainRow, this._echoDelayRow, this._reverbRow, this._ringModContainerRow, this._phaserMixRow, this._phaserFreqRow, this._phaserFeedbackRow, this._phaserStagesRow, this._upperNoteLimitRow, this._lowerNoteLimitRow, this._invertWaveRow));
-            this._envelopeDiv = div({ id: "envelopesDiv" }, div({ class: "envelopesNameDiv", style: `padding: 2px 0; margin-left: 2em; display: flex; align-items: center;` }, span({ style: `flex-grow: 1; text-align: center;` }, span({ class: "tip", onclick: () => this._openPrompt("envelopes") }, "Envelopes")), this._envelopeDropdown, this._addEnvelopeButton), div({ class: "envelopesOpDiv" }, this._envelopeDropdownGroup, this.envelopeEditor.container));
+            this._effectDiv = div({ id: "effectsDiv" }, div({ class: "effectsNameDiv", style: `padding: 2px 0; margin-left: 2em; display: flex; align-items: center;` }, span({ style: `flex-grow: 1; text-align: center;` }, span({ class: "tip", onclick: () => this._openPrompt("effects") }, "Effects")), div({ class: "effects-menu" }, this._effectsSelect)), div({ class: "effectsOpDiv" }, this._transitionRow, this._transitionDropdownGroup, this._chordSelectRow, this._chordDropdownGroup, this._pitchShiftRow, this._detuneSliderRow, this._vibratoSelectRow, this._vibratoDropdownGroup, this._noteFilterTypeRow, this._noteFilterRow, this._noteFilterSimpleCutRow, this._noteFilterSimplePeakRow, this._distortionRow, this._aliasingRow, this._bitcrusherQuantizationRow, this._bitcrusherFreqRow, this._chorusRow, this._echoSustainRow, this._echoDelayRow, this._reverbRow, this._ringModContainerRow, this._phaserMixRow, this._phaserFreqRow, this._phaserFeedbackRow, this._phaserStagesRow, this._upperNoteLimitRow, this._lowerNoteLimitRow, this._invertWaveRow, this._granularContainerRow));
+            this._envelopeDiv = div({ id: "envelopesDiv" }, div({ class: "envelopesNameDiv", style: `padding: 2px 0; margin-left: 2em; display: flex; align-items: center;` }, span({ style: `flex-grow: 1; text-align: center;` }, span({ class: "tip", onclick: () => this._openPrompt("envelopes") }, "Envelopes")), this._envelopeDropdown, this._addEnvelopeButton), div({ class: "envelopesOpDiv" }, this._envelopeDropdownGroup, this._envelopeEditor.container));
             this._customInstrumentSettingsGroup = div({ class: "editor-controls" }, this._instrumentDiv, this._effectDiv, this._envelopeDiv);
             this._instrumentCopyGroup = div({ class: "editor-controls" }, div({ class: "selectRow" }, this._instrumentCopyButton, this._instrumentPasteButton));
             this._instrumentExportGroup = div({ class: "editor-controls" }, div({ class: "selectRow" }, this._instrumentExportButton, this._instrumentImportButton));
@@ -64277,6 +63495,9 @@ You should be redirected to the song at:<br /><br />
             this.refocusStage = () => {
                 this.mainLayer.focus({ preventScroll: true });
             };
+            this._dropHandler = () => {
+                this._openPrompt("import");
+            };
             this._onFocusIn = (event) => {
                 if (this._doc.synth.recording && event.target != this.mainLayer && event.target != this._stopButton && event.target != this._volumeSlider.input) {
                     this.refocusStage();
@@ -64286,7 +63507,6 @@ You should be redirected to the song at:<br /><br />
                 if (!this._patternEditor.editingModLabel)
                     this.mainLayer.focus({ preventScroll: true });
             };
-            this.updatePromptHolder = new UpdatePopup();
             this.whenUpdated = () => {
                 const prefs = this._doc.prefs;
                 this._muteEditor.container.style.display = prefs.enableChannelMuting ? "" : "none";
@@ -64322,9 +63542,6 @@ You should be redirected to the song at:<br /><br />
                 if (!isMobile) {
                     this._playPauseAreaMobile.style.display = "none";
                     if (window.localStorage.getItem("tutorialComplete") != "true") ;
-                    if (window.localStorage.getItem("curVer") != "1.5.1") {
-                        document.body.appendChild(this.updatePromptHolder.updatePopupDiv);
-                    }
                     if (this._doc.getFullScreen()) {
                         const semitoneHeight = this._patternEditorRow.clientHeight / this._doc.getVisiblePitchCount();
                         const targetBeatWidth = semitoneHeight * 5;
@@ -64463,214 +63680,35 @@ You should be redirected to the song at:<br /><br />
                         this._patternArea.style.display = "";
                         this.mainLayer.style.display = "unset";
                         if (window.innerWidth > window.innerHeight) {
-                            this._mobileMenu.style.right = "0px";
-                            this._mobileMenu.style.left = "";
-                            this._mobileMenu.style.height = "100vh";
-                            this._mobileMenu.style.width = "15vw";
-                            this._patternArea.style.width = "75vw";
-                            this._patternArea.style.height = "100vh";
-                            this._patternArea.style.maxHeight = "100vh";
-                            beepboxEditorContainer$1.style.maxWidth = "100vw";
-                            this._playPauseAreaMobile.style.height = "100vh";
-                            this._playPauseAreaMobile.style.width = "4vw";
-                            this._playPauseAreaMobile.style.right = "16vw";
-                            this._playPauseAreaMobile.style.bottom = "0";
-                            this._playPauseAreaMobile.style.left = "";
-                            this._playbackMobileDiv.style.flexDirection = "column";
-                            this._mobilePlayButton.style.width = "100%";
-                            this._mobilePauseButton.style.width = "100%";
-                            this._mobileNextBarButton.style.width = "100%";
-                            this._mobilePrevBarButton.style.width = "100%";
-                            this._mobilePlayButton.style.height = "33vh";
-                            this._mobilePauseButton.style.height = "33vh";
-                            this._mobileNextBarButton.style.height = "34vh";
-                            this._mobilePrevBarButton.style.height = "33vh";
-                            this._settingsArea.style.gridTemplateColumns = "33% 34% 33%";
-                            this._settingsArea.style.gridTemplateRows = "min-content min-content min-content min-content 1fr";
-                            this._mobilePatternButton.style.right = "0";
-                            this._mobilePatternButton.style.bottom = "";
-                            this._mobileTrackButton.style.right = "0";
-                            this._mobileTrackButton.style.bottom = "";
-                            this._mobileSettingsButton.style.right = "0";
-                            this._mobileSettingsButton.style.bottom = "";
-                            this._settingsArea.style.gridTemplateAreas = '"version-area version-area version-area" "play-pause-area menu-area instrument-settings-area" "play-pause-area menu-area instrument-settings-area" "song-settings-area song-settings-area instrument-settings-area" "song-settings-area song-settings-area instrument-settings-area"';
-                            this._settingsArea.style.width = "78vw";
-                            this._trackArea.style.width = "78vw";
-                            if (this._menuMode == 1) {
-                                this._patternArea.style.display = "";
-                                this._trackArea.style.display = "none";
-                                this._settingsArea.style.display = "none";
-                                this._mobilePatternButton.style.width = "100%";
-                                this._mobileTrackButton.style.width = "80%";
-                                this._mobileSettingsButton.style.width = "80%";
-                                this._mobilePatternButton.style.height = "33vh";
-                                this._mobileTrackButton.style.height = "34vh";
-                                this._mobileSettingsButton.style.height = "33vh";
-                                this._mobilePatternButton.style.left = "";
-                                this._mobileTrackButton.style.left = "";
-                                this._mobilePatternButton.style.top = "0";
-                                this._mobileTrackButton.style.top = "33vh";
-                                this._mobileSettingsButton.style.bottom = "0";
-                                this._mobileMenu.style.width = "15vw";
-                                this._mobileMenu.style.height = "100vh";
-                                this._mobileMenu.style.right = "0";
-                                this._playPauseAreaMobile.style.display = "flex";
+                            if (SongEditor.getMobileUi() != 'landscape') {
+                                SongEditor.setMobileUi("landscape");
                             }
-                            if (this._menuMode == 2) {
-                                this._patternArea.style.display = "none";
-                                this._trackArea.style.display = "";
-                                this._settingsArea.style.display = "none";
-                                this._mobilePatternButton.style.width = "80%";
-                                this._mobileTrackButton.style.width = "100%";
-                                this._mobileSettingsButton.style.width = "80%";
-                                this._mobilePatternButton.style.height = "33vh";
-                                this._mobileTrackButton.style.height = "34vh";
-                                this._mobileSettingsButton.style.height = "33vh";
-                                this._mobilePatternButton.style.top = "0";
-                                this._mobileTrackButton.style.top = "33vh";
-                                this._mobileSettingsButton.style.bottom = "0";
-                                this._mobileTrackButton.style.left = "";
-                                this._mobilePatternButton.style.left = "";
-                                this._mobileMenu.style.width = "15vw";
-                                this._mobileMenu.style.height = "100vh";
-                                this._mobileMenu.style.right = "0";
-                                this._playPauseAreaMobile.style.display = "none";
-                            }
-                            if (this._menuMode == 3) {
-                                this._patternArea.style.display = "none";
-                                this._trackArea.style.display = "none";
-                                this._settingsArea.style.display = "";
-                                this._mobilePatternButton.style.width = "80%";
-                                this._mobileTrackButton.style.width = "80%";
-                                this._mobileSettingsButton.style.width = "100%";
-                                this._mobilePatternButton.style.height = "33vh";
-                                this._mobileTrackButton.style.height = "34vh";
-                                this._mobileSettingsButton.style.height = "33vh";
-                                this._mobilePatternButton.style.top = "0";
-                                this._mobileTrackButton.style.top = "33vh";
-                                this._mobileSettingsButton.style.bottom = "0";
-                                this._mobileTrackButton.style.left = "";
-                                this._mobilePatternButton.style.left = "";
-                                this._mobileMenu.style.width = "15vw";
-                                this._mobileMenu.style.height = "100vh";
-                                this._mobileMenu.style.right = "0";
-                                this._playPauseAreaMobile.style.display = "none";
-                            }
+                            this._patternArea.style.display = this._menuMode == 1 ? "" : "none";
+                            this._trackArea.style.display = this._menuMode == 2 ? "" : "none";
+                            this._settingsArea.style.display = this._menuMode == 3 ? "" : "none";
+                            this._mobilePatternButton.style.width = this._menuMode == 1 ? "100%" : "80%";
+                            this._mobileTrackButton.style.width = this._menuMode == 2 ? "100%" : "80%";
+                            this._mobileSettingsButton.style.width = this._menuMode == 3 ? "100%" : "80%";
+                            this._playPauseAreaMobile.style.display = this._menuMode == 1 ? "flex" : "none";
                         }
                         else if (window.innerWidth < window.innerHeight) {
-                            this._playPauseAreaMobile.style.height = "";
-                            this._playPauseAreaMobile.style.width = "100vw";
-                            this._playPauseAreaMobile.style.bottom = "16vh";
-                            this._playPauseAreaMobile.style.left = "0";
-                            this._playbackMobileDiv.style.flexDirection = "row";
-                            this._mobilePlayButton.style.height = "";
-                            this._mobilePauseButton.style.height = "";
-                            this._mobileNextBarButton.style.height = "";
-                            this._mobilePrevBarButton.style.height = "";
-                            this._mobilePlayButton.style.width = "33vh";
-                            this._mobilePauseButton.style.width = "33vh";
-                            this._mobileNextBarButton.style.width = "34vh";
-                            this._mobilePrevBarButton.style.width = "33vh";
-                            beepboxEditorContainer$1.style.maxWidth = "710px";
-                            this._settingsArea.style.gridTemplateRows = "min-content min-content min-content min-content 1fr";
-                            this._settingsArea.style.gridTemplateAreas = '"version-area version-area" "play-pause-area instrument-settings-area" "play-pause-area instrument-settings-area" "menu-area instrument-settings-area" "song-settings-area instrument-settings-area"';
-                            this._mobileMenu.style.bottom = "0px";
-                            this._mobileMenu.style.width = "100vw";
-                            this._mobileMenu.style.height = "20vh";
-                            this._settingsArea.style.width = "98vw";
-                            this._patternArea.style.width = "91vw";
-                            this._trackArea.style.width = "98vw";
-                            this._mobileMenu.style.right = "";
-                            this._mobileMenu.style.left = "";
-                            this._mobileMenu.style.height = "100vh";
-                            this._mobileMenu.style.width = "15vw";
-                            beepboxEditorContainer$1.style.maxWidth = "100vw";
-                            this._settingsArea.style.gridTemplateColumns = "50% 50%";
-                            this._mobilePatternButton.style.bottom = "0";
-                            this._mobileTrackButton.style.bottom = "0";
-                            this._mobileSettingsButton.style.bottom = "0";
-                            if (this._menuMode == 1) {
-                                this._patternArea.style.width = "91vw";
-                                this._patternArea.style.display = "";
-                                this._trackArea.style.display = "none";
-                                this._settingsArea.style.display = "none";
-                                this._mobilePatternButton.style.height = "100%";
-                                this._mobileTrackButton.style.height = "80%";
-                                this._mobileSettingsButton.style.height = "80%";
-                                this._mobilePatternButton.style.width = "33vw";
-                                this._mobileTrackButton.style.width = "34vw";
-                                this._mobileSettingsButton.style.width = "33vw";
-                                this._mobilePatternButton.style.top = "";
-                                this._mobilePatternButton.style.left = "0";
-                                this._mobileTrackButton.style.left = "33vw";
-                                this._mobileSettingsButton.style.right = "0";
-                                this._mobilePatternButton.style.bottom = "0";
-                                this._mobileTrackButton.style.bottom = "0";
-                                this._mobileTrackButton.style.top = "";
-                                this._mobileTrackButton.style.right = "";
-                                this._mobileSettingsButton.style.bottom = "0";
-                                this._mobileMenu.style.height = "15vh";
-                                this._mobileMenu.style.width = "100vw";
-                                this._mobileMenu.style.right = "";
-                                this._playPauseAreaMobile.style.display = "flex";
+                            if (SongEditor.getMobileUi() != 'portrait') {
+                                SongEditor.setMobileUi("portrait");
                             }
-                            else if (this._menuMode == 2) {
-                                this._trackArea.style.width = "100vw";
-                                this._patternArea.style.display = "none";
-                                this._trackArea.style.display = "";
-                                this._settingsArea.style.display = "none";
-                                this._mobilePatternButton.style.height = "80%";
-                                this._mobileTrackButton.style.height = "100%";
-                                this._mobileSettingsButton.style.height = "80%";
-                                this._mobilePatternButton.style.width = "33vw";
-                                this._mobileTrackButton.style.width = "34vw";
-                                this._mobileSettingsButton.style.width = "33vw";
-                                this._mobilePatternButton.style.top = "";
-                                this._mobilePatternButton.style.left = "0";
-                                this._mobileTrackButton.style.left = "33vw";
-                                this._mobileSettingsButton.style.right = "0";
-                                this._mobilePatternButton.style.bottom = "0";
-                                this._mobileTrackButton.style.bottom = "0";
-                                this._mobileTrackButton.style.top = "";
-                                this._mobileTrackButton.style.right = "";
-                                this._mobileSettingsButton.style.bottom = "0";
-                                this._mobileMenu.style.height = "15vh";
-                                this._mobileMenu.style.width = "100vw";
-                                this._playPauseAreaMobile.style.display = "none";
-                            }
-                            else if (this._menuMode == 3) {
-                                this._settingsArea.style.width = "96vw";
-                                this._patternArea.style.display = "none";
-                                this._trackArea.style.display = "none";
-                                this._settingsArea.style.display = "";
-                                this._mobilePatternButton.style.height = "80%";
-                                this._mobileTrackButton.style.height = "80%";
-                                this._mobileSettingsButton.style.height = "100%";
-                                this._mobilePatternButton.style.width = "33vw";
-                                this._mobileTrackButton.style.width = "34vw";
-                                this._mobileSettingsButton.style.width = "33vw";
-                                this._mobilePatternButton.style.top = "";
-                                this._mobilePatternButton.style.left = "0";
-                                this._mobileTrackButton.style.left = "33vw";
-                                this._mobileSettingsButton.style.right = "0";
-                                this._mobilePatternButton.style.bottom = "0";
-                                this._mobileTrackButton.style.bottom = "0";
-                                this._mobileTrackButton.style.top = "";
-                                this._mobileTrackButton.style.right = "";
-                                this._mobileSettingsButton.style.bottom = "0";
-                                this._mobileMenu.style.height = "15vh";
-                                this._mobileMenu.style.width = "100vw";
-                                this._playPauseAreaMobile.style.display = "none";
-                            }
-                            this._patternArea.style.maxHeight = "75vh";
-                            this._patternArea.style.height = "70vh";
+                            this._patternArea.style.display = this._menuMode == 1 ? "" : "none";
+                            this._trackArea.style.display = this._menuMode == 2 ? "" : "none";
+                            this._settingsArea.style.display = this._menuMode == 3 ? "" : "none";
+                            this._mobilePatternButton.style.height = this._menuMode == 1 ? "100%" : "80%";
+                            this._mobileTrackButton.style.height = this._menuMode == 2 ? "100%" : "80%";
+                            this._mobileSettingsButton.style.height = this._menuMode == 3 ? "100%" : "80%";
+                            this._playPauseAreaMobile.style.display = this._menuMode == 1 ? "flex" : "none";
                         }
                         this.mainLayer.style.minHeight = "80vh";
                         beepboxEditorContainer$1.style.maxHeight = "80vh";
                         this._mobilePatternButton.style.display = "";
                         this._mobileTrackButton.style.display = "";
                         this._mobileSettingsButton.style.display = "";
-                        this._mobileMenu.style.display = "";
+                        this.mobileMenu.style.display = "";
                         this._instOptionsDiv.style.display = "";
                         beepboxEditorContainer$1.appendChild(this._playPauseAreaMobile);
                         const playPauseArea = document.getElementById('play-pause-area');
@@ -64680,10 +63718,10 @@ You should be redirected to the song at:<br /><br />
                         playPauseArea.style.display = "flex";
                         playPauseArea.style.flexDirection = "column";
                     }
-                    document.body.appendChild(this._mobileMenu);
-                    this._mobileMenu.appendChild(this._mobilePatternButton);
-                    this._mobileMenu.appendChild(this._mobileTrackButton);
-                    this._mobileMenu.appendChild(this._mobileSettingsButton);
+                    document.body.appendChild(this.mobileMenu);
+                    this.mobileMenu.appendChild(this._mobilePatternButton);
+                    this.mobileMenu.appendChild(this._mobileTrackButton);
+                    this.mobileMenu.appendChild(this._mobileSettingsButton);
                     this._mobilePatternButton.appendChild(this._mobileEditMenuIcon);
                     this._mobileTrackButton.appendChild(this._mobileTrackMenuIcon);
                     this._mobileSettingsButton.appendChild(this._mobileSettingsMenuIcon);
@@ -65292,6 +64330,16 @@ You should be redirected to the song at:<br /><br />
                         this._upperNoteLimitRow.style.display = "none";
                         this._lowerNoteLimitRow.style.display = "none";
                     }
+                    if (effectsIncludeGranular(instrument.effects)) {
+                        this._granularContainerRow.style.display = "";
+                        this._granularSlider.updateValue(instrument.granular);
+                        this._grainSizeSlider.updateValue(instrument.grainSize);
+                        this._grainAmountsSlider.updateValue(instrument.grainAmounts);
+                        this._grainRangeSlider.updateValue(instrument.grainRange);
+                    }
+                    else {
+                        this._granularContainerRow.style.display = "none";
+                    }
                     if (instrument.type == 0 || instrument.type == 9 || instrument.type == 5 || instrument.type == 7 || instrument.type == 3 || instrument.type == 6 || instrument.type == 2) {
                         this._unisonSelectRow.style.display = "";
                         setSelectedValue(this._unisonSelect, instrument.unison);
@@ -65312,8 +64360,7 @@ You should be redirected to the song at:<br /><br />
                         this._envelopeDropdownGroup.style.display = "";
                     else
                         this._envelopeDropdownGroup.style.display = "none";
-                    this.envelopeEditor.render();
-                    this.envelopeEditor.rerenderExtraSettings();
+                    this._envelopeEditor.render();
                     for (let chordIndex = 0; chordIndex < Config.chords.length; chordIndex++) {
                         let hidden = (!Config.instrumentTypeHasSpecialInterval[instrument.type] && Config.chords[chordIndex].customInterval);
                         const option = this._chordSelect.children[chordIndex];
@@ -65515,8 +64562,8 @@ You should be redirected to the song at:<br /><br />
                                 settingList.push("note volume");
                                 settingList.push("mix volume");
                                 let tgtInstrumentTypes = [];
-                                let anyInstrumentAdvancedEQ = false, anyInstrumentSimpleEQ = false, anyInstrumentAdvancedNote = false, anyInstrumentSimpleNote = false, anyInstrumentArps = false, anyInstrumentPitchShifts = false, anyInstrumentDetunes = false, anyInstrumentVibratos = false, anyInstrumentNoteFilters = false, anyInstrumentDistorts = false, anyInstrumentBitcrushes = false, anyInstrumentPans = false, anyInstrumentChorus = false, anyInstrumentEchoes = false, anyInstrumentReverbs = false, anyInstrumentRMs = false, anyInstrumentPhasers = false, anyInstrumentHasEnvelopes = false;
-                                let allInstrumentNoteFilters = true, allInstrumentDetunes = true, allInstrumentVibratos = true, allInstrumentDistorts = true, allInstrumentBitcrushes = true, allInstrumentPans = true, allInstrumentChorus = true, allInstrumentEchoes = true, allInstrumentReverbs = true;
+                                let anyInstrumentAdvancedEQ = false, anyInstrumentSimpleEQ = false, anyInstrumentAdvancedNote = false, anyInstrumentSimpleNote = false, anyInstrumentArps = false, anyInstrumentPitchShifts = false, anyInstrumentDetunes = false, anyInstrumentVibratos = false, anyInstrumentNoteFilters = false, anyInstrumentDistorts = false, anyInstrumentBitcrushes = false, anyInstrumentPans = false, anyInstrumentChorus = false, anyInstrumentEchoes = false, anyInstrumentReverbs = false, anyInstrumentRMs = false, anyInstrumentPhasers = false, anyInstrumentGranulars = false, anyInstrumentHasEnvelopes = false;
+                                let allInstrumentNoteFilters = true, allInstrumentDetunes = true, allInstrumentVibratos = true, allInstrumentDistorts = true, allInstrumentBitcrushes = true, allInstrumentPans = true, allInstrumentChorus = true, allInstrumentEchoes = true, allInstrumentReverbs = true, anyInstrumentInvertWave = true, allInstrumentGranulars = true;
                                 let instrumentCandidates = [];
                                 if (modInstrument >= channel.instruments.length) {
                                     for (let i = 0; i < channel.instruments.length; i++) {
@@ -65609,6 +64656,18 @@ You should be redirected to the song at:<br /><br />
                                     }
                                     else {
                                         anyInstrumentPhasers = false;
+                                    }
+                                    if (effectsIncludeInvertWave(channel.instruments[instrumentIndex].effects)) {
+                                        anyInstrumentInvertWave = true;
+                                    }
+                                    else {
+                                        anyInstrumentInvertWave = false;
+                                    }
+                                    if (effectsIncludeGranular(channel.instruments[instrumentIndex].effects)) {
+                                        anyInstrumentGranulars = true;
+                                    }
+                                    else {
+                                        allInstrumentGranulars = false;
                                     }
                                     if (channel.instruments[instrumentIndex].envelopes.length > 0) {
                                         anyInstrumentHasEnvelopes = true;
@@ -65726,7 +64785,6 @@ You should be redirected to the song at:<br /><br />
                                 }
                                 if (anyInstrumentHasEnvelopes) {
                                     settingList.push("envelope speed");
-                                    settingList.push("individual envelope speed");
                                 }
                                 if (anyInstrumentRMs) {
                                     settingList.push("ring modulation");
@@ -65737,6 +64795,21 @@ You should be redirected to the song at:<br /><br />
                                     settingList.push("phaser frequency");
                                     settingList.push("phaser feedback");
                                     settingList.push("phaser stages");
+                                }
+                                if (anyInstrumentInvertWave) {
+                                    settingList.push("invert wave");
+                                }
+                                if (anyInstrumentGranulars) {
+                                    settingList.push("granular");
+                                    settingList.push("grain freq");
+                                    settingList.push("grain size");
+                                    settingList.push("grain range");
+                                }
+                                if (!allInstrumentGranulars) {
+                                    unusedSettingList.push("+ granular");
+                                    unusedSettingList.push("+ grain freq");
+                                    unusedSettingList.push("+ grain size");
+                                    unusedSettingList.push("+ grain range");
                                 }
                             }
                             buildOptions(this._modSetBoxes[mod], settingList);
@@ -66236,6 +65309,15 @@ You should be redirected to the song at:<br /><br />
                         else if ((event.ctrlKey || event.metaKey) && !event.shiftKey) {
                             this._doc.selection.insertChannel();
                         }
+                        else if (event.altKey) {
+                            const channelIndex = this._doc.channel;
+                            if (this._doc.song.channels[channelIndex].instruments.length < this._doc.song.getMaxInstrumentsPerChannel()) {
+                                if (!this._doc.song.layeredInstruments && !this._doc.song.patternInstruments) {
+                                    this._doc.record(new ChangeInstrumentsFlags(this._doc, true, this._doc.song.patternInstruments));
+                                }
+                                this._doc.record(new ChangeAddChannelInstrument(this._doc));
+                            }
+                        }
                         else {
                             this._doc.selection.insertBars();
                         }
@@ -66247,6 +65329,15 @@ You should be redirected to the song at:<br /><br />
                         this._loopEditor.setLoopAt(this._doc.synth.loopBarStart, this._doc.synth.loopBarEnd);
                         if (event.ctrlKey || event.metaKey) {
                             this._doc.selection.deleteChannel();
+                        }
+                        else if (event.altKey) {
+                            const channelIndex = this._doc.channel;
+                            if (this._doc.song.channels[channelIndex].instruments.length > 1) {
+                                if (!this._doc.song.layeredInstruments && !this._doc.song.patternInstruments) {
+                                    this._doc.record(new ChangeInstrumentsFlags(this._doc, true, this._doc.song.patternInstruments));
+                                }
+                                this._doc.record(new ChangeRemoveChannelInstrument(this._doc));
+                            }
                         }
                         else {
                             this._doc.selection.deleteBars();
@@ -66285,18 +65376,6 @@ You should be redirected to the song at:<br /><br />
                             const instrument = this._doc.song.channels[this._doc.channel].instruments[this._doc.getCurrentInstrument()];
                             if (!instrument.eqFilterType && this._doc.channel < this._doc.song.pitchChannelCount + this._doc.song.noiseChannelCount)
                                 this._openPrompt("customEQFilterSettings");
-                        }
-                        else if (event.altKey) {
-                            const instrument = this._doc.song.channels[this._doc.channel].instruments[this._doc.getCurrentInstrument()];
-                            const isAllOpen = this.envelopeEditor.openExtraSettingsDropdowns.every((x) => { return x == true; });
-                            for (let i = 0; i < instrument.envelopeCount; i++) {
-                                if (isAllOpen)
-                                    this.envelopeEditor.openExtraSettingsDropdowns[i] = false;
-                                else
-                                    this.envelopeEditor.openExtraSettingsDropdowns[i] = true;
-                            }
-                            this.envelopeEditor.rerenderExtraSettings();
-                            event.preventDefault();
                         }
                         else if (needControlForShortcuts == (event.ctrlKey || event.metaKey)) {
                             this._openPrompt("generateEuclideanRhythm");
@@ -66501,7 +65580,12 @@ You should be redirected to the song at:<br /><br />
                         if (canPlayNotes)
                             break;
                         if (event.ctrlKey || event.metaKey) {
-                            this._openPrompt("export");
+                            if (!event.shiftKey) {
+                                this._openPrompt("export");
+                            }
+                            else {
+                                this._openPrompt("quickExport");
+                            }
                             event.preventDefault();
                         }
                         else {
@@ -66645,7 +65729,6 @@ You should be redirected to the song at:<br /><br />
                         }
                         else {
                             this._doc.selection.setChannelBar((this._doc.channel - 1 + this._doc.song.getChannelCount()) % this._doc.song.getChannelCount(), this._doc.bar);
-                            this.envelopeEditor.rerenderExtraSettings();
                             this._doc.selection.resetBoxSelection();
                         }
                         event.preventDefault();
@@ -66661,7 +65744,6 @@ You should be redirected to the song at:<br /><br />
                         }
                         else {
                             this._doc.selection.setChannelBar((this._doc.channel + 1) % this._doc.song.getChannelCount(), this._doc.bar);
-                            this.envelopeEditor.rerenderExtraSettings();
                             this._doc.selection.resetBoxSelection();
                         }
                         event.preventDefault();
@@ -66824,148 +65906,15 @@ You should be redirected to the song at:<br /><br />
             };
             this._displayPatternEditor = () => {
                 this._menuMode = 1;
-                if (this._menuMode == 1) {
-                    this._patternArea.style.display = "";
-                    this._trackArea.style.display = "none";
-                    this._settingsArea.style.display = "none";
-                    this.whenUpdated();
-                    if (window.innerWidth < window.innerHeight) {
-                        this._mobilePatternButton.style.height = "100%";
-                        this._mobileTrackButton.style.height = "80%";
-                        this._mobileSettingsButton.style.height = "80%";
-                        this._mobilePatternButton.style.width = "33vw";
-                        this._mobileTrackButton.style.width = "34vw";
-                        this._mobileSettingsButton.style.width = "33vw";
-                        this._mobilePatternButton.style.top = "";
-                        this._mobilePatternButton.style.left = "0";
-                        this._mobileTrackButton.style.left = "33vw";
-                        this._mobileSettingsButton.style.right = "0";
-                        this._mobilePatternButton.style.bottom = "0";
-                        this._mobileTrackButton.style.bottom = "0";
-                        this._mobileTrackButton.style.top = "";
-                        this._mobileTrackButton.style.right = "33vw";
-                        this._mobileSettingsButton.style.bottom = "0";
-                        this._mobileMenu.style.height = "15vh";
-                        this._mobileMenu.style.width = "100vw";
-                        this._mobileMenu.style.right = "";
-                        this._patternArea.style.width = "98vw";
-                        this._playPauseAreaMobile.style.display = "flex";
-                    }
-                    else if (window.innerWidth > window.innerHeight) {
-                        this._mobilePatternButton.style.width = "100%";
-                        this._mobileTrackButton.style.width = "80%";
-                        this._mobileSettingsButton.style.width = "80%";
-                        this._mobilePatternButton.style.height = "33vh";
-                        this._mobileTrackButton.style.height = "34vh";
-                        this._mobileSettingsButton.style.height = "33vh";
-                        this._mobilePatternButton.style.left = "";
-                        this._mobileTrackButton.style.left = "";
-                        this._mobilePatternButton.style.top = "0";
-                        this._mobileTrackButton.style.top = "33vh";
-                        this._mobileSettingsButton.style.bottom = "0";
-                        this._mobileMenu.style.width = "15vw";
-                        this._mobileMenu.style.height = "100vh";
-                        this._mobileMenu.style.right = "0";
-                        this._playPauseAreaMobile.style.display = "flex";
-                    }
-                }
+                this.whenUpdated();
             };
             this._displayTrackEditor = () => {
                 this._menuMode = 2;
-                if (this._menuMode == 2) {
-                    this._patternArea.style.display = "none";
-                    this._trackArea.style.display = "";
-                    this._settingsArea.style.display = "none";
-                    this.whenUpdated();
-                    if (window.innerWidth < window.innerHeight) {
-                        this._mobilePatternButton.style.height = "80%";
-                        this._mobileTrackButton.style.height = "100%";
-                        this._mobileSettingsButton.style.height = "80%";
-                        this._mobilePatternButton.style.width = "33vw";
-                        this._mobileTrackButton.style.width = "34vw";
-                        this._mobileSettingsButton.style.width = "33vw";
-                        this._mobilePatternButton.style.top = "";
-                        this._mobilePatternButton.style.left = "0";
-                        this._mobileTrackButton.style.left = "33vw";
-                        this._mobileSettingsButton.style.right = "0";
-                        this._mobilePatternButton.style.bottom = "0";
-                        this._mobileTrackButton.style.left = "";
-                        this._mobileTrackButton.style.top = "";
-                        this._mobileTrackButton.style.right = "33vw";
-                        this._mobileTrackButton.style.bottom = "0";
-                        this._mobileSettingsButton.style.bottom = "0";
-                        this._patternArea.style.width = "98vw";
-                        this._mobileMenu.style.height = "15vh";
-                        this._mobileMenu.style.width = "100vw";
-                        this._playPauseAreaMobile.style.display = "none";
-                    }
-                    else if (window.innerWidth > window.innerHeight) {
-                        this._mobilePatternButton.style.width = "80%";
-                        this._mobileTrackButton.style.width = "100%";
-                        this._mobileSettingsButton.style.width = "80%";
-                        this._mobilePatternButton.style.height = "33vh";
-                        this._mobileTrackButton.style.height = "34vh";
-                        this._mobileSettingsButton.style.height = "33vh";
-                        this._mobilePatternButton.style.top = "0";
-                        this._mobileTrackButton.style.top = "33vh";
-                        this._mobileSettingsButton.style.bottom = "0";
-                        this._mobileTrackButton.style.left = "";
-                        this._mobilePatternButton.style.left = "";
-                        this._mobileMenu.style.width = "15vw";
-                        this._mobileMenu.style.height = "100vh";
-                        this._mobileMenu.style.right = "0";
-                        this._playPauseAreaMobile.style.display = "none";
-                    }
-                }
+                this.whenUpdated();
             };
             this._displaySettingsEditor = () => {
                 this._menuMode = 3;
-                if (this._menuMode == 3) {
-                    this._patternArea.style.display = "none";
-                    this._trackArea.style.display = "none";
-                    this._settingsArea.style.display = "";
-                    this.whenUpdated();
-                    this._instrumentDiv.style.display = (this._instSettingMode == 1) ? "" : "none";
-                    this._effectDiv.style.display = (this._instSettingMode == 2) ? "" : "none";
-                    this._envelopeDiv.style.display = (this._instSettingMode == 3) ? "" : "none";
-                    if (window.innerWidth < window.innerHeight) {
-                        this._mobilePatternButton.style.height = "80%";
-                        this._mobileTrackButton.style.height = "80%";
-                        this._mobileSettingsButton.style.height = "100%";
-                        this._mobilePatternButton.style.width = "33vw";
-                        this._mobileTrackButton.style.width = "34vw";
-                        this._mobileSettingsButton.style.width = "33vw";
-                        this._mobilePatternButton.style.top = "";
-                        this._mobilePatternButton.style.left = "0";
-                        this._mobileSettingsButton.style.right = "0";
-                        this._mobilePatternButton.style.bottom = "0";
-                        this._mobileTrackButton.style.top = "";
-                        this._mobileTrackButton.style.right = "33vw";
-                        this._mobileTrackButton.style.bottom = "0";
-                        this._mobileSettingsButton.style.bottom = "0";
-                        this._patternArea.style.width = "98vw";
-                        this._mobileMenu.style.height = "15vh";
-                        this._mobileMenu.style.width = "100vw";
-                        this._playPauseAreaMobile.style.display = "none";
-                    }
-                    else if (window.innerWidth > window.innerHeight) {
-                        this._mobilePatternButton.style.width = "80%";
-                        this._mobileTrackButton.style.width = "80%";
-                        this._mobileSettingsButton.style.width = "100%";
-                        this._mobilePatternButton.style.height = "33vh";
-                        this._mobileTrackButton.style.height = "34vh";
-                        this._mobileSettingsButton.style.height = "33vh";
-                        this._mobilePatternButton.style.top = "0";
-                        this._mobileTrackButton.style.top = "33vh";
-                        this._mobileSettingsButton.style.bottom = "0";
-                        this._mobileTrackButton.style.left = "";
-                        this._mobilePatternButton.style.left = "";
-                        this._mobileMenu.style.width = "15vw";
-                        this._mobileMenu.style.height = "100vh";
-                        this._mobileMenu.style.right = "0";
-                        this._playPauseAreaMobile.style.display = "none";
-                    }
-                }
+                this.whenUpdated();
             };
             this._animate = () => {
                 this._modSliderUpdate();
@@ -67374,8 +66323,8 @@ You should be redirected to the song at:<br /><br />
                     case "songRecovery":
                         this._openPrompt("songRecovery");
                         break;
-                    case "openTutorial":
-                        this._openPrompt("tutorial");
+                    case "openManual":
+                        window.open("./manual.html");
                         break;
                 }
                 this._fileMenu.selectedIndex = 0;
@@ -67775,6 +66724,7 @@ You should be redirected to the song at:<br /><br />
             this._fullscreenButton.addEventListener("click", this._goFullscreen);
             this._patternArea.addEventListener("mousedown", this._refocusStageNotEditing);
             this._trackArea.addEventListener("mousedown", this.refocusStage);
+            this._patternArea.addEventListener('dragover', this._dropHandler);
             this._volumeSlider.container.style.setProperty("flex-grow", "1");
             this._volumeSlider.container.style.setProperty("display", "flex");
             this._volumeBarContainer.style.setProperty("flex-grow", "1");
@@ -67948,19 +66898,11 @@ You should be redirected to the song at:<br /><br />
                     this._openUnisonDropdown = this._openUnisonDropdown ? false : true;
                     group = this._unisonDropdownGroup;
                     break;
-                case 8:
-                    target = this.envelopeEditor.extraSettingsDropdowns[submenu];
-                    this.envelopeEditor.openExtraSettingsDropdowns[submenu] = this.envelopeEditor.openExtraSettingsDropdowns[submenu] ? false : true;
-                    group = this.envelopeEditor.extraSettingsDropdownGroups[submenu];
-                    break;
             }
             if (target.textContent == "▼") {
                 let instrument = this._doc.song.channels[this._doc.channel].instruments[this._doc.getCurrentInstrument()];
                 target.textContent = "▲";
-                if (dropdown == 8) {
-                    this.envelopeEditor.rerenderExtraSettings();
-                }
-                else if (group != this._chordDropdownGroup) {
+                if (group != this._chordDropdownGroup) {
                     group.style.display = "";
                 }
                 else if ((instrument.chord == Config.chords.dictionary["arpeggio"].index) || (instrument.chord == Config.chords.dictionary["strum"].index)) {
@@ -68142,6 +67084,8 @@ You should be redirected to the song at:<br /><br />
                     return this._phaserFeedbackSlider;
                 case Config.modulators.dictionary["phaser stages"].index:
                     return this._phaserStagesSlider;
+                case Config.modulators.dictionary["granular"].index:
+                    return this._granularSlider;
                 default:
                     return null;
             }
@@ -68169,6 +67113,9 @@ You should be redirected to the song at:<br /><br />
             if (promptName) {
                 switch (promptName) {
                     case "export":
+                        this.prompt = new ImportPrompt(this._doc);
+                        break;
+                    case "quickExport":
                         this.prompt = new ImportPrompt(this._doc);
                         break;
                     case "import":
@@ -68295,6 +67242,15 @@ You should be redirected to the song at:<br /><br />
         }
         changeBarScrollPos(offset) {
             this._barScrollBar.changePos(offset);
+        }
+        static setMobileUi(name) {
+            let mobileUI = this.mobileUI[name];
+            if (mobileUI == undefined)
+                mobileUI = this.mobileUI["horizontal"];
+            this._mobileUIStyleElement.textContent = mobileUI;
+        }
+        static getMobileUi() {
+            return this._mobileUIStyleElement.textContent;
         }
         handleModRecording() {
             window.clearTimeout(this._modRecTimeout);
@@ -68574,6 +67530,122 @@ You should be redirected to the song at:<br /><br />
           }
         `,
     };
+    SongEditor.mobileUI = {
+        "landscape": `
+            .mobileMenu {
+                right: 0 !important;
+                left: unset !important;
+                height: 100vh !important;
+                width: 15vw !important;
+
+                display: flex;
+                flex-direction: column;
+            }
+
+            .pattern-area {
+                width: 74vw !important;
+                height: 100vh !important;
+                max-height: 100vh !important;
+            }
+
+            #beepboxEditorContainer {
+                max-width: 100vw !important;
+            }
+
+            .play-pause-area2 {
+                height: 100vh !important;
+                width: 4vw !important;
+                bottom: 0 !important;
+                right: 16vw !important;
+                left: unset !important;
+            }
+
+            .playback-bar-controls2 {
+                flex-direction: column !important;
+            }
+            
+            .mobilePlayButton, .mobilePauseButton, .mobilePrevBarButton, .mobileNextBarButton {
+                width: 100% !important;
+                flex: 1;
+            }
+
+            .settings-area {
+                grid-template-columns: 33% 34% 33% !important;
+                grid-template-rows: min-content min-content min-content min-content 1fr !important;
+                grid-template-areas: "version-area version-area version-area" "play-pause-area menu-area instrument-settings-area" "play-pause-area menu-area instrument-settings-area" "song-settings-area song-settings-area instrument-settings-area" "song-settings-area song-settings-area instrument-settings-area" !important;
+                width: 78vw !important;
+            }
+
+            .track-area {
+                width: 78vw !important;
+            }
+
+            .mobilePatternButton, .mobileTrackButton, .mobileSettingsButton {
+                align-self: end;
+                flex: 1;
+            }
+
+        `,
+        "portrait": `
+
+            .play-pause-area2 {
+                height: unset !important;
+                width: 100% !important
+                bottom: 16vh !important;
+                right: unset !important;
+                left: 0 !important;
+            }
+
+            .mobileMenu {
+                right: unset !important;
+                left: unset !important;
+                height: 15vh !important;
+                width: 100vw !important;
+                bottom: 0 !important;
+
+                display: flex;
+                flex-direction: row;
+            }
+
+            .pattern-area {
+                width: 91vw !important;
+                height: 70vh !important;
+                max-height: 75vh;
+            }
+
+            #beepboxEditorContainer {
+                max-width: 710px !important;
+            }
+
+            .playback-bar-controls2 {
+                flex-direction: row !important;
+                height: 3vh;
+            }
+            
+            .mobilePlayButton, .mobilePauseButton, .mobilePrevBarButton, .mobileNextBarButton {
+                height: 100% !important;
+                flex: 1;
+            }
+
+            .settings-area {
+                grid-template-columns: 50% 50% !important;
+                grid-template-rows: min-content min-content min-content min-content 1fr !important;
+                grid-template-areas: "version-area version-area" "play-pause-area instrument-settings-area" "play-pause-area instrument-settings-area" "menu-area instrument-settings-area" "song-settings-area instrument-settings-area" !important;
+                width: 96vw !important;
+            }
+
+            .track-area {
+                width: 98vw !important;
+            }
+
+            .mobilePatternButton, .mobileTrackButton, .mobileSettingsButton {
+                align-self: end;
+                flex: 1;
+            }
+
+        `
+    };
+    SongEditor._mobileUIStyleElement = document.head.appendChild(HTML.style({ type: "text/css" }));
 
     class SongPerformance {
         constructor(_doc) {
@@ -69118,20 +68190,29 @@ You should be redirected to the song at:<br /><br />
         }
         nextDigit(digit, forInstrument, forRhythms) {
             if (forRhythms) {
-                if (digit == "3") {
+                if (digit == "1") {
                     this._doc.record(new ChangeRhythm(this._doc, 0));
                 }
-                else if (digit == "4") {
+                if (digit == "2") {
                     this._doc.record(new ChangeRhythm(this._doc, 1));
                 }
-                else if (digit == "6") {
+                if (digit == "3") {
                     this._doc.record(new ChangeRhythm(this._doc, 2));
                 }
-                else if (digit == "8") {
+                else if (digit == "4") {
                     this._doc.record(new ChangeRhythm(this._doc, 3));
                 }
-                else if (digit == "0" || digit == "1") {
+                else if (digit == "6") {
                     this._doc.record(new ChangeRhythm(this._doc, 4));
+                }
+                else if (digit == "8") {
+                    this._doc.record(new ChangeRhythm(this._doc, 5));
+                }
+                else if (digit == "9") {
+                    this._doc.record(new ChangeRhythm(this._doc, 6));
+                }
+                else if (digit == "0") {
+                    this._doc.record(new ChangeRhythm(this._doc, 7));
                 }
             }
             else if (forInstrument) {
