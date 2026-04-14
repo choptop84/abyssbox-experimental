@@ -28139,11 +28139,11 @@ var beepbox = (function (exports) {
                                 }
                                 else {
                                     bits.write(1, 1);
-                                    bits.write(4, pitchIndex);
+                                    bits.write(7, pitchIndex);
                                     recentPitches.splice(pitchIndex, 1);
                                 }
                                 recentPitches.unshift(pitch);
-                                if (recentPitches.length > 16)
+                                if (recentPitches.length > 97)
                                     recentPitches.pop();
                                 if (i == note.pitches.length - 1) {
                                     lastPitch = note.pitches[0];
@@ -29896,9 +29896,11 @@ var beepbox = (function (exports) {
                         {
                             let bitStringLength = 0;
                             let channelIndex;
-                            let preJB4Chords = !((beforeFour && fromJummBox) || fromBeepBox);
-                            let recentPitchBitLength = (preJB4Chords ? 4 : 3);
-                            let recentPitchLength = (preJB4Chords ? 16 : 8);
+                            let postJB4Chords = !((beforeFour && fromJummBox) || fromBeepBox);
+                            let postAB4Chords = !beforeFour && fromAbyssBox;
+                            let recentPitchBitLength = postAB4Chords ? 7 : (postJB4Chords ? 4 : 3);
+                            let recentPitchLength = postAB4Chords ? 97 : (postJB4Chords ? 16 : 8);
+                            console.log(postAB4Chords);
                             if (beforeThree && fromBeepBox) {
                                 channelIndex = base64CharCodeToInt[compressed.charCodeAt(charIndex++)];
                                 charIndex++;
@@ -30069,7 +30071,7 @@ var beepbox = (function (exports) {
                                             }
                                             else {
                                                 shape = {};
-                                                if (!preJB4Chords) {
+                                                if (!postJB4Chords) {
                                                     shape.pitchCount = 1;
                                                     while (shape.pitchCount < 4 && bits.read(1) == 1)
                                                         shape.pitchCount++;
