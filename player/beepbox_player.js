@@ -727,7 +727,7 @@ var beepbox = (function (exports) {
         { name: "arpeggio", customInterval: false, arpeggiates: true, strumParts: 0, singleTone: true },
         { name: "custom interval", customInterval: true, arpeggiates: false, strumParts: 0, singleTone: true },
     ]);
-    Config.maxChordSize = 9;
+    Config.maxChordSize = 97;
     Config.operatorCount = 4;
     Config.maxPitchOrOperatorCount = Math.max(Config.maxChordSize, Config.operatorCount + 2);
     Config.algorithms = toNameMap([
@@ -25022,6 +25022,17 @@ var beepbox = (function (exports) {
             }
             return result;
         }
+        readSilent(bitCount) {
+            let result = 0;
+            let startingBitCount = bitCount;
+            while (bitCount > 0) {
+                result = result << 1;
+                result += this._bits[this._readIndex++];
+                bitCount--;
+            }
+            this._readIndex -= startingBitCount;
+            return result;
+        }
         readLongTail(minValue, minBits) {
             let result = minValue;
             let numBits = minBits;
@@ -28055,7 +28066,7 @@ var beepbox = (function (exports) {
                             }
                             else {
                                 shapeBits.write(1, 1);
-                                shapeBits.write(3, note.pitches.length - 2);
+                                shapeBits.write(7, note.pitches.length - 2);
                             }
                             shapeBits.writePinCount(note.pins.length - 1);
                             if (!isModChannel) {
@@ -29885,9 +29896,9 @@ var beepbox = (function (exports) {
                         {
                             let bitStringLength = 0;
                             let channelIndex;
-                            let largerChords = !((beforeFour && fromJummBox) || fromBeepBox);
-                            let recentPitchBitLength = (largerChords ? 4 : 3);
-                            let recentPitchLength = (largerChords ? 16 : 8);
+                            let preJB4Chords = !((beforeFour && fromJummBox) || fromBeepBox);
+                            let recentPitchBitLength = (preJB4Chords ? 4 : 3);
+                            let recentPitchLength = (preJB4Chords ? 16 : 8);
                             if (beforeThree && fromBeepBox) {
                                 channelIndex = base64CharCodeToInt[compressed.charCodeAt(charIndex++)];
                                 charIndex++;
@@ -30058,14 +30069,19 @@ var beepbox = (function (exports) {
                                             }
                                             else {
                                                 shape = {};
-                                                if (!largerChords) {
+                                                if (!preJB4Chords) {
                                                     shape.pitchCount = 1;
                                                     while (shape.pitchCount < 4 && bits.read(1) == 1)
                                                         shape.pitchCount++;
                                                 }
                                                 else {
                                                     if (bits.read(1) == 1) {
-                                                        shape.pitchCount = bits.read(3) + 2;
+                                                        if (!fromAbyssBox || (fromAbyssBox && beforeFour)) {
+                                                            shape.pitchCount = bits.read(3) + 2;
+                                                        }
+                                                        else {
+                                                            shape.pitchCount = bits.read(7) + 2;
+                                                        }
                                                     }
                                                     else {
                                                         shape.pitchCount = 1;
@@ -30304,7 +30320,6 @@ var beepbox = (function (exports) {
             const chipWaveIndex = Config.chipWaves.length;
             let urlSliced = url;
             let customSampleRate = 44100;
-            let sampleName = "";
             let isCustomPercussive = false;
             let customRootKey = 60;
             let presetIsUsingAdvancedLoopControls = false;
@@ -30325,9 +30340,6 @@ var beepbox = (function (exports) {
                         const optionData = rawOption.slice(1, rawOption.length);
                         if (optionCode === "s") {
                             customSampleRate = clamp(8000, 96000 + 1, parseFloatWithDefault(optionData, 44100));
-                        }
-                        else if (optionCode === "n") {
-                            sampleName = optionData;
                         }
                         else if (optionCode === "r") {
                             customRootKey = parseFloatWithDefault(optionData, 60);
@@ -30439,8 +30451,6 @@ var beepbox = (function (exports) {
                 const namedOptions = [];
                 if (customSampleRate !== 44100)
                     namedOptions.push("s" + customSampleRate);
-                if ((sampleName != "") && (sampleName != null))
-                    namedOptions.push("n" + sampleName);
                 if (customRootKey !== 60)
                     namedOptions.push("r" + customRootKey);
                 if (isCustomPercussive)
@@ -30462,16 +30472,11 @@ var beepbox = (function (exports) {
                 }
                 customSampleUrls[customSampleUrlIndex] = urlWithNamedOptions;
                 let name;
-                if (sampleName != "") {
-                    name = decodeURIComponent(sampleName);
+                if (OFFLINE) {
+                    name = decodeURIComponent(parsedUrl.replace(/^([^\/]*\/)+/, ""));
                 }
                 else {
-                    if (OFFLINE) {
-                        name = decodeURIComponent(parsedUrl.replace(/^([^\/]*\/)+/, ""));
-                    }
-                    else {
-                        name = decodeURIComponent(parsedUrl.pathname.replace(/^([^\/]*\/)+/, ""));
-                    }
+                    name = decodeURIComponent(parsedUrl.pathname.replace(/^([^\/]*\/)+/, ""));
                 }
                 const expression = 1.0;
                 Config.chipWaves[chipWaveIndex] = {
@@ -31221,7 +31226,7 @@ var beepbox = (function (exports) {
     Song._oldestUltraBoxVersion = 1;
     Song._latestUltraBoxVersion = 6;
     Song._oldestAbyssBoxVersion = 1;
-    Song._latestAbyssBoxVersion = 3;
+    Song._latestAbyssBoxVersion = 4;
     Song._variant = 0x61;
     class PickedString {
         constructor() {

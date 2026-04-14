@@ -741,7 +741,7 @@ var beepbox = (function (exports) {
         { name: "arpeggio", customInterval: false, arpeggiates: true, strumParts: 0, singleTone: true },
         { name: "custom interval", customInterval: true, arpeggiates: false, strumParts: 0, singleTone: true },
     ]);
-    Config.maxChordSize = 9;
+    Config.maxChordSize = 97;
     Config.operatorCount = 4;
     Config.maxPitchOrOperatorCount = Math.max(Config.maxChordSize, Config.operatorCount + 2);
     Config.algorithms = toNameMap([
@@ -27426,6 +27426,17 @@ li.select2-results__option[role=group] > strong:hover {
             }
             return result;
         }
+        readSilent(bitCount) {
+            let result = 0;
+            let startingBitCount = bitCount;
+            while (bitCount > 0) {
+                result = result << 1;
+                result += this._bits[this._readIndex++];
+                bitCount--;
+            }
+            this._readIndex -= startingBitCount;
+            return result;
+        }
         readLongTail(minValue, minBits) {
             let result = minValue;
             let numBits = minBits;
@@ -30459,7 +30470,7 @@ li.select2-results__option[role=group] > strong:hover {
                             }
                             else {
                                 shapeBits.write(1, 1);
-                                shapeBits.write(3, note.pitches.length - 2);
+                                shapeBits.write(7, note.pitches.length - 2);
                             }
                             shapeBits.writePinCount(note.pins.length - 1);
                             if (!isModChannel) {
@@ -32289,9 +32300,9 @@ li.select2-results__option[role=group] > strong:hover {
                         {
                             let bitStringLength = 0;
                             let channelIndex;
-                            let largerChords = !((beforeFour && fromJummBox) || fromBeepBox);
-                            let recentPitchBitLength = (largerChords ? 4 : 3);
-                            let recentPitchLength = (largerChords ? 16 : 8);
+                            let preJB4Chords = !((beforeFour && fromJummBox) || fromBeepBox);
+                            let recentPitchBitLength = (preJB4Chords ? 4 : 3);
+                            let recentPitchLength = (preJB4Chords ? 16 : 8);
                             if (beforeThree && fromBeepBox) {
                                 channelIndex = base64CharCodeToInt[compressed.charCodeAt(charIndex++)];
                                 charIndex++;
@@ -32462,14 +32473,19 @@ li.select2-results__option[role=group] > strong:hover {
                                             }
                                             else {
                                                 shape = {};
-                                                if (!largerChords) {
+                                                if (!preJB4Chords) {
                                                     shape.pitchCount = 1;
                                                     while (shape.pitchCount < 4 && bits.read(1) == 1)
                                                         shape.pitchCount++;
                                                 }
                                                 else {
                                                     if (bits.read(1) == 1) {
-                                                        shape.pitchCount = bits.read(3) + 2;
+                                                        if (!fromAbyssBox || (fromAbyssBox && beforeFour)) {
+                                                            shape.pitchCount = bits.read(3) + 2;
+                                                        }
+                                                        else {
+                                                            shape.pitchCount = bits.read(7) + 2;
+                                                        }
                                                     }
                                                     else {
                                                         shape.pitchCount = 1;
@@ -32708,7 +32724,6 @@ li.select2-results__option[role=group] > strong:hover {
             const chipWaveIndex = Config.chipWaves.length;
             let urlSliced = url;
             let customSampleRate = 44100;
-            let sampleName = "";
             let isCustomPercussive = false;
             let customRootKey = 60;
             let presetIsUsingAdvancedLoopControls = false;
@@ -32729,9 +32744,6 @@ li.select2-results__option[role=group] > strong:hover {
                         const optionData = rawOption.slice(1, rawOption.length);
                         if (optionCode === "s") {
                             customSampleRate = clamp(8000, 96000 + 1, parseFloatWithDefault(optionData, 44100));
-                        }
-                        else if (optionCode === "n") {
-                            sampleName = optionData;
                         }
                         else if (optionCode === "r") {
                             customRootKey = parseFloatWithDefault(optionData, 60);
@@ -32843,8 +32855,6 @@ li.select2-results__option[role=group] > strong:hover {
                 const namedOptions = [];
                 if (customSampleRate !== 44100)
                     namedOptions.push("s" + customSampleRate);
-                if ((sampleName != "") && (sampleName != null))
-                    namedOptions.push("n" + sampleName);
                 if (customRootKey !== 60)
                     namedOptions.push("r" + customRootKey);
                 if (isCustomPercussive)
@@ -32866,16 +32876,11 @@ li.select2-results__option[role=group] > strong:hover {
                 }
                 customSampleUrls[customSampleUrlIndex] = urlWithNamedOptions;
                 let name;
-                if (sampleName != "") {
-                    name = decodeURIComponent(sampleName);
+                if (OFFLINE) {
+                    name = decodeURIComponent(parsedUrl.replace(/^([^\/]*\/)+/, ""));
                 }
                 else {
-                    if (OFFLINE) {
-                        name = decodeURIComponent(parsedUrl.replace(/^([^\/]*\/)+/, ""));
-                    }
-                    else {
-                        name = decodeURIComponent(parsedUrl.pathname.replace(/^([^\/]*\/)+/, ""));
-                    }
+                    name = decodeURIComponent(parsedUrl.pathname.replace(/^([^\/]*\/)+/, ""));
                 }
                 const expression = 1.0;
                 Config.chipWaves[chipWaveIndex] = {
@@ -33625,7 +33630,7 @@ li.select2-results__option[role=group] > strong:hover {
     Song._oldestUltraBoxVersion = 1;
     Song._latestUltraBoxVersion = 6;
     Song._oldestAbyssBoxVersion = 1;
-    Song._latestAbyssBoxVersion = 3;
+    Song._latestAbyssBoxVersion = 4;
     Song._variant = 0x61;
     class PickedString {
         constructor() {
@@ -59285,7 +59290,7 @@ You should be redirected to the song at:<br /><br />
         }
     }
 
-    const t={id:"",classname:"",theme:"light",toggle:!0,popover:!0,position:"bottom-start",margin:4,preset:!0,color:"#000",default:"#000",target:"",disabled:!1,format:"rgb",singleInput:!1,inputs:!0,opacity:!0,preview:!0,copy:!0,swatches:[],toggleSwatches:!1,closeOnScroll:!1,i18n:{palette:"Color picker",buttons:{copy:"Copy color to clipboard",changeFormat:"Change color format",swatch:"Color swatch",toggleSwatches:"Toggle Swatches"},sliders:{hue:"Change hue",alpha:"Change opacity"}}},e="alwan",s=`${e}__container`,o=`${e}__palette`,r=`${e}__marker`,n=`${e}__preview`,i=`${e}__button `,a$1=`${e}__copy-button`,l=`${e}__slider `,h=`${e}__hue`,c=`${e}__alpha`,p$4=`${e}__input`,g=`${e}__inputs`,u=`${e}__swatch`,d=`${e}__swatches`,_=`${e}__reference `,b=`${e}__backdrop`,w=`${e}__toggle-button`,f=`${e}--open`,$$1=`${e}--collapse`,y=parseInt,{min:v,max:m,abs:x,round:A,PI:C}=Math,S=(t,e=100,s=0)=>t>e?e:t<s?s:t,k=t=>A((t%=360)<0?t+360:t),H=document,L=H.documentElement,M="button",O="open",V="close",z="color",B="click",E="pointerdown",I="keydown",j="input",D="change",F="blur",P="rgb",T="hsl",Z=["hex",P,T],K="afterbegin",N="afterend",R="beforeend",U="aria-label",q={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowRight:[1,0],ArrowLeft:[-1,0]},G={deg:1,turn:360,rad:180/C,grad:.9},J=/^#[0-9a-f]{6}$/i,Q=/^hsla?\(\s*([+-]?\d*\.?\d+)(\w*)?\s*[\s,]\s*([+-]?\d*\.?\d+)%?\s*,?\s*([+-]?\d*\.?\d+)%?(?:\s*[\/,]\s*([+-]?\d*\.?\d+)(%)?)?\s*\)?$/,W=(t,e,s,o)=>{t.addEventListener(e,s,o);},X=(t,e,s)=>{t.removeEventListener(e,s);},Y=t=>"string"==typeof t,tt=t=>null!=t,et=t=>t instanceof Element,st=t=>Number.isFinite(Y(t)&&""!==t.trim()?+t:t),{keys:ot,assign:rt,setPrototypeOf:nt,prototype:it}=Object,{from:at,isArray:lt}=Array,ht=t=>tt(t)&&"object"==typeof t&&!lt(t)&&!et(t),ct=(t,e)=>ot(t).forEach((s=>e(s,t[s]))),pt=(t,e)=>(ht(t)||(t={}),ct(e,((e,s)=>{tt(s)&&rt(t,{[e]:ht(s)?pt(t[e]||{},s):s});})),t),gt=()=>H.body,ut=(t,e=gt())=>Y(t)&&t.trim()?at(e.querySelectorAll(t)):et(t)&&gt().contains(t)&&t!==gt()?[t]:[],dt=t=>ut(`${j},${M},[tabindex]`,t),_t=(t,e,s=R)=>{t&&e&&e.insertAdjacentElement(s,t);},bt=(t,e)=>{t.innerHTML=e;},wt=(t,e,s)=>{t&&t.setAttribute(e,s+"");},ft=(t,e,s,o,r,n)=>{const i=H.createElement(t);return e&&(i.className=e),o&&bt(i,o),ct(r||{},((t,e)=>{tt(e)&&wt(i,t,e);})),s&&_t(i,s,n),i},$t=(t,e,s,o)=>ft("div",t,e,"",s,o),yt=t=>(t&&t.remove(),null),vt=(t,e)=>(t.replaceWith(e),e),mt=(t,e,s,o,r,n,a)=>ft(M,i+t,e,s,rt({type:M,[U]:r,title:n||r},o),a),xt=(t,e,s,o=1)=>ft(j,l+t,e,"",{max:s,step:o,type:"range"}),At=(t,e)=>$t(s,t,{},e),Ct=(t,e,s)=>{t&&t.style.setProperty("--"+e,s+"");},St=(t,e,s)=>t.classList.toggle(e,s),kt=(t,e,s)=>{t.style.transform=`translate(${e}px,${s}px)`;},Ht=(t,e=[H])=>(t&&(t=t.parentElement),t&&t!==gt()?(/auto|scroll|overflow|clip|hidden/.test(getComputedStyle(t).overflow)&&e.push(t),Ht(t,e)):e),Lt=t=>{let e,s,o,r,n,i;return et(t)?({x:e,y:s,width:o,height:r,right:n,bottom:i}=t.getBoundingClientRect()):(e=s=0,o=n=L.clientWidth,r=i=L.clientHeight),[e,s,o,r,n,i]},Mt='<svg width="18" height="18" viewBox="0 0 24 24" aria-role="none"><path d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg>',Ot=(t,e=P)=>{let s=t.a,o="",r=e;return s<1&&(o+=", "+s,r+="a"),e===P?r+`(${t.r}, ${t.g}, ${t.b+o})`:r+`(${t.h}, ${t.s}%, ${t.l}%${o})`},Vt=ft("canvas").getContext("2d");function zt(t,e){let s,o,r="";Y(t)?r=t.trim():ht(t)&&(s=[P,T].find((e=>e.split("").every((e=>st(t[e]))))),s&&(r=Ot(t,s)));const[n,i,a,l,h,c="1",p]=Q.exec(r)||[];if(n)o={h:k(+i*(G[a]?G[a]:1)),s:S(+l),l:S(+h),a:S(+c/(p?100:1),1)},s=T;else if(s=P,Vt.fillStyle="#000",Vt.fillStyle=r,r=Vt.fillStyle,J.test(r))o={r:y(r.slice(1,3),16),g:y(r.slice(3,5),16),b:y(r.slice(5,7),16),a:1};else {const[t,e,s,n]=/\((.+)\)/.exec(r)[1].split(",").map((t=>+t));o={r:t,g:e,b:s,a:n};}return o.a=A(100*o.a)/100,r=Ot(o,s),e?r:[o,s,r]}const Bt={top:[1,5,4,0],bottom:[5,1,4,0],right:[4,0,1,5],left:[0,4,1,5]},Et={start:[0,1,2],center:[1,0,2],end:[2,1,0]},It=(t,e,s,{margin:o,position:r,toggle:n,closeOnScroll:i},{t:a,o:l})=>{o=st(o)?+o:0;const[h,c]=Y(r)?r.split("-"):[],p=Bt[h]||Bt.bottom,g=Et[c]||Et.center,u=Ht(t),d=e.style,_=()=>{d.height="";const s=Lt(H),r=Lt(t),n=Lt(e),i=[null,null];p.some((t=>{let e=t%2;const a=s[t],l=r[t],h=o+n[e+2];if(h<=x(a-l)){i[e]=l+(t<=1?-h:o),e=(e+1)%2;const a=n[e+2],c=r[e],p=r[e+4],u=s[e+4]-c,d=(a+r[e+2])/2;return g.some((t=>0===t&&a<=u?(i[e]=c,!0):1===t&&d<=p&&d<=u?(i[e]=p-d,!0):2===t&&a<=p&&(i[e]=p-a,!0))),!0}})),kt(e,...i.map(((t,e)=>(e&&null===t&&n[3]>s[5]&&(d.height=s[5]-6+"px",n[3]=s[5]-3),A(tt(t)?t:(s[e+4]-n[e+2])/2)))));},b=()=>{!a()&&n||(((t,e)=>e.every((e=>{const[s,o,,,r,n]=Lt(t),[i,a,,,l,h]=Lt(e);return o<h&&n>a&&s<l&&r>i})))(t,u)?a()?(_(),i&&l(!1)):l(!0,!0):l(!1,!0));},w=t=>{if(a()){const{target:o,key:r,shiftKey:n}=t;if("Escape"===r)l(!1);else if("Tab"===r){const r=dt(e),i=r[0],a=r.pop(),l=o!==s||n?n&&o===i||!n&&o===a?s:null:i;l&&(t.preventDefault(),l.focus());}}},f=({target:t})=>{!a()||t===s||e.contains(t)||at(s.labels||[]).some((e=>e.contains(t)))||l(!1);},$=t=>{u.forEach((e=>{t(e,"scroll",b);})),t(window,"resize",b),t(H,I,w),t(H,E,f);};return _(),$(W),{i:_,p:()=>{$(X),e.style.transform="";}}},jt=(t,s)=>{const l=t.config,y=$t(e,gt()),x=((t,e)=>{let s=e||mt("",gt());const o=()=>{t.u.o();};return {_:()=>s,$({preset:t,classname:r}){e&&t!==(e!==s)&&(t?(s=vt(e,mt()),e.id&&(s.id=e.id)):s=vt(s,e)),W(s,B,o),e&&!t||!Y(r)||(s.className=(i+_+r).trim());},p(){e?e!==s&&vt(s,e):yt(s);}}})(t,ut(s)[0]),A=(({v:t},e)=>{let s,n,i,a;const l=$t(o,e),h=$t(r,l),c=(e,[o,r]=[0,0])=>{let a,l,[c,p,g,u]=i;e?(s=e.clientX-c,n=e.clientY-p):(s+=o*g/100,n+=r*u/100),s=S(s,g),n=S(n,u),kt(h,s,n),a=1-n/u,l=a*(1-s/(2*g)),t.i({s:1===l||0===l?0:(a-l)/v(l,1-l)*100,l:100*l},1);},p=t=>{t.buttons?c(t):d(!1);},g=()=>{t.m(),d(!1);},u=()=>{t.m();},d=t=>{St(L,b,t),(t?W:X)(H,"pointermove",p),(t?W:X)(window,F,u);};return W(l,E,(e=>{a||(t.A(),i=Lt(l),c(e),d(!0),W(H,"pointerup",g,{once:!0}));})),W(l,I,(e=>{const s=q[e.key];s&&(e.preventDefault(),i=Lt(l),t.A(),c(null,s),t.m());})),{el:l,$({i18n:t,disabled:e}){wt(l,U,t.palette),wt(l,"tabindex",e?"":0),a=e;},C(t,e){let o=e+t*v(e,1-e);i=Lt(l),s=(o?2*(1-e/o):0)*i[2],n=(1-o)*i[3],kt(h,s,n);}}})(t,y),C=At(y),k=((t,e)=>{let s,o,r=!1;const i=t=>{r=t,bt(o,t?'<svg width="18" height="18" viewBox="0 0 24 24" aria-role="none"><path d="M9,20.42L2.79,14.21L5.62,11.38L9,14.77L18.88,4.88L21.71,7.71L9,20.42Z"></path></svg>':Mt);},l=t=>{const e=ft(j,"",L,"",{value:t});e.select(),H.execCommand("copy"),yt(e),o.focus(),i(!0);},h=()=>{if(!r){const e=navigator.clipboard,s=t.v.S();e?e.writeText(s).then((()=>i(!0))).catch((()=>l(s))):l(s);}};return {$({preview:t,copy:l,i18n:c}){s=yt(s),o=yt(o),t&&(s=$t(n,e,{},K)),l&&(o=mt(a$1,s||e,Mt,{},c.buttons.copy,"",K),W(o,B,h),W(o,F,(()=>r&&i(!1))),W(o,"mouseout",(()=>o.blur())));}}})(t,C),M=(({v:t,k:e},s)=>{let o;const r=$t("",s),n=xt(h,r,360);return W(n,j,(()=>t.i({h:+n.value},2))),W(r,D,(()=>e.H(D))),{$({opacity:e,i18n:{sliders:s}}){o=yt(o),e?(o=xt(c,r,1,.01),W(o,j,(()=>t.i({a:+o.value},2)))):t.i({a:1}),wt(n,U,s.hue),wt(o,U,s.alpha);},L(t,e){n.value=t+"",o&&(o.value=e+"");}}})(t,C),T=((t,e)=>{let s,o,r,n,i,{config:a,v:l}=t,h=[],c=!1;const u=()=>a.singleInput||"hex"===h[n],d=t=>{let e=t.target.value,s={};c||(l.A(),c=!0),u()||(ct(i,((t,e)=>{s[t]=+e.value;})),e=Ot(s,h[n])),l.M(e,3,!1,!0);},_=()=>{i={},yt(o),o=$t(g,s,{},K);const e=h[n],r=u()?[e]:(e+(a.opacity?"a":"")).split(""),_=l.O;r.forEach((t=>{const e=ft("label","",o);i[t]=ft(j,p$4,e,"",{type:"text",value:_[t]}),ft("span","",e,t);})),W(o,j,d),W(o,D,(()=>{l.m(),c=!1;})),W(o,"focusin",(t=>t.target.select())),W(o,I,(e=>"Enter"===e.key&&t.u.o(!1)));},b=()=>{n=(n+1)%h.length,l.V(h[n]),_();};return {$({inputs:t,format:o,i18n:i}){s=yt(s),r=yt(r),h=Z,!0!==t&&(t=t||{},h=h.filter((e=>t[e])));const a=h.length;a||(h=Z),n=m(h.indexOf(o),0),l.V(h[n]),a&&(s=At(e,N),_(),a>1&&(r=mt("",s,'<svg width="15" height="15" viewBox="0 0 20 20" aria-role="none"><path d="M10 1L5 8h10l-5-7zm0 18l5-7H5l5 7z"></path></svg>',{},i.buttons.changeFormat),W(r,B,b)));},L(t){ct(i||{},((e,s)=>{s.value=t[e]+"";}));}}})(t,C),G=((t,e)=>{let s,o;return {$({swatches:r,toggleSwatches:n,i18n:{buttons:i}}){lt(r)&&(s=yt(s),o=yt(o),r.length&&(s=$t(d,e),r.forEach((t=>{Ct(mt(u,s,"",{},i.swatch,Y(t)?t:zt(t,!0)),z,zt(t,!0));})),n&&(o=mt(w,e,'<svg width="20" height="20" viewBox="0 0 24 24" aria-role="none"><path d="M6.984 14.016l5.016-5.016 5.016 5.016h-10.031z"></path></svg>',{},i.toggleSwatches),W(o,B,(()=>{St(s,$$1),t.u.B();}))),W(s,B,(({target:e})=>{e!==s&&t.v.M(e.style.getPropertyValue("--"+z),0,!0,!0);}))));}}})(t,y);let J,Q=!1,et=null;return {I(e){e=e||{};const s=this,o=y.dataset,r=t.v,{id:n,color:i}=e,{theme:a,toggle:h,popover:c,target:p,disabled:g}=pt(l,e);[x,A,k,M,T,G].forEach((t=>t.$(l))),J=x._();let u=ut(p)[0]||J;Y(n)&&(y.id=n),o.theme=a,o.display=c?"popover":"block",h||s.o(!0,!0),J.style.display=c||h?"":"none",et&&(et.p(),et=null),c?et=It(u,y,J,l,s):_t(y,u,u===J?N:R),tt(i)?r.M(i):r.i({}),[J,...dt(y)].forEach((t=>{t.disabled=!!g;})),g&&(c?s.o(!1,!0):h||s.o(!0,!0));},i(t,e){const{r:s,g:o,b:r,a:n,h:i,s:a,l:l,rgb:h}=t;Ct(J,z,h),Ct(y,P,`${s},${o},${r}`),Ct(y,"a",n),Ct(A.el,"h",i),1!==e&&2!==e&&(A.C(a/100,l/100),M.L(i,n)),3!==e&&T.L(t);},o(e=!Q,s=!1){e===Q||l.disabled&&(!s||e&&l.popover)||!l.toggle&&!s||(e&&et&&et.i(),Q=e,St(y,f,e),t.k.H(Q?O:V));},t:()=>Q,B(){et&&et.i();},p(){yt(y),et&&et.p(),x.p();}}},Dt=t=>(t<16?"0":"")+t.toString(16),Ft=(t,e,s)=>(t%=12,A(255*(s-e*v(s,1-s)*m(-1,v(t-3,9-t,1))))),Pt=t=>{const e={h:0,s:0,l:0,r:0,g:0,b:0,a:1,rgb:"",hsl:"",hex:""},s=t.k.H;let o,r,n;return {O:e,i(o,r,i=!0,a){n=e.hex,rt(e,o),rt(e,a||(({h:t,s:e,l:s})=>({r:Ft(t/=30,e/=100,s/=100),g:Ft(t+8,e,s),b:Ft(t+4,e,s)}))(e)),e.s=A(e.s),e.l=A(e.l),e.rgb=Ot(e),e.hsl=Ot(e,T),e.hex=(({r:t,g:e,b:s,a:o})=>"#"+Dt(t)+Dt(e)+Dt(s)+(o<1?Dt(A(255*o)):""))(e),t.u.i(e,r),i&&n!==e.hex&&s(z,e);},M(t,o,r,n){const[i,a,l]=zt(t);let h,c;e[a]!==l&&(a===P?(h=i,c=(({r:t,g:e,b:s,a:o})=>{const r=m(t/=255,e/=255,s/=255),n=v(t,e,s),i=r-n,a=(r+n)/2;return {h:k(60*(0===i?0:r===t?(e-s)/i%6:r===e?(s-t)/i+2:r===s?(t-e)/i+4:0)),s:i?i/(1-x(2*a-1))*100:0,l:100*a,a:o}})(h)):c=i,this.i(c,o,n,h),r&&s(D,e));},A(){r=e[o];},m(){r!==e[o]&&s(D,e);},V(e){o=t.config.format=e;},S:()=>e[o]}};class Tt{static version(){return "2.0.2"}static setDefaults(e){pt(t,e);}constructor(e,s){this.config=pt({},t),this.k=(t=>{const e={[O]:[],[V]:[],[D]:[],[z]:[]};return {H(s,o=t.v.O){t.config.disabled||(e[s]||[]).forEach((e=>{e(rt({type:s,source:t},o));}));},j(t,s){e[t]&&!e[t].includes(s)&&"function"==typeof s&&e[t].push(s);},D(t,s){tt(t)?e[t]&&(tt(s)?e[t]=e[t].filter((t=>t!==s)):e[t]=[]):ct(e,(t=>{e[t]=[];}));}}})(this),this.v=Pt(this),this.u=jt(this,e),this.u.I(s);}setOptions(t){this.u.I(t);}setColor(t){return this.v.M(t),this}getColor(){return {...this.v.O}}isOpen(){return this.u.t()}open(){this.u.o(!0);}close(){this.u.o(!1);}toggle(){this.u.o();}on(t,e){this.k.j(t,e);}off(t,e){this.k.D(t,e);}addSwatches(...t){this.u.I({swatches:this.config.swatches.concat(t)});}removeSwatches(...t){this.u.I({swatches:this.config.swatches.filter(((e,s)=>!t.some((t=>st(t)?+t===s:t===e))))});}enable(){this.u.I({disabled:!1});}disable(){this.u.I({disabled:!0});}reset(){this.v.M(this.config.default);}reposition(){this.u.B();}trigger(t){this.k.H(t);}destroy(){this.u.p(),ct(this,(t=>delete this[t])),nt(this,it);}}
+    const t={id:"",classname:"",theme:"light",parent:"",toggle:!0,popover:!0,position:"bottom-start",margin:4,preset:!0,color:"#000",default:"#000",target:"",disabled:!1,format:"rgb",singleInput:!1,inputs:!0,opacity:!0,preview:!0,copy:!0,swatches:[],toggleSwatches:!1,closeOnScroll:!1,i18n:{picker:"Color picker",buttons:{copy:"Copy color to clipboard",changeFormat:"Change color format",swatch:"Color swatch: %label%",toggleSwatches:"Toggle Swatches"},sliders:{hue:"Change hue",alpha:"Change opacity"}}},e=document,s=e.documentElement,r="#000000",o="button",a$1="open",n="close",l="color",i="click",h="pointerdown",c="pointermove",p$4="pointerup",g="scroll",u="keydown",d="input",_="change",w="rgb",b="hsl",v={capture:!0},f=["hex",w,b],y=t=>"string"==typeof t,m=t=>t instanceof Element,$$1=t=>Number.isFinite(y(t)&&""!==t.trim()?+t:t),{keys:x,assign:A,setPrototypeOf:S,prototype:k}=Object,{isArray:C}=Array,H=t=>null!=t&&"object"==typeof t&&!C(t)&&!m(t),O=(t,e)=>x(t).forEach((s=>e(s,t[s]))),V=(t,e)=>(O(e,((e,s)=>{A(t,{[e]:H(s)?V(t[e]||{},s):s});})),t),L=()=>e.body,M=(t,e=s)=>y(t)&&t.trim()?[...e.querySelectorAll(t)]:m(t)?[t]:[],z=t=>M(`${d},${o},[tabindex]`,t),B=(t,s,r,o={},a)=>{const n=e.createElement(t);return s&&(n.className=s.trim()),r&&(y(r)?n.innerHTML=r:n.append(...(C(r)?r:[r]).filter((t=>!!t)))),O(y(a)?{...o,"aria-label":a}:o,((t,e)=>n.setAttribute(t,e+""))),n},E=(t,e,s)=>B("div",e,t,{},s),I=(t,e)=>(t&&t!==e&&t.replaceWith(e),e),j=(t="",e="",s,r=t)=>B(o,"alwan__button "+e,s,{type:o,title:r},t),D=(t,e,s,r=1)=>B(d,"alwan__slider alwan__"+e,"",{type:"range",max:s,step:r},t),F=(t,e)=>t.style.setProperty("--color",e),N=(t,e,s)=>t.classList.toggle("alwan--"+e,s),P=(t,e,s)=>{t.style.transform=`translate(${e}px,${s}px)`;},R=t=>{const{x:e,y:s,width:r,height:o}=t.getBoundingClientRect();return [e,s,r,o,r+e,o+s]},T=t=>E(t,"alwan__container"),Z=(t,e)=>t.style.display=e?"none":"",K=(t,e,s,r)=>t.addEventListener(e,s,r),U=(t,e,s)=>t.removeEventListener(e,s),q=(t,e=w)=>e?e+(e===w?`(${t.r}, ${t.g}, ${t.b}`:`(${t.h}, ${t.s}%, ${t.l}%`)+(t.a<1?`, ${t.a})`:")"):r,{min:G,max:J,abs:Q,round:W,PI:X}=Math,Y=(t,e=100,s=0)=>t>e?e:t<s?s:t,tt=t=>W((t%=360)<0?t+360:t),et=t=>parseInt(t,16),st=t=>{let e,s,{config:r,s:o}=t,a=!1;const n=()=>{const t={};a||(o.t(),a=!0),O(e,((e,s)=>t[e]=s.value)),o.o(t[s]||q(t,s),!0);},l=()=>{e={};const t="hex"===s||r.singleInput?[s]:[...s+(r.opacity?"a":"")];return E(t.map((t=>B("label","",[e[t]=B(d,"alwan__input",[],{type:"text",value:o.i[t]}),B("span","",t)]))),"alwan__inputs")};return {p({inputs:e,format:r,i18n:h}){let c,p,g,w,b=f;return !0!==e&&(e=e||{},b=b.filter((t=>e[t]))),w=b.length,b=w?b:f,s=b[J(b.indexOf(r),0)],o.u(s),w?(w>1&&(g=j(h.buttons.changeFormat,"",'<svg width="15" height="15" viewBox="0 0 20 20" aria-role="none"><path d="M10 1L5 8h10l-5-7zm0 18l5-7H5l5 7z"></path></svg>'),K(g,i,(()=>{s=b[(b.indexOf(s)+1)%w],o.u(s),c=I(c,l());}))),c=l(),p=E(c),K(p,d,n),K(p,_,(()=>{o._(),a=!1;})),K(p,"focusin",(t=>t.target.select())),K(p,u,(e=>"Enter"===e.key&&t.c.v(!1))),T([p,g])):null},m(t){a||O(e||{},((e,s)=>s.value=t[e]+""));}}},rt={ArrowLeft:-1,ArrowRight:1},ot={ArrowUp:-1,ArrowDown:1},at=({s:t})=>{let s,r,o,a,n;const l={s:0,l:0},i=(e,s)=>{let i,h,[,,c,p]=n;o=e=Y(e,c),a=s=Y(s,p),P(r,e,s),i=1-s/p,h=i*(1-e/(2*c)),l.s=1===h||0===h?0:(i-h)/G(h,1-h)*100,l.l=100*h,t.$(l);},g=({x:t,y:e,buttons:s})=>{s?i(t-n[0],e-n[1]):d();},d=()=>{t._(),U(e,c,g),U(e,p$4,d);},_=r=>{s.setPointerCapture(r.pointerId),t.t(),n=R(s),i(r.x-n[0],r.y-n[1]),K(e,c,g),K(e,p$4,d);},w=e=>{const r=e.key,l=rt[r]||0,h=ot[r]||0;(l||h)&&(e.preventDefault(),n=R(s),t.t(),i(o+l*n[2]/100,a+h*n[3]/100),t._());};return {p:({i18n:t,disabled:e})=>(r=E("","alwan__cursor"),s=E(r,"alwan__selector",t.picker||t.palette),e||(s.tabIndex=0,K(s,h,_),K(s,u,w)),s),A(t,e){t=(e/=100)+t/100*G(e,1-e),n=R(s),o=(t?2*(1-e/t):0)*n[2],a=(1-t)*n[3],P(r,o,a);}}},nt=({s:t,e:e})=>{let s,r,o;return {p:({opacity:a,i18n:{sliders:n}})=>(s=D(n.hue,"hue",360),r=a?D(n.alpha,"alpha",1,.01):null,o=E([s,r]),K(o,_,(()=>e.S(_))),K(o,d,(({target:e})=>t.$({[e===s?"h":"a"]:e.value}))),o),m(t,e){s.value=t+"",r&&(r.value=e+"");}}},lt=t=>(t<16?"0":"")+t.toString(16),it=(t,e,s)=>(t%=12,W(255*(s-e*G(s,1-s)*J(-1,G(t-3,9-t,1))))),ht=B("canvas").getContext("2d"),ct={turn:360,rad:180/X,grad:.9},pt=/a?\(\s*([+-]?\d*\.?\d+)(\w*)?\s*[\s,]\s*([+-]?\d*\.?\d+)%?\s*,?\s*([+-]?\d*\.?\d+)%?(?:\s*[\/,]\s*([+-]?\d*\.?\d+)(%)?)?\s*\)?$/,gt=t=>y(t)?t:q(t,(t=>H(t)&&[b,w].find((e=>[...e].every((e=>$$1(t[e])))))||"")(t)),ut=t=>(ht.fillStyle=r,ht.fillStyle=t,ht.fillStyle),dt=(t,e)=>{let s,r,o=gt(t).trim();if(/^hsl/.test(o)){const[t,e,s,a,n,l="1",i]=pt.exec(o)||[];t&&(r={h:tt(+e*(ct[s]||1)),s:Y(+a),l:Y(+n),a:Y(+l/(i?100:1),1)});}if(!r){if(/^[\da-f]+$/i.test(o)&&(o="#"+o),o=ut(o),"#"===o[0])s={r:et(o[1]+o[2]),g:et(o[3]+o[4]),b:et(o[5]+o[6]),a:1};else {const[t,e,r,a]=o.match(/[\d\.]+/g).map(Number);s={r:t,g:e,b:r,a:a};}r=(({r:t,g:e,b:s,a:r})=>{const o=J(t/=255,e/=255,s/=255),a=G(t,e,s),n=o-a,l=(o+a)/2;return {h:tt(60*(0===n?0:o===t?(e-s)/n%6:o===e?(s-t)/n+2:o===s?(t-e)/n+4:0)),s:n?n/(1-Q(2*l-1))*100:0,l:100*l,a:r}})(s);}return r.a=e?W(100*r.a)/100:1,s&&(s.a=r.a),[r,s]},_t=t=>{let e=!1;const s=(e,s)=>{let o,a,n,l;var h;return H(h=e)&&"color"in h?({color:a,label:l}=e):a=e,n=gt(a),n=ut(n)===r?r:n,l=y(l)?l:n,o=j(s.replace("%label%",l),"alwan__swatch","",l),F(o,n),K(o,i,(()=>t.s.o(n,!0,!0))),o};return {p({swatches:r,toggleSwatches:o,i18n:{buttons:a}}){let n,l,h;return C(r)&&r.length?(n=E(r.map((t=>s(t,a.swatch))),"alwan__swatches"),o?(h=(s=!e)=>{e=s,N(n,"collapse",e),t.c.k();},l=j(a.toggleSwatches,"alwan__toggle-button",'<svg width="20" height="20" viewBox="0 0 24 24" aria-role="none"><path d="M6.984 14.016l5.016-5.016 5.016 5.016h-10.031z"></path></svg>'),K(l,i,(()=>h())),h(e),E([n,l])):n):n}}},wt=t=>({p({preview:e,copy:s,i18n:r}){let o,a,n,l,h;return s&&(o=j(r.buttons.copy,"alwan__cp",'<svg width="18" height="18" viewBox="0 0 24 24" aria-role="none"><path d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg><svg width="18" height="18" viewBox="0 0 24 24" aria-role="none"><path d="M9,20.42L2.79,14.21L5.62,11.38L9,14.77L18.88,4.88L21.71,7.71L9,20.42Z"></path></svg>'),[n,l]=o.children,a=t=>{Z(n,t),Z(l,!t);},a(!1),h=navigator.clipboard,h&&(K(o,i,(()=>h.writeText(t.s.C()).then((()=>a(!0))))),K(o,"blur",(()=>a())),K(o,"mouseleave",(()=>o.blur())))),e?E(o,"alwan__preview"):o}}),bt=(t,e)=>t.map((t=>C(t)?T(bt(t,e)):t.p(e))),vt={top:[1,5,4,0],bottom:[5,1,4,0],right:[4,0,1,5],left:[0,4,1,5]},ft={start:[0,1,2],center:[1,0,2],end:[2,1,0]},yt=(t,r)=>{let o,l,c=E(),p=!1,d=null;const{config:_,s:w}=t,b=((t,e)=>{const s=j(),r=s.className+" alwan__ref ";let o;return t&&t.id&&(s.id=t.id),{H:a=>(o=I(o||t,a.preset||!t?s:t),o===s&&(o.className=(r+a.classname).trim(),o.parentNode||L().append(o)),K(o,i,e),o),O(){t?(U(t,i,e),I(o,t)):o.remove();}}})(r,(()=>t.toggle())),f=E(c,"alwan"),[m,x,A,S,k]=(t=>[at,wt,nt,st,_t].map((e=>e(t))))(t);return w.V((t=>{F(o,t.rgb),c.style.cssText=`--rgb:${t.r},${t.g},${t.b};--a:${t.a};--h:${t.h}`,S.m(t);}),(({a:t,h:e,s:s,l:r})=>{A.m(e,t),m.A(s,r);})),{L(t){const r=this,{id:a,color:n=w.i.hsl}=t,{theme:i,parent:C,toggle:H,popover:O,target:B,disabled:j}=V(_,t);o=b.H(_);let D=M(C)[0],F=M(B)[0]||o;a&&(f.id=a),N(f,"dark","dark"===i),c=I(c,E(bt([m,[x,A],S,k],_))),Z(o,!O&&!H),d&&(d.M(),d=null),O?(D=D||H&&L(),l=E(f,"alwan__popover-container"),d=((t,r,o,a,{margin:n,position:l,closeOnScroll:i,toggle:c,disabled:p},{v:d,B:_})=>{let w;n=$$1(n)?+n:0;let b=_();const[f,m]=y(l)?l.split("-"):[],x=r.style,A=t.getRootNode(),S=z(r),k=S[0],C=S.pop(),H=()=>{const e=[s.clientWidth,s.clientHeight],a=R(t),l=R(r),i=R(o),h=[-1,-1];x.height="",!b||!w||a[4]<0||a[5]<0||a[0]>e[0]||a[1]>e[1]||((vt[f]||vt.bottom).some((t=>{let s=t%2,r=a[t]+(t<=1?-l[s+2]-n:n);return !(r<0||r+l[s+2]+n>e[s])&&(h[s]=r,s=+!s,(ft[m]||ft.center).some((t=>(r=0===t?a[s]:a[s+4]-(2===t?l[s+2]:(l[s+2]+a[s+2])/2),!(r<0||r+l[s+2]>e[s]||(h[s]=r,0))))))})),P(r,...h.map(((t,s)=>(s&&-1===t&&l[3]>e[s]&&(x.height=e[s]-6+"px",l[3]=e[s]-3),W((t>=0?t:(e[s]-l[s+2])/2)-i[s]))))));};c&&K(r,u,(t=>{let e,{key:s,target:r,shiftKey:o}=t;"Escape"===s?d(!1):"Tab"===s&&(r===k&&o?e=C:r!==C||o||(e=k),e&&(e.focus(),t.preventDefault()));}));const O=[r,a,...a.labels||[]],V=t=>{const e=t.composedPath();b&&!O.some((t=>e.includes(t)))&&d(!1);},L=new IntersectionObserver((([t])=>{w=t.isIntersecting,d(!p&&w&&(!c||b),!0);})),M=({target:e})=>{(A instanceof ShadowRoot&&e.contains(A.host)||e.contains(t))&&(H(),i&&d(!1));},B=t=>{t(window,"resize",H),t(e,g,M,v),t(A,g,M,v),t(e,h,V);};return L.observe(t),B(K),{I:()=>w,k(t,e){b=t,w&&(H(),c&&e!==t&&(t?k:a).focus());},M(){x.cssText="",L.unobserve(t),B(U),o.remove();}}})(F,f,l,o,_,r)):(l=f,r.v(!H||!j&&p,!0)),D?D.append(l):F.after(l),j&&[o,...z(f)].forEach((t=>{t.disabled=!0;})),w.o(n);},v(e=!p,s=!1){(e!==p&&(!d||d.I())&&!_.disabled&&_.toggle||s)&&(N(f,a$1,e),d&&d.k(e,p),p=e,t.e.S(p?a$1:n));},B:()=>p,k(){d&&d.k(p,p);},M(){f.remove(),d&&d.M(),b.O();}}},mt=t=>{const e={h:0,s:0,l:0,r:0,g:0,b:0,a:1,rgb:"",hsl:"",hex:""},s=t.config,r=t.e.S;let o,a,n,i;return {i:e,C:()=>e[n],V(t,e){o=t,a=e;},u(t){n=s.format=t;},$(t,s,a=!0,n){const i=e.hex;A(e,t),A(e,s||(({h:t,s:e,l:s,a:r})=>({r:it(t/=30,e/=100,s/=100),g:it(t+8,e,s),b:it(t+4,e,s),a:r}))(e)),e.s=W(e.s),e.l=W(e.l),e.rgb=q(e),e.hsl=q(e,b),e.hex=(({r:t,g:e,b:s,a:r})=>"#"+lt(t)+lt(e)+lt(s)+(r<1?lt(W(255*r)):""))(e),o(e),i!==e.hex&&(a&&r(l,e),n&&r(_,e));},o(t,r=!1,o){this.$(...dt(t,s.opacity),r,o),a(e);},t(){i=e[n];},_(){i!==e[n]&&r(_,e);}}};class $t{static version(){return "2.3.0"}static setDefaults(e){V(t,e);}constructor(e,s){this.config=V({},t),this.e=(t=>{const e={[a$1]:[],[n]:[],[_]:[],[l]:[]};return {S(s,r=t.s.i){(e[s]||[]).forEach((e=>e(A({type:s,source:t},r))));},j(t,s){s&&!(e[t]||[]).includes(s)&&e[t].push(s);},D(t,s){t?e[t]&&(e[t]=s?e[t].filter((t=>t!==s)):[]):O(e,(t=>{e[t]=[];}));}}})(this),this.s=mt(this),this.c=yt(this,M(e)[0]),this.c.L(s||{});}setOptions(t){t&&this.c.L(t);}setColor(t){return this.s.o(t),this}getColor(){return {...this.s.i}}isOpen(){return this.c.B()}open(){this.c.v(!0);}close(){this.c.v(!1);}toggle(){this.c.v();}on(t,e){this.e.j(t,e);}off(t,e){this.e.D(t,e);}addSwatches(...t){this.c.L({swatches:this.config.swatches.concat(t)});}removeSwatches(...t){this.c.L({swatches:this.config.swatches.filter(((e,s)=>!t.some((t=>$$1(t)?+t===s:t===e))))});}enable(){this.c.L({disabled:!1});}disable(){this.c.L({disabled:!0});}reset(){this.s.o(this.config.default);}reposition(){this.c.k();}trigger(t){this.e.S(t);}destroy(){this.c.M(),O(this,(t=>{this[t]=null;})),S(this,k);}}
 
     const { button: button$a, div: div$a, h2: h2$9, input: input$6, p: p$3, option: option$6, select: select$6 } = HTML;
     const opacityValue = "1";
@@ -59734,7 +59739,7 @@ You should be redirected to the song at:<br /><br />
             this._okayButton.addEventListener("click", this._close);
             this._cancelButton.addEventListener("click", this._close);
             setTimeout(() => {
-                this._colorpicker = new Tt(this._colorpickerInput, {
+                this._colorpicker = new $t(this._colorpickerInput, {
                     theme: 'dark',
                     format: 'hex',
                 });
@@ -61661,22 +61666,16 @@ You should be redirected to the song at:<br /><br />
                 }
             };
             this._saveChanges = () => {
-                if (window.location.href.length + this._generateURLData().length < 180000) {
-                    const urlData = this._generateURLData();
-                    EditorConfig.customSamples = urlData.split("|").filter(x => x !== "");
-                    Config.willReloadForCustomSamples = true;
-                    window.location.hash = this._doc.song.toBase64String();
-                    setTimeout(() => { location.reload(); }, 50);
-                }
-                else {
-                    alert("You have surpassed the 180k character limit for URLs! Your url is " + (window.location.href.length + this._generateURLData().length) + " characters long!\n\nPlease compress or remove samples until you're below the limit.");
-                }
+                const urlData = this._generateURLData();
+                EditorConfig.customSamples = urlData.split("|").filter(x => x !== "");
+                Config.willReloadForCustomSamples = true;
+                window.location.hash = this._doc.song.toBase64String();
+                setTimeout(() => { location.reload(); }, 50);
             };
             this._whenAddSampleClicked = (event) => {
                 const entryIndex = this._entries.length;
                 this._entries.push({
                     url: "",
-                    sampleName: "",
                     sampleRate: 44100,
                     rootKey: 60,
                     percussion: false,
@@ -61741,36 +61740,6 @@ You should be redirected to the song at:<br /><br />
                     this._entryOptionsDisplayStates[entryIndex] = false;
                 }
             };
-            this._whenFileSelected = (event) => {
-                const element = event.target;
-                const entryIndex = +(element.dataset.index);
-                const file = element.files[0];
-                if (!file)
-                    return;
-                const reader = new FileReader();
-                reader.addEventListener("load", () => {
-                    var _a, _b, _c, _d, _e, _f;
-                    console.log("FILE: " + reader.result);
-                    this._entries[entryIndex].url = String(reader.result);
-                    this._entries[entryIndex].sampleName = file.name;
-                    const sampleNameElement = (_b = (_a = element.parentNode) === null || _a === void 0 ? void 0 : _a.parentNode) === null || _b === void 0 ? void 0 : _b.querySelector(".add-sample-prompt-sample-name");
-                    if (sampleNameElement != null) {
-                        const sampleName = file.name;
-                        sampleNameElement.innerText = sampleName;
-                        sampleNameElement.title = sampleName;
-                    }
-                    const sampleNameInputElement = (_d = (_c = element.parentNode) === null || _c === void 0 ? void 0 : _c.parentNode) === null || _d === void 0 ? void 0 : _d.querySelector(".add-sample-prompt-name-input-box");
-                    if (sampleNameInputElement != null) {
-                        sampleNameInputElement.value = file.name;
-                    }
-                    const urlInputElement = (_f = (_e = element.parentNode) === null || _e === void 0 ? void 0 : _e.parentNode) === null || _f === void 0 ? void 0 : _f.querySelector(".add-sample-prompt-url-input-box");
-                    if (urlInputElement != null) {
-                        const urlText = String(reader.result);
-                        urlInputElement.value = urlText;
-                    }
-                });
-                reader.readAsDataURL(file);
-            };
             this._whenURLChanges = (event) => {
                 var _a, _b;
                 const element = event.target;
@@ -61783,18 +61752,6 @@ You should be redirected to the song at:<br /><br />
                     sampleNameElement.title = sampleName;
                 }
                 this._doReload = true;
-            };
-            this._whenNameChanges = (event) => {
-                var _a, _b, _c;
-                const element = event.target;
-                const entryIndex = +(element.dataset.index);
-                this._entries[entryIndex].sampleName = element.value;
-                const sampleNameElement = (_c = (_b = (_a = element.parentNode) === null || _a === void 0 ? void 0 : _a.parentNode) === null || _b === void 0 ? void 0 : _b.parentNode) === null || _c === void 0 ? void 0 : _c.querySelector(".add-sample-prompt-sample-name");
-                if (sampleNameElement != null) {
-                    const sampleName = this._getSampleName(this._entries[entryIndex]);
-                    sampleNameElement.innerText = sampleName;
-                    sampleNameElement.title = sampleName;
-                }
             };
             this._whenSampleRateChanges = (event) => {
                 const element = event.target;
@@ -61931,7 +61888,6 @@ You should be redirected to the song at:<br /><br />
                         if (!useLegacySamples) {
                             parsedEntries.push({
                                 url: "legacySamples",
-                                sampleName: "",
                                 sampleRate: 44100,
                                 rootKey: 60,
                                 percussion: false,
@@ -61948,7 +61904,6 @@ You should be redirected to the song at:<br /><br />
                         if (!useNintariboxSamples) {
                             parsedEntries.push({
                                 url: "nintariboxSamples",
-                                sampleName: "",
                                 sampleRate: 44100,
                                 rootKey: 60,
                                 percussion: false,
@@ -61965,7 +61920,6 @@ You should be redirected to the song at:<br /><br />
                         if (!useMarioPaintboxSamples) {
                             parsedEntries.push({
                                 url: "marioPaintboxSamples",
-                                sampleName: "",
                                 sampleRate: 44100,
                                 rootKey: 60,
                                 percussion: false,
@@ -61980,7 +61934,6 @@ You should be redirected to the song at:<br /><br />
                     }
                     else {
                         let urlSliced = url;
-                        let sampleName = "";
                         let sampleRate = 44100;
                         let rootKey = 60;
                         let percussion = false;
@@ -62001,9 +61954,6 @@ You should be redirected to the song at:<br /><br />
                                     const optionData = rawOption.slice(1, rawOption.length);
                                     if (optionCode === "s") {
                                         sampleRate = clamp(8000, 96000 + 1, parseFloatWithDefault(optionData, 44100));
-                                    }
-                                    else if (optionCode === "n") {
-                                        sampleName = optionData;
                                     }
                                     else if (optionCode === "r") {
                                         rootKey = parseFloatWithDefault(optionData, 60);
@@ -62062,7 +62012,6 @@ You should be redirected to the song at:<br /><br />
                         }
                         parsedEntries.push({
                             url: urlSliced,
-                            sampleName: sampleName,
                             sampleRate: sampleRate,
                             rootKey: rootKey,
                             percussion: percussion,
@@ -62079,7 +62028,6 @@ You should be redirected to the song at:<br /><br />
             this._generateURLDataForEntry = (entry) => {
                 const url = entry.url.trim();
                 const sampleRate = entry.sampleRate;
-                const sampleName = entry.sampleName.replaceAll("!", "%21");
                 const rootKey = entry.rootKey;
                 const percussion = entry.percussion;
                 const chipWaveLoopStart = entry.chipWaveLoopStart;
@@ -62094,8 +62042,6 @@ You should be redirected to the song at:<br /><br />
                 const options = [];
                 if (sampleRate !== 44100)
                     options.push("s" + sampleRate);
-                if (sampleName)
-                    options.push("n" + sampleName);
                 if (rootKey !== 60)
                     options.push("r" + rootKey);
                 if (percussion)
@@ -62128,17 +62074,12 @@ You should be redirected to the song at:<br /><br />
                 return output;
             };
             this._getSampleName = (entry) => {
-                if (entry.sampleName != "") {
-                    return entry.sampleName;
+                try {
+                    const parsedUrl = new URL(entry.url);
+                    return decodeURIComponent(parsedUrl.pathname.replace(/^([^\/]*\/)+/, ""));
                 }
-                else {
-                    try {
-                        const parsedUrl = new URL(entry.url);
-                        return decodeURIComponent(parsedUrl.pathname.replace(/^([^\/]*\/)+/, ""));
-                    }
-                    catch (error) {
-                        return entry.url;
-                    }
+                catch (error) {
+                    return entry.url;
                 }
             };
             this._noteNameFromPitchNumber = (n) => {
@@ -62173,9 +62114,7 @@ You should be redirected to the song at:<br /><br />
                     const canMoveDown = this._entries.length >= 2 && entryIndex < this._entries.length - 1;
                     const entry = this._entries[entryIndex];
                     const optionsVisible = Boolean(this._entryOptionsDisplayStates[entryIndex]);
-                    const urlInput = input$3({ class: "add-sample-prompt-url-input-box", style: "flex-grow: 1; margin-left: 1em; width: 100%;", value: entry.url });
-                    const fileInput = input$3({ type: "file", accept: "audio,video" });
-                    const nameInput = input$3({ class: "add-sample-prompt-name-input-box", style: "flex-grow: 1; margin-left: 1em; width: 100%;", value: entry.sampleName });
+                    const urlInput = input$3({ style: "flex-grow: 1; margin-left: 1em; width: 100%;", value: entry.url });
                     const sampleRateStepper = input$3({ style: "flex-grow: 1; margin-left: 1em; width: 100%;", type: "number", value: "" + entry.sampleRate, min: "8000", max: "96000", step: "1" });
                     const rootKeyStepper = input$3({ style: "flex-grow: 1; margin-left: 1em; width: 100%;", type: "number", value: "" + entry.rootKey, min: "0", max: Config.maxPitch + Config.pitchesPerOctave, step: "1" });
                     const rootKeyDisplay = span$1({ class: "add-sample-prompt-root-key-display", style: "margin-left: 0.4em; width: 3em; text-align: left; text-overflow: ellipsis; overflow: hidden; flex-shrink: 0;" }, `(${this._noteNameFromPitchNumber(entry.rootKey)})`);
@@ -62195,10 +62134,8 @@ You should be redirected to the song at:<br /><br />
                     const removeButton = button$5({ style: "height: auto; min-height: var(--button-size); margin-left: 0.5em;" }, "Remove");
                     const moveUpButton = button$5({ style: "height: auto; min-height: var(--button-size); margin-left: 0.5em;" }, SVG.svg({ width: "16", height: "16", viewBox: "-13 -14 26 26", "pointer-events": "none", style: "width: 100%; height: 100%;" }, SVG.path({ d: "M -6 6 L 0 -6 L 6 6 z", fill: ColorConfig.primaryText })));
                     const moveDownButton = button$5({ style: "height: auto; min-height: var(--button-size); margin-left: 0.5em;" }, SVG.svg({ width: "16", height: "16", viewBox: "-13 -14 26 26", "pointer-events": "none", style: "width: 100%; height: 100%;" }, SVG.path({ d: "M -6 -6 L 6 -6 L 0 6 z", fill: ColorConfig.primaryText })));
-                    const optionsContainer = details({ open: optionsVisible, style: "margin-bottom: 2em; margin-top: 1em;" }, summary({ style: "margin-bottom: 1em;" }, "Options"), div$5({ style: "display: flex; flex-direction: row; align-items: center; justify-content: flex-end; margin-bottom: 0.5em;" }, div$5({ style: `flex-shrink: 0; :text-align: right; color: ${ColorConfig.primaryText};` }, span$1({ title: "What your sample is named" }, "Name")), nameInput), div$5({ style: "display: flex; flex-direction: row; align-items: center; justify-content: flex-end; margin-bottom: 0.5em;" }, div$5({ style: `flex-shrink: 0; :text-align: right; color: ${ColorConfig.primaryText};` }, span$1({ title: "What rate to resample to" }, "Sample rate")), sampleRateStepper), div$5({ style: "display: flex; flex-direction: row; align-items: center; justify-content: flex-end; margin-bottom: 0.5em;" }, div$5({ style: `text-align: right; color: ${ColorConfig.primaryText}; flex-shrink: 0;` }, span$1({ title: "Pitch where the sample is played as-is" }, "Root key")), rootKeyDisplay, rootKeyStepper), div$5({ style: "display: flex; flex-direction: row; align-items: center; justify-content: space-between; margin-bottom: 0.5em;" }, div$5({ style: `text-align: right; color: ${ColorConfig.primaryText};` }, "Percussion (pitch doesn't change with key)"), percussionBox), div$5({ style: "display: flex; flex-direction: row; align-items: center; justify-content: flex-end; margin-bottom: 0.5em;" }, div$5({ style: `flex-shrink: 0; text-align: right; color: ${ColorConfig.primaryText};` }, span$1({ title: "Applies to the \"Loop Start\" loop control option of the preset created for this sample" }, "Loop Start")), chipWaveLoopStartStepper), div$5({ style: "display: flex; flex-direction: row; align-items: center; justify-content: flex-end; margin-bottom: 0.5em;" }, div$5({ style: `flex-shrink: 0; text-align: right; color: ${ColorConfig.primaryText};` }, span$1({ title: "Applies to the \"Loop End\" loop control option of the preset created for this sample" }, "Loop End")), chipWaveLoopEndStepper), div$5({ style: "display: flex; flex-direction: row; align-items: center; justify-content: flex-end; margin-bottom: 0.5em;" }, div$5({ style: `flex-shrink: 0; text-align: right; color: ${ColorConfig.primaryText};` }, span$1({ title: "Applies to the \"Offset\" loop control option of the preset created for this sample" }, "Sample Start Offset")), chipWaveStartOffsetStepper), div$5({ style: "display: flex; flex-direction: row; align-items: center; justify-content: flex-end; margin-bottom: 0.5em;" }, div$5({ style: `flex-shrink: 0; text-align: right; color: ${ColorConfig.primaryText};` }, span$1({ title: "Applies to the \"Loop Mode\" loop control option of the preset created for this sample" }, "Loop Mode")), chipWaveLoopModeSelect), div$5({ style: "display: flex; flex-direction: row; align-items: center; justify-content: flex-end; margin-bottom: 0.5em;" }, div$5({ style: `flex-shrink: 0; text-align: right; color: ${ColorConfig.primaryText};` }, span$1({ title: "Applies to the \"Backwards\" loop control option of the preset created for this sample" }, "Backwards")), chipWavePlayBackwardsBox));
-                    fileInput.dataset.index = "" + entryIndex;
+                    const optionsContainer = details({ open: optionsVisible, style: "margin-bottom: 2em; margin-top: 1em;" }, summary({ style: "margin-bottom: 1em;" }, "Options"), div$5({ style: "display: flex; flex-direction: row; align-items: center; justify-content: flex-end; margin-bottom: 0.5em;" }, div$5({ style: `flex-shrink: 0; :text-align: right; color: ${ColorConfig.primaryText};` }, span$1({ title: "What rate to resample to" }, "Sample rate")), sampleRateStepper), div$5({ style: "display: flex; flex-direction: row; align-items: center; justify-content: flex-end; margin-bottom: 0.5em;" }, div$5({ style: `text-align: right; color: ${ColorConfig.primaryText}; flex-shrink: 0;` }, span$1({ title: "Pitch where the sample is played as-is" }, "Root key")), rootKeyDisplay, rootKeyStepper), div$5({ style: "display: flex; flex-direction: row; align-items: center; justify-content: space-between; margin-bottom: 0.5em;" }, div$5({ style: `text-align: right; color: ${ColorConfig.primaryText};` }, "Percussion (pitch doesn't change with key)"), percussionBox), div$5({ style: "display: flex; flex-direction: row; align-items: center; justify-content: flex-end; margin-bottom: 0.5em;" }, div$5({ style: `flex-shrink: 0; text-align: right; color: ${ColorConfig.primaryText};` }, span$1({ title: "Applies to the \"Loop Start\" loop control option of the preset created for this sample" }, "Loop Start")), chipWaveLoopStartStepper), div$5({ style: "display: flex; flex-direction: row; align-items: center; justify-content: flex-end; margin-bottom: 0.5em;" }, div$5({ style: `flex-shrink: 0; text-align: right; color: ${ColorConfig.primaryText};` }, span$1({ title: "Applies to the \"Loop End\" loop control option of the preset created for this sample" }, "Loop End")), chipWaveLoopEndStepper), div$5({ style: "display: flex; flex-direction: row; align-items: center; justify-content: flex-end; margin-bottom: 0.5em;" }, div$5({ style: `flex-shrink: 0; text-align: right; color: ${ColorConfig.primaryText};` }, span$1({ title: "Applies to the \"Offset\" loop control option of the preset created for this sample" }, "Sample Start Offset")), chipWaveStartOffsetStepper), div$5({ style: "display: flex; flex-direction: row; align-items: center; justify-content: flex-end; margin-bottom: 0.5em;" }, div$5({ style: `flex-shrink: 0; text-align: right; color: ${ColorConfig.primaryText};` }, span$1({ title: "Applies to the \"Loop Mode\" loop control option of the preset created for this sample" }, "Loop Mode")), chipWaveLoopModeSelect), div$5({ style: "display: flex; flex-direction: row; align-items: center; justify-content: flex-end; margin-bottom: 0.5em;" }, div$5({ style: `flex-shrink: 0; text-align: right; color: ${ColorConfig.primaryText};` }, span$1({ title: "Applies to the \"Backwards\" loop control option of the preset created for this sample" }, "Backwards")), chipWavePlayBackwardsBox));
                     urlInput.dataset.index = "" + entryIndex;
-                    nameInput.dataset.index = "" + entryIndex;
                     sampleRateStepper.dataset.index = "" + entryIndex;
                     rootKeyStepper.dataset.index = "" + entryIndex;
                     percussionBox.dataset.index = "" + entryIndex;
@@ -62223,11 +62160,9 @@ You should be redirected to the song at:<br /><br />
                         class: "add-sample-prompt-sample-name",
                         style: `margin-bottom: 0.5em; color: ${ColorConfig.secondaryText}; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;`,
                         title: sampleName,
-                    }, sampleName), div$5({ style: "display: flex; flex-direction: row; align-items: center; justify-content: flex-end; margin-bottom: 0.5em;" }, div$5({ style: `text-align: right; color: ${ColorConfig.primaryText};` }, "URL"), urlInput), div$5({ style: "display: flex; flex-direction: row; align-items: center; justify-content: flex-end; margin-bottom: 0.5em;" }, div$5({ style: `text-align: center; color: ${ColorConfig.primaryText};` }, "File Upload"), fileInput), optionsContainer, bottomButtons);
+                    }, sampleName), div$5({ style: "display: flex; flex-direction: row; align-items: center; justify-content: flex-end; margin-bottom: 0.5em;" }, div$5({ style: `text-align: right; color: ${ColorConfig.primaryText};` }, "URL"), urlInput), optionsContainer, bottomButtons);
                     optionsContainer.addEventListener("toggle", this._whenOptionsAreToggled);
-                    fileInput.addEventListener("change", this._whenFileSelected);
                     urlInput.addEventListener("change", this._whenURLChanges);
-                    nameInput.addEventListener("change", this._whenNameChanges);
                     sampleRateStepper.addEventListener("change", this._whenSampleRateChanges);
                     rootKeyStepper.addEventListener("change", this._whenRootKeyChanges);
                     percussionBox.addEventListener("change", this._whenPercussionChanges);
