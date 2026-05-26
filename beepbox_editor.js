@@ -436,6 +436,7 @@ var beepbox = (function (exports) {
     Config.releaseVal = 0.25;
     Config.willReloadForCustomSamples = false;
     Config.jsonFormat = "AbyssBox";
+    Config.maxEffectCount = 17;
     Config.scales = toNameMap([
         { name: "Free", realName: "chromatic", flags: [true, true, true, true, true, true, true, true, true, true, true, true] },
         { name: "Major", realName: "ionian", flags: [true, false, true, false, true, true, false, true, false, true, false, true] },
@@ -1441,7 +1442,7 @@ var beepbox = (function (exports) {
             promptDesc: ["This setting controls the number of phaser stages in your insturment, just like the phaser stages slider.", "At $LO, your instrument will have no phaser stages. At $HI, it will be at maximum.", "[OVERWRITING] [$LO - $HI]"] },
         { name: "song pitch shift",
             pianoName: "Song Pitch Shift",
-            maxRawVol: (Config.pitchShiftRange * 2) - 2, newNoteVol: Config.pitchShiftRange, forSong: true, convertRealFactor: -Config.pitchShiftRange + 1, associatedEffect: 7,
+            maxRawVol: (Config.pitchShiftRange * 2) - 2, newNoteVol: Config.pitchShiftRange - 1, forSong: true, convertRealFactor: -Config.pitchShiftRange + 1, associatedEffect: 7,
             promptName: "Songwide Pitch Shift",
             promptDesc: ["This setting controls the pitch offset of all instruments regardless of whether or not the instrument has the effect itself, just like the pitch shift slider.", "At $MID your instrument will have no pitch shift. This increases as you decrease toward $LO pitches (half-steps) at the low end, or increases towards +$HI pitches at the high end.", "[ADDITIVE] [$LO - $HI] [pitch]"] },
         { name: "individual envelope speed",
@@ -1473,6 +1474,11 @@ var beepbox = (function (exports) {
             maxRawVol: Config.grainRangeMax / Config.grainSizeStep, newNoteVol: 0, forSong: false, convertRealFactor: 0, associatedEffect: 16,
             promptName: "Grain Range",
             promptDesc: ["This setting controls the range of values for your grain size of the granular effect in your instrument, from no variation to a lot", "The number shown in the mod channel is multiplied by " + Config.grainSizeStep + " to get the actual grain size.", "[OVERWRITING] [$LO - $HI]"] },
+        { name: "song eq",
+            pianoName: "Song EQ",
+            maxRawVol: 10, newNoteVol: 0, forSong: true, convertRealFactor: 0, associatedEffect: 17,
+            promptName: "Song EQ Filter",
+            promptDesc: ["This setting overwrites every instrument's eq filter. You can do this in a few separate ways, similar to the per instrument eq filter modulator.", "When the option 'morph' is selected, your modulator values will indicate a sub-filter index of your EQ filter to 'morph' to over time. For example, a change from 0 to 1 means your main filter (default) will morph to sub-filter 1 over the specified duration. You can shape the main filter and sub-filters in the large filter editor ('+' button). If your two filters' number, type, and order of filter dots all match up, the morph will happen smoothly and you'll be able to hear them changing. If they do not match up, the filters will simply jump between each other.", "Note that filters will morph based on endpoints in the pattern editor. So, if you specify a morph from sub-filter 1 to 4 but do not specifically drag in new endpoints for 2 and 3, it will morph directly between 1 and 4 without going through the others.", "If you target Dot X or Dot Y, you can finely tune the coordinates of a single dot for your filter. The number of available dots to choose is dependent on your main filter's dot count.", "[OVERWRITING] [$LO - $HI]"] },
     ]);
     function centerWave(wave) {
         let sum = 0.0;
@@ -24804,7 +24810,6 @@ content: "";
 
 .beepboxEditor .settings-area {
 	grid-area: settings-area;
-	display: grid;
     grid-template-columns: auto;
     grid-template-rows: min-content min-content min-content min-content min-content;
     grid-template-areas: "version-area" "play-pause-area" "menu-area" "song-settings-area" "instrument-settings-area";
@@ -26672,6 +26677,31 @@ li.select2-results__option[role=group] > strong:hover {
 	}
 }
 
+	/* Mobile UI */
+
+	.mobileButtonContainer {
+		display: flex;
+		gap: 5px;
+	}
+
+	.play-pause-area2 {
+		flex-direction:row; 
+		width: 100%; 
+		display: flex; 
+	}
+
+	.playback-bar-controls2 {
+		width: 100%; 
+		display: flex; 
+		background: var(--editor-background); 
+		z-index: 6;
+	}
+
+	.mobileMenu {
+		display:none; 
+		background: var(--editor-background); 
+		z-index: 5;
+	}	
 `));
 
     class BarScrollBar {
@@ -28906,7 +28936,7 @@ li.select2-results__option[role=group] > strong:hover {
                     instrumentObject["harmonics"][i] = Math.round(100 * this.harmonicsWave.harmonics[i] / Config.harmonicsMax);
                 }
             }
-            if (this.type == 0 || this.type == 6 || this.type == 9 || this.type == 2 || this.type == 5 || this.type == 7 || this.type == 3) {
+            if (this.type != 1 && this.type != 11 && this.type != 8) {
                 instrumentObject["unison"] = this.unison == Config.unisons.length ? "custom" : Config.unisons[this.unison].name;
                 if (this.unison == Config.unisons.length) {
                     instrumentObject["unisonVoices"] = this.unisonVoices;
@@ -29883,7 +29913,7 @@ li.select2-results__option[role=group] > strong:hover {
                     let modulator = Config.modulators[instrument.modulators[modCount]];
                     let cap = modulator.maxRawVol;
                     if (cap != undefined) {
-                        if (modulator.name == "eq filter" || modulator.name == "note filter") {
+                        if (modulator.name == "eq filter" || modulator.name == "note filter" || modulator.name == "song eq") {
                             cap = Config.filterMorphCount - 1;
                             if (instrument.modFilterTypes[modCount] > 0 && instrument.modFilterTypes[modCount] % 2) {
                                 cap = Config.filterFreqRange;
@@ -29904,7 +29934,7 @@ li.select2-results__option[role=group] > strong:hover {
                 else {
                     let cap = Config.modulators[modSetting].maxRawVol;
                     if (cap != undefined) {
-                        if (filterType != undefined && (Config.modulators[modSetting].name == "eq filter" || Config.modulators[modSetting].name == "note filter")) {
+                        if (filterType != undefined && (Config.modulators[modSetting].name == "eq filter" || Config.modulators[modSetting].name == "note filter" || Config.modulators[modSetting].name == "song eq")) {
                             cap = Config.filterMorphCount - 1;
                             if (filterType > 0 && filterType % 2) {
                                 cap = Config.filterFreqRange;
@@ -30060,6 +30090,32 @@ li.select2-results__option[role=group] > strong:hover {
             }
             else {
                 buffer.push(base64IntToCharCode[0x3f]);
+            }
+            buffer.push(99);
+            if (this.eqFilter == null) {
+                buffer.push(base64IntToCharCode[0]);
+                console.log("Null EQ filter settings detected in toBase64String for song");
+            }
+            else {
+                buffer.push(base64IntToCharCode[this.eqFilter.controlPointCount]);
+                for (let j = 0; j < this.eqFilter.controlPointCount; j++) {
+                    const point = this.eqFilter.controlPoints[j];
+                    buffer.push(base64IntToCharCode[point.type], base64IntToCharCode[Math.round(point.freq)], base64IntToCharCode[Math.round(point.gain)]);
+                }
+            }
+            let usingSubFilterBitfield = 0;
+            for (let j = 0; j < Config.filterMorphCount - 1; j++) {
+                usingSubFilterBitfield |= (+(this.eqSubFilters[j + 1] != null) << j);
+            }
+            buffer.push(base64IntToCharCode[usingSubFilterBitfield >> 6], base64IntToCharCode[usingSubFilterBitfield & 63]);
+            for (let j = 0; j < Config.filterMorphCount - 1; j++) {
+                if (usingSubFilterBitfield & (1 << j)) {
+                    buffer.push(base64IntToCharCode[this.eqSubFilters[j + 1].controlPointCount]);
+                    for (let k = 0; k < this.eqSubFilters[j + 1].controlPointCount; k++) {
+                        const point = this.eqSubFilters[j + 1].controlPoints[k];
+                        buffer.push(base64IntToCharCode[point.type], base64IntToCharCode[Math.round(point.freq)], base64IntToCharCode[Math.round(point.gain)]);
+                    }
+                }
             }
             buffer.push(85);
             for (let channel = 0; channel < this.getChannelCount(); channel++) {
@@ -30428,7 +30484,7 @@ li.select2-results__option[role=group] > strong:hover {
                             if (status != 3) {
                                 bits.write(6, modSetting);
                             }
-                            if (Config.modulators[instrument.modulators[mod]].name == "eq filter" || Config.modulators[instrument.modulators[mod]].name == "note filter") {
+                            if (Config.modulators[instrument.modulators[mod]].name == "eq filter" || Config.modulators[instrument.modulators[mod]].name == "note filter" || Config.modulators[instrument.modulators[mod]].name == "song eq") {
                                 bits.write(6, modFilter);
                             }
                         }
@@ -31550,6 +31606,46 @@ li.select2-results__option[role=group] > strong:hover {
                                     }
                                 }
                             }
+                            else {
+                                if (fromAbyssBox && !beforeFour) {
+                                    const originalControlPointCount = base64CharCodeToInt[compressed.charCodeAt(charIndex++)];
+                                    this.eqFilter.controlPointCount = clamp(0, Config.filterMaxPoints + 1, originalControlPointCount);
+                                    for (let i = this.eqFilter.controlPoints.length; i < this.eqFilter.controlPointCount; i++) {
+                                        this.eqFilter.controlPoints[i] = new FilterControlPoint();
+                                    }
+                                    for (let i = 0; i < this.eqFilter.controlPointCount; i++) {
+                                        const point = this.eqFilter.controlPoints[i];
+                                        point.type = clamp(0, 3, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
+                                        point.freq = clamp(0, Config.filterFreqRange, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
+                                        point.gain = clamp(0, Config.filterGainRange, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
+                                    }
+                                    for (let i = this.eqFilter.controlPointCount; i < originalControlPointCount; i++) {
+                                        charIndex += 3;
+                                    }
+                                    this.eqSubFilters[0] = this.eqFilter;
+                                    let usingSubFilterBitfield = (base64CharCodeToInt[compressed.charCodeAt(charIndex++)] << 6) | (base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
+                                    for (let j = 0; j < Config.filterMorphCount - 1; j++) {
+                                        if (usingSubFilterBitfield & (1 << j)) {
+                                            const originalSubfilterControlPointCount = base64CharCodeToInt[compressed.charCodeAt(charIndex++)];
+                                            if (this.eqSubFilters[j + 1] == null)
+                                                this.eqSubFilters[j + 1] = new FilterSettings();
+                                            this.eqSubFilters[j + 1].controlPointCount = clamp(0, Config.filterMaxPoints + 1, originalSubfilterControlPointCount);
+                                            for (let i = this.eqSubFilters[j + 1].controlPoints.length; i < this.eqSubFilters[j + 1].controlPointCount; i++) {
+                                                this.eqSubFilters[j + 1].controlPoints[i] = new FilterControlPoint();
+                                            }
+                                            for (let i = 0; i < this.eqSubFilters[j + 1].controlPointCount; i++) {
+                                                const point = this.eqSubFilters[j + 1].controlPoints[i];
+                                                point.type = clamp(0, 3, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
+                                                point.freq = clamp(0, Config.filterFreqRange, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
+                                                point.gain = clamp(0, Config.filterGainRange, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
+                                            }
+                                            for (let i = this.eqSubFilters[j + 1].controlPointCount; i < originalSubfilterControlPointCount; i++) {
+                                                charIndex += 3;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                         break;
                     case 71:
@@ -31683,6 +31779,8 @@ li.select2-results__option[role=group] > strong:hover {
                                 instrument.convertLegacySettings(legacySettings, forceSimpleFilter);
                             }
                             else {
+                                if (17 > Config.maxEffectCount)
+                                    throw new Error();
                                 if ((fromAbyssBox && !beforeTwo || fromAbyssBox && !beforeThree) || (fromUltraBox && !beforeSix)) {
                                     instrument.effects = ((base64CharCodeToInt[compressed.charCodeAt(charIndex++)] << (6 * 5))
                                         | (base64CharCodeToInt[compressed.charCodeAt(charIndex++)] << (6 * 4))
@@ -32362,7 +32460,7 @@ li.select2-results__option[role=group] > strong:hover {
                                             if (status != 3) {
                                                 instrument.modulators[mod] = bits.read(6);
                                             }
-                                            if (!jumfive && (Config.modulators[instrument.modulators[mod]].name == "eq filter" || Config.modulators[instrument.modulators[mod]].name == "note filter")) {
+                                            if (!jumfive && (Config.modulators[instrument.modulators[mod]].name == "eq filter" || Config.modulators[instrument.modulators[mod]].name == "note filter" || Config.modulators[instrument.modulators[mod]].name == "song eq")) {
                                                 instrument.modFilterTypes[mod] = bits.read(6);
                                             }
                                             if (jumfive && instrument.modChannels[mod] >= 0) {
@@ -33039,10 +33137,14 @@ li.select2-results__option[role=group] > strong:hover {
                 "limitRise": this.limitRise,
                 "limitRatio": this.limitRatio,
                 "compressionRatio": this.compressionRatio,
+                "songEq": this.eqFilter.toJsonObject(),
                 "layeredInstruments": this.layeredInstruments,
                 "patternInstruments": this.patternInstruments,
                 "channels": channelArray,
             };
+            for (let i = 0; i < Config.filterMorphCount - 1; i++) {
+                result["songEq" + i] = this.eqSubFilters[i];
+            }
             if (EditorConfig.customSamples != null && EditorConfig.customSamples.length > 0) {
                 result["customSamples"] = EditorConfig.customSamples;
             }
@@ -33483,6 +33585,20 @@ li.select2-results__option[role=group] > strong:hover {
             }
             else {
                 this.compressionRatio = 1.0;
+            }
+            if (jsonObject["songEq"] != undefined) {
+                this.eqFilter.fromJsonObject(jsonObject["songEq"]);
+            }
+            else {
+                this.eqFilter.reset();
+            }
+            for (let i = 0; i < Config.filterMorphCount - 1; i++) {
+                if (jsonObject["songEq" + i]) {
+                    this.eqSubFilters[i] = jsonObject["songEq" + i];
+                }
+                else {
+                    this.eqSubFilters[i] = null;
+                }
             }
             let maxInstruments = 1;
             let maxPatterns = 1;
@@ -35126,6 +35242,8 @@ li.select2-results__option[role=group] > strong:hover {
         }
         initModFilters(song) {
             if (song != null) {
+                song.tmpEqFilterStart = song.eqFilter;
+                song.tmpEqFilterEnd = null;
                 for (let channelIndex = 0; channelIndex < song.getChannelCount(); channelIndex++) {
                     for (let instrumentIndex = 0; instrumentIndex < song.channels[channelIndex].instruments.length; instrumentIndex++) {
                         const instrument = song.channels[channelIndex].instruments[instrumentIndex];
@@ -35220,7 +35338,30 @@ li.select2-results__option[role=group] > strong:hover {
                                 for (let mod = 0; mod < Config.modCount; mod++) {
                                     if (latestPinParts[mod] != null) {
                                         if (Config.modulators[instrument.modulators[mod]].forSong) {
+                                            const songFilterParam = instrument.modulators[mod] == Config.modulators.dictionary["song eq"].index;
                                             if (latestModTimes[instrument.modulators[mod]] == null || currentBar * Config.partsPerBeat * this.song.beatsPerBar + latestPinParts[mod] > latestModTimes[instrument.modulators[mod]]) {
+                                                if (songFilterParam) {
+                                                    let tgtSong = this.song;
+                                                    if (instrument.modFilterTypes[mod] == 0) {
+                                                        tgtSong.tmpEqFilterStart = tgtSong.eqSubFilters[latestPinValues[mod]];
+                                                    }
+                                                    else {
+                                                        for (let i = 0; i < Config.filterMorphCount; i++) {
+                                                            if (tgtSong.tmpEqFilterStart != null && tgtSong.tmpEqFilterStart == tgtSong.eqSubFilters[i]) {
+                                                                tgtSong.tmpEqFilterStart = new FilterSettings();
+                                                                tgtSong.tmpEqFilterStart.fromJsonObject(tgtSong.eqSubFilters[i].toJsonObject());
+                                                                i = Config.filterMorphCount;
+                                                            }
+                                                        }
+                                                        if (tgtSong.tmpEqFilterStart != null && Math.floor((instrument.modFilterTypes[mod] - 1) / 2) < tgtSong.tmpEqFilterStart.controlPointCount) {
+                                                            if (instrument.modFilterTypes[mod] % 2)
+                                                                tgtSong.tmpEqFilterStart.controlPoints[Math.floor((instrument.modFilterTypes[mod] - 1) / 2)].freq = latestPinValues[mod];
+                                                            else
+                                                                tgtSong.tmpEqFilterStart.controlPoints[Math.floor((instrument.modFilterTypes[mod] - 1) / 2)].gain = latestPinValues[mod];
+                                                        }
+                                                    }
+                                                    tgtSong.tmpEqFilterEnd = tgtSong.tmpEqFilterStart;
+                                                }
                                                 this.setModValue(latestPinValues[mod], latestPinValues[mod], instrument.modChannels[mod], instrument.modInstruments[mod], instrument.modulators[mod]);
                                                 latestModTimes[instrument.modulators[mod]] = currentBar * Config.partsPerBeat * this.song.beatsPerBar + latestPinParts[mod];
                                             }
@@ -35614,6 +35755,15 @@ li.select2-results__option[role=group] > strong:hover {
             this.metronomePrevAmplitude = 0.0;
             this.metronomeFilter = 0.0;
             this.limit = 0.0;
+            this.songEqFilterVolume = 1.0;
+            this.songEqFilterVolumeDelta = 0.0;
+            this.songEqFiltersL = [];
+            this.songEqFiltersR = [];
+            this.songEqFilterCount = 0;
+            this.initialSongEqFilterInput1L = 0.0;
+            this.initialSongEqFilterInput2L = 0.0;
+            this.initialSongEqFilterInput1R = 0.0;
+            this.initialSongEqFilterInput2R = 0.0;
             this.tempMonoInstrumentSampleBuffer = null;
             this.audioCtx = null;
             this.scriptNode = null;
@@ -35716,6 +35866,8 @@ li.select2-results__option[role=group] > strong:hover {
             if (this.song != null) {
                 this.song.inVolumeCap = 0.0;
                 this.song.outVolumeCap = 0.0;
+                this.song.tmpEqFilterStart = null;
+                this.song.tmpEqFilterEnd = null;
                 for (let channelIndex = 0; channelIndex < this.song.pitchChannelCount + this.song.noiseChannelCount; channelIndex++) {
                     this.modInsValues[channelIndex] = [];
                     this.nextModInsValues[channelIndex] = [];
@@ -35801,7 +35953,8 @@ li.select2-results__option[role=group] > strong:hover {
                 }
             }
         }
-        isFilterModActive(forNoteFilter, channelIdx, instrumentIdx) {
+        isFilterModActive(forNoteFilter, channelIdx, instrumentIdx, forSong) {
+            var _a;
             const instrument = this.song.channels[channelIdx].instruments[instrumentIdx];
             if (forNoteFilter) {
                 if (instrument.noteFilterType)
@@ -35810,10 +35963,16 @@ li.select2-results__option[role=group] > strong:hover {
                     return true;
             }
             else {
-                if (instrument.eqFilterType)
-                    return false;
-                if (instrument.tmpEqFilterEnd != null)
-                    return true;
+                if (forSong) {
+                    if (((_a = this === null || this === void 0 ? void 0 : this.song) === null || _a === void 0 ? void 0 : _a.tmpEqFilterEnd) != null)
+                        return true;
+                }
+                else {
+                    if (instrument.eqFilterType)
+                        return false;
+                    if (instrument.tmpEqFilterEnd != null)
+                        return true;
+                }
             }
             return false;
         }
@@ -35952,6 +36111,63 @@ li.select2-results__option[role=group] > strong:hover {
                     this.loopRepeatCount--;
             }
         }
+        computeSongState(samplesPerTick) {
+            if (this.song == null)
+                return;
+            const roundedSamplesPerTick = Math.ceil(samplesPerTick);
+            const samplesPerSecond = this.samplesPerSecond;
+            let eqFilterVolume = 1.0;
+            if (this.song.eqFilterType) {
+                const eqFilterSettingsStart = this.song.eqFilter;
+                if (this.song.eqSubFilters[1] == null)
+                    this.song.eqSubFilters[1] = new FilterSettings();
+                this.song.eqSubFilters[1];
+                let startSimpleFreq = this.song.eqFilterSimpleCut;
+                let startSimpleGain = this.song.eqFilterSimplePeak;
+                this.song.eqFilterSimpleCut;
+                this.song.eqFilterSimplePeak;
+                let startPoint;
+                {
+                    eqFilterSettingsStart.convertLegacySettingsForSynth(startSimpleFreq, startSimpleGain, true);
+                    startPoint = eqFilterSettingsStart.controlPoints[0];
+                    startPoint.toCoefficients(Synth.tempFilterStartCoefficients, samplesPerSecond, 1.0, 1.0);
+                    if (this.songEqFiltersL.length < 1)
+                        this.songEqFiltersL[0] = new DynamicBiquadFilter();
+                    this.songEqFiltersL[0].loadCoefficientsWithGradient(Synth.tempFilterStartCoefficients, Synth.tempFilterStartCoefficients, 1.0 / roundedSamplesPerTick, startPoint.type == 0);
+                    if (this.songEqFiltersR.length < 1)
+                        this.songEqFiltersR[0] = new DynamicBiquadFilter();
+                    this.songEqFiltersR[0].loadCoefficientsWithGradient(Synth.tempFilterStartCoefficients, Synth.tempFilterStartCoefficients, 1.0 / roundedSamplesPerTick, startPoint.type == 0);
+                }
+                eqFilterVolume *= startPoint.getVolumeCompensationMult();
+                this.songEqFilterCount = 1;
+                eqFilterVolume = Math.min(3.0, eqFilterVolume);
+            }
+            else {
+                const eqFilterSettings = (this.song.tmpEqFilterStart != null) ? this.song.tmpEqFilterStart : this.song.eqFilter;
+                for (let i = 0; i < eqFilterSettings.controlPointCount; i++) {
+                    let startPoint = eqFilterSettings.controlPoints[i];
+                    let endPoint = (this.song.tmpEqFilterEnd != null && this.song.tmpEqFilterEnd.controlPoints[i] != null) ? this.song.tmpEqFilterEnd.controlPoints[i] : eqFilterSettings.controlPoints[i];
+                    if (startPoint.type != endPoint.type) {
+                        startPoint = endPoint;
+                    }
+                    startPoint.toCoefficients(Synth.tempFilterStartCoefficients, samplesPerSecond, 1.0, 1.0);
+                    endPoint.toCoefficients(Synth.tempFilterEndCoefficients, samplesPerSecond, 1.0, 1.0);
+                    if (this.songEqFiltersL.length <= i)
+                        this.songEqFiltersL[i] = new DynamicBiquadFilter();
+                    this.songEqFiltersL[i].loadCoefficientsWithGradient(Synth.tempFilterStartCoefficients, Synth.tempFilterEndCoefficients, 1.0 / roundedSamplesPerTick, startPoint.type == 0);
+                    if (this.songEqFiltersR.length <= i)
+                        this.songEqFiltersR[i] = new DynamicBiquadFilter();
+                    this.songEqFiltersR[i].loadCoefficientsWithGradient(Synth.tempFilterStartCoefficients, Synth.tempFilterEndCoefficients, 1.0 / roundedSamplesPerTick, startPoint.type == 0);
+                    eqFilterVolume *= startPoint.getVolumeCompensationMult();
+                }
+                this.songEqFilterCount = eqFilterSettings.controlPointCount;
+                eqFilterVolume = Math.min(3.0, eqFilterVolume);
+            }
+            let eqFilterVolumeStart = eqFilterVolume;
+            let eqFilterVolumeEnd = eqFilterVolume;
+            this.songEqFilterVolume = eqFilterVolumeStart;
+            this.songEqFilterVolumeDelta = (eqFilterVolumeEnd - eqFilterVolumeStart) / roundedSamplesPerTick;
+        }
         synthesize(outputDataL, outputDataR, outputBufferLength, playSong = true) {
             if (this.song == null) {
                 for (let i = 0; i < outputBufferLength; i++) {
@@ -36022,7 +36238,8 @@ li.select2-results__option[role=group] > strong:hover {
                                 const instrument = channel.instruments[tone.instrumentIndex];
                                 let mod = Config.modCount - 1 - tone.pitches[0];
                                 if ((instrument.modulators[mod] == Config.modulators.dictionary["note filter"].index
-                                    || instrument.modulators[mod] == Config.modulators.dictionary["eq filter"].index)
+                                    || instrument.modulators[mod] == Config.modulators.dictionary["eq filter"].index
+                                    || instrument.modulators[mod] == Config.modulators.dictionary["song eq"].index)
                                     && instrument.modFilterTypes[mod] != null && instrument.modFilterTypes[mod] > 0) {
                                     continue;
                                 }
@@ -36041,7 +36258,8 @@ li.select2-results__option[role=group] > strong:hover {
                                 const instrument = channel.instruments[tone.instrumentIndex];
                                 let mod = Config.modCount - 1 - tone.pitches[0];
                                 if ((instrument.modulators[mod] == Config.modulators.dictionary["note filter"].index
-                                    || instrument.modulators[mod] == Config.modulators.dictionary["eq filter"].index)
+                                    || instrument.modulators[mod] == Config.modulators.dictionary["eq filter"].index
+                                    || instrument.modulators[mod] == Config.modulators.dictionary["song eq"].index)
                                     && instrument.modFilterTypes[mod] != null && instrument.modFilterTypes[mod] > 0) {
                                     this.playModTone(song, channelIndex, samplesPerTick, bufferIndex, runLength, tone, false, false);
                                 }
@@ -36064,6 +36282,7 @@ li.select2-results__option[role=group] > strong:hover {
                     this.skipBar();
                     continue;
                 }
+                this.computeSongState(samplesPerTick);
                 for (let channelIndex = 0; channelIndex < song.pitchChannelCount + song.noiseChannelCount; channelIndex++) {
                     const channel = song.channels[channelIndex];
                     const channelState = this.channels[channelIndex];
@@ -36164,6 +36383,55 @@ li.select2-results__option[role=group] > strong:hover {
                     }
                 }
                 for (let i = bufferIndex; i < runEnd; i++) {
+                    {
+                        let filtersL = this.songEqFiltersL;
+                        let filtersR = this.songEqFiltersR;
+                        const filterCount = this.songEqFilterCount | 0;
+                        let initialFilterInput1L = +this.initialSongEqFilterInput1L;
+                        let initialFilterInput2L = +this.initialSongEqFilterInput2L;
+                        let initialFilterInput1R = +this.initialSongEqFilterInput1R;
+                        let initialFilterInput2R = +this.initialSongEqFilterInput2R;
+                        const applyFilters = Synth.applyFilters;
+                        let eqFilterVolume = +this.songEqFilterVolume;
+                        const eqFilterVolumeDelta = +this.songEqFilterVolumeDelta;
+                        const inputSampleL = outputDataL[i];
+                        let sampleL = inputSampleL;
+                        sampleL = applyFilters(sampleL, initialFilterInput1L, initialFilterInput2L, filterCount, filtersL);
+                        initialFilterInput2L = initialFilterInput1L;
+                        initialFilterInput1L = inputSampleL;
+                        sampleL *= eqFilterVolume;
+                        outputDataL[i] = sampleL;
+                        const inputSampleR = outputDataR[i];
+                        let sampleR = inputSampleR;
+                        sampleR = applyFilters(sampleR, initialFilterInput1R, initialFilterInput2R, filterCount, filtersR);
+                        initialFilterInput2R = initialFilterInput1R;
+                        initialFilterInput1R = inputSampleR;
+                        sampleR *= eqFilterVolume;
+                        outputDataR[i] = sampleR;
+                        eqFilterVolume += eqFilterVolumeDelta;
+                        this.sanitizeFilters(filtersL);
+                        if (!(initialFilterInput1L < 100) || !(initialFilterInput2L < 100)) {
+                            initialFilterInput1L = 0.0;
+                            initialFilterInput2L = 0.0;
+                        }
+                        if (Math.abs(initialFilterInput1L) < epsilon)
+                            initialFilterInput1L = 0.0;
+                        if (Math.abs(initialFilterInput2L) < epsilon)
+                            initialFilterInput2L = 0.0;
+                        this.initialSongEqFilterInput1L = initialFilterInput1L;
+                        this.initialSongEqFilterInput2L = initialFilterInput2L;
+                        this.sanitizeFilters(filtersR);
+                        if (!(initialFilterInput1R < 100) || !(initialFilterInput2R < 100)) {
+                            initialFilterInput1R = 0.0;
+                            initialFilterInput2R = 0.0;
+                        }
+                        if (Math.abs(initialFilterInput1R) < epsilon)
+                            initialFilterInput1R = 0.0;
+                        if (Math.abs(initialFilterInput2R) < epsilon)
+                            initialFilterInput2R = 0.0;
+                        this.initialSongEqFilterInput1R = initialFilterInput1R;
+                        this.initialSongEqFilterInput2R = initialFilterInput2R;
+                    }
                     const sampleL = outputDataL[i] * song.masterGain * song.masterGain;
                     const sampleR = outputDataR[i] * song.masterGain * song.masterGain;
                     const absL = sampleL < 0.0 ? -sampleL : sampleL;
@@ -36251,6 +36519,12 @@ li.select2-results__option[role=group] > strong:hover {
                                 instrument.tmpNoteFilterStart = instrument.noteFilter;
                             }
                         }
+                    }
+                    if (song.tmpEqFilterEnd != null) {
+                        song.tmpEqFilterStart = song.tmpEqFilterEnd;
+                    }
+                    else {
+                        song.tmpEqFilterStart = song.eqFilter;
                     }
                     this.tick++;
                     this.tickSampleCountdown += samplesPerTick;
@@ -37543,8 +37817,8 @@ li.select2-results__option[role=group] > strong:hover {
                     let pulseWidthModStart = basePulseWidth;
                     let pulseWidthModEnd = basePulseWidth;
                     if (this.isModActive(Config.modulators.dictionary["pulse width"].index, channelIndex, tone.instrumentIndex)) {
-                        pulseWidthModStart = (this.getModValue(Config.modulators.dictionary["pulse width"].index, channelIndex, tone.instrumentIndex, false)) / (Config.pulseWidthRange * 2);
-                        pulseWidthModEnd = (this.getModValue(Config.modulators.dictionary["pulse width"].index, channelIndex, tone.instrumentIndex, true)) / (Config.pulseWidthRange * 2);
+                        pulseWidthModStart = (this.getModValue(Config.modulators.dictionary["pulse width"].index, channelIndex, tone.instrumentIndex, false)) / (Config.pulseWidthRange);
+                        pulseWidthModEnd = (this.getModValue(Config.modulators.dictionary["pulse width"].index, channelIndex, tone.instrumentIndex, true)) / (Config.pulseWidthRange);
                     }
                     const pulseWidthStart = pulseWidthModStart * envelopeStarts[2];
                     const pulseWidthEnd = pulseWidthModEnd * envelopeEnds[2];
@@ -37688,8 +37962,8 @@ li.select2-results__option[role=group] > strong:hover {
                     let pulseWidthModStart = basePulseWidth;
                     let pulseWidthModEnd = basePulseWidth;
                     if (this.isModActive(Config.modulators.dictionary["pulse width"].index, channelIndex, tone.instrumentIndex)) {
-                        pulseWidthModStart = (this.getModValue(Config.modulators.dictionary["pulse width"].index, channelIndex, tone.instrumentIndex, false)) / (Config.pulseWidthRange * 2);
-                        pulseWidthModEnd = (this.getModValue(Config.modulators.dictionary["pulse width"].index, channelIndex, tone.instrumentIndex, true)) / (Config.pulseWidthRange * 2);
+                        pulseWidthModStart = (this.getModValue(Config.modulators.dictionary["pulse width"].index, channelIndex, tone.instrumentIndex, false)) / (Config.pulseWidthRange);
+                        pulseWidthModEnd = (this.getModValue(Config.modulators.dictionary["pulse width"].index, channelIndex, tone.instrumentIndex, true)) / (Config.pulseWidthRange);
                     }
                     let pulseWidthStart = pulseWidthModStart * envelopeStarts[2];
                     let pulseWidthEnd = pulseWidthModEnd * envelopeEnds[2];
@@ -39657,6 +39931,43 @@ li.select2-results__option[role=group] > strong:hover {
                 }
                 else if (setting == Config.modulators.dictionary["next bar"].index) {
                     synth.wantToSkip = true;
+                }
+                else if (setting == Config.modulators.dictionary["song eq"].index) {
+                    const tgtSong = synth.song;
+                    let dotTarget = instrument.modFilterTypes[mod] | 0;
+                    if (dotTarget == 0) {
+                        let pinIdx = 0;
+                        const currentPart = synth.getTicksIntoBar() / Config.ticksPerPart;
+                        while (tone.note.start + tone.note.pins[pinIdx].time <= currentPart)
+                            pinIdx++;
+                        let lerpEndRatio = ((currentPart - tone.note.start + (roundedSamplesPerTick / (synth.getSamplesPerTick() * Config.ticksPerPart)) * Config.ticksPerPart) - tone.note.pins[pinIdx - 1].time) / (tone.note.pins[pinIdx].time - tone.note.pins[pinIdx - 1].time);
+                        if (tgtSong.eqSubFilters[tone.note.pins[pinIdx - 1].size] != null || tgtSong.eqSubFilters[tone.note.pins[pinIdx].size] != null) {
+                            tgtSong.tmpEqFilterEnd = FilterSettings.lerpFilters(tgtSong.eqSubFilters[tone.note.pins[pinIdx - 1].size], tgtSong.eqSubFilters[tone.note.pins[pinIdx].size], lerpEndRatio);
+                        }
+                        else {
+                            tgtSong.tmpEqFilterEnd = tgtSong.eqFilter;
+                        }
+                    }
+                    else {
+                        for (let i = 0; i < Config.filterMorphCount; i++) {
+                            if (tgtSong.tmpEqFilterEnd == tgtSong.eqSubFilters[i] && tgtSong.tmpEqFilterEnd != null) {
+                                tgtSong.tmpEqFilterEnd = new FilterSettings();
+                                tgtSong.tmpEqFilterEnd.fromJsonObject(tgtSong.eqSubFilters[i].toJsonObject());
+                            }
+                        }
+                        if (tgtSong.tmpEqFilterEnd == null) {
+                            tgtSong.tmpEqFilterEnd = new FilterSettings();
+                            tgtSong.tmpEqFilterEnd.fromJsonObject(tgtSong.eqFilter.toJsonObject());
+                        }
+                        if (tgtSong.tmpEqFilterEnd.controlPointCount > Math.floor((dotTarget - 1) / 2)) {
+                            if (dotTarget % 2) {
+                                tgtSong.tmpEqFilterEnd.controlPoints[Math.floor((dotTarget - 1) / 2)].freq = tone.expression + tone.expressionDelta;
+                            }
+                            else {
+                                tgtSong.tmpEqFilterEnd.controlPoints[Math.floor((dotTarget - 1) / 2)].gain = tone.expression + tone.expressionDelta;
+                            }
+                        }
+                    }
                 }
                 else if (setting == Config.modulators.dictionary["eq filter"].index) {
                     const tgtInstrument = synth.song.channels[instrument.modChannels[mod]].instruments[usedInstruments[instrumentIndex]];
@@ -42448,6 +42759,33 @@ li.select2-results__option[role=group] > strong:hover {
                 this._didSomething();
         }
     }
+    class ChangeSongFilterAddPoint extends UndoableChange {
+        constructor(doc, filterSettings, point, index, deletion = false) {
+            super(deletion);
+            this._doc = doc;
+            this._filterSettings = filterSettings;
+            this._point = point;
+            this._index = index;
+            this._didSomething();
+            this.redo();
+        }
+        _doForwards() {
+            this._filterSettings.controlPoints.splice(this._index, 0, this._point);
+            this._filterSettings.controlPointCount++;
+            this._filterSettings.controlPoints.length = this._filterSettings.controlPointCount;
+            this._doc.song.tmpEqFilterStart = this._doc.song.eqFilter;
+            this._doc.song.tmpEqFilterEnd = null;
+            this._doc.notifier.changed();
+        }
+        _doBackwards() {
+            this._filterSettings.controlPoints.splice(this._index, 1);
+            this._filterSettings.controlPointCount--;
+            this._filterSettings.controlPoints.length = this._filterSettings.controlPointCount;
+            this._doc.song.tmpEqFilterStart = this._doc.song.eqFilter;
+            this._doc.song.tmpEqFilterEnd = null;
+            this._doc.notifier.changed();
+        }
+    }
     class ChangeFilterAddPoint extends UndoableChange {
         constructor(doc, filterSettings, point, index, isNoteFilter, deletion = false) {
             super(deletion);
@@ -42531,6 +42869,37 @@ li.select2-results__option[role=group] > strong:hover {
             this.gain = useGain;
         }
     }
+    class ChangeSongFilterMovePoint extends UndoableChange {
+        constructor(doc, point, oldFreq, newFreq, oldGain, newGain, pointIndex) {
+            super(false);
+            this._doc = doc;
+            this._point = point;
+            this._oldFreq = oldFreq;
+            this._newFreq = newFreq;
+            this._oldGain = oldGain;
+            this._newGain = newGain;
+            this.pointIndex = pointIndex;
+            this.pointType = point.type;
+            this._didSomething();
+            this.redo();
+        }
+        getMoveData(beforeChange) {
+            if (beforeChange) {
+                return new FilterMoveData(this._point, this._oldFreq, this._oldGain);
+            }
+            return new FilterMoveData(this._point, this._newFreq, this._newGain);
+        }
+        _doForwards() {
+            this._point.freq = this._newFreq;
+            this._point.gain = this._newGain;
+            this._doc.notifier.changed();
+        }
+        _doBackwards() {
+            this._point.freq = this._oldFreq;
+            this._point.gain = this._oldGain;
+            this._doc.notifier.changed();
+        }
+    }
     class ChangeFilterMovePoint extends UndoableChange {
         constructor(doc, point, oldFreq, newFreq, oldGain, newGain, useNoteFilter, pointIndex) {
             super(false);
@@ -42565,6 +42934,36 @@ li.select2-results__option[role=group] > strong:hover {
             this._point.freq = this._oldFreq;
             this._point.gain = this._oldGain;
             this._instrument.preset = this._instrumentPrevPreset;
+            this._doc.notifier.changed();
+        }
+    }
+    class ChangeSongFilterSettings extends UndoableChange {
+        constructor(doc, settings, oldSettings, subFilters = null, oldSubFilters = null) {
+            super(false);
+            this._doc = doc;
+            this._oldSettings = oldSettings;
+            this._filterSettings = settings;
+            if (subFilters != null && oldSubFilters != null) {
+                this._subFilters = subFilters;
+                this._oldSubFilters = oldSubFilters;
+            }
+            this._didSomething();
+            this.redo();
+        }
+        _doForwards() {
+            this._doc.song.eqFilter = this._filterSettings;
+            if (this._subFilters != null)
+                this._doc.song.eqSubFilters = this._subFilters;
+            this._doc.song.tmpEqFilterStart = this._doc.song.eqFilter;
+            this._doc.song.tmpEqFilterEnd = null;
+            this._doc.notifier.changed();
+        }
+        _doBackwards() {
+            this._doc.song.eqFilter = this._oldSettings;
+            if (this._oldSubFilters != null)
+                this._doc.song.eqSubFilters = this._oldSubFilters;
+            this._doc.song.tmpEqFilterStart = this._doc.song.eqFilter;
+            this._doc.song.tmpEqFilterEnd = null;
             this._doc.notifier.changed();
         }
     }
@@ -45122,7 +45521,7 @@ li.select2-results__option[role=group] > strong:hover {
     }
 
     class FilterEditor {
-        constructor(_doc, useNoteFilter = false, larger = false) {
+        constructor(_doc, useNoteFilter = false, larger = false, forSong = false) {
             this._doc = _doc;
             this._editorWidth = 120;
             this._editorHeight = 26;
@@ -45161,6 +45560,7 @@ li.select2-results__option[role=group] > strong:hover {
             this._renderedPointTypes = -1;
             this._renderedPointFreqs = -1;
             this._renderedPointGains = -1;
+            this._forSong = false;
             this._whenKeyPressed = (event) => {
                 if (event.keyCode == 90) {
                     this.undo();
@@ -45239,8 +45639,13 @@ li.select2-results__option[role=group] > strong:hover {
             };
             this._whenCursorReleased = (event) => {
                 if (this._writingMods) {
-                    const instrument = this._doc.song.channels[this._doc.channel].instruments[this._doc.getCurrentInstrument()];
-                    this._useFilterSettings = this._getTargetFilterSettings(instrument);
+                    if (this._forSong) {
+                        this._useFilterSettings = this._getTargetFilterSettingsForSong(this._doc.song);
+                    }
+                    else {
+                        const instrument = this._doc.song.channels[this._doc.channel].instruments[this._doc.getCurrentInstrument()];
+                        this._useFilterSettings = this._getTargetFilterSettings(instrument);
+                    }
                 }
                 if (this.container.offsetParent == null)
                     return;
@@ -45248,9 +45653,17 @@ li.select2-results__option[role=group] > strong:hover {
                     if (!this._addingPoint && !this._mouseDragging && !this._touchMode) {
                         if (this._selectedIndex < this._useFilterSettings.controlPointCount && this._selectedIndex != -1) {
                             const point = this._useFilterSettings.controlPoints[this._selectedIndex];
-                            let change = new ChangeFilterAddPoint(this._doc, this._useFilterSettings, point, this._selectedIndex, this._useNoteFilter, true);
-                            if (!this._larger) {
-                                this._doc.record(change);
+                            if (this._forSong) {
+                                let change = new ChangeSongFilterAddPoint(this._doc, this._useFilterSettings, point, this._selectedIndex, true);
+                                if (!this._larger) {
+                                    this._doc.record(change);
+                                }
+                            }
+                            else {
+                                let change = new ChangeFilterAddPoint(this._doc, this._useFilterSettings, point, this._selectedIndex, this._useNoteFilter, true);
+                                if (!this._larger) {
+                                    this._doc.record(change);
+                                }
                             }
                         }
                     }
@@ -45273,6 +45686,7 @@ li.select2-results__option[role=group] > strong:hover {
             };
             this._useNoteFilter = useNoteFilter;
             this._larger = larger;
+            this._forSong = forSong;
             if (this._larger) {
                 this.container.addEventListener("keydown", this._whenKeyPressed);
                 this._editorWidth = 1200;
@@ -45301,16 +45715,32 @@ li.select2-results__option[role=group] > strong:hover {
                     this._indicators[i].style.setProperty("font-size", "24px");
                     this._svg.appendChild(this._indicators[i]);
                 }
+                let filterSettings;
                 const instrument = this._doc.song.channels[this._doc.channel].instruments[this._doc.getCurrentInstrument()];
-                const filterSettings = this._useNoteFilter ? instrument.noteFilter : instrument.eqFilter;
+                if (this._forSong) {
+                    filterSettings = this._doc.song.eqFilter;
+                }
+                else {
+                    filterSettings = this._useNoteFilter ? instrument.noteFilter : instrument.eqFilter;
+                }
                 this.selfUndoSettings.push(JSON.stringify(filterSettings.toJsonObject()));
                 this._subFilters[0] = filterSettings;
                 for (let i = 1; i < Config.filterMorphCount; i++) {
-                    const subFilter = this._useNoteFilter ? instrument.noteSubFilters[i] : instrument.eqSubFilters[i];
-                    if (subFilter != null) {
-                        let parsedFilter = new FilterSettings();
-                        parsedFilter.fromJsonObject(subFilter.toJsonObject());
-                        this._subFilters[i] = parsedFilter;
+                    if (this._forSong) {
+                        const subFilter = this._doc.song.eqSubFilters[i];
+                        if (subFilter != null) {
+                            let parsedFilter = new FilterSettings();
+                            parsedFilter.fromJsonObject(subFilter.toJsonObject());
+                            this._subFilters[i] = parsedFilter;
+                        }
+                    }
+                    else {
+                        const subFilter = this._useNoteFilter ? instrument.noteSubFilters[i] : instrument.eqSubFilters[i];
+                        if (subFilter != null) {
+                            let parsedFilter = new FilterSettings();
+                            parsedFilter.fromJsonObject(subFilter.toJsonObject());
+                            this._subFilters[i] = parsedFilter;
+                        }
                     }
                 }
             }
@@ -45374,10 +45804,28 @@ li.select2-results__option[role=group] > strong:hover {
         }
         _whenCursorMoved() {
             if (this._writingMods) {
-                const instrument = this._doc.song.channels[this._doc.channel].instruments[this._doc.getCurrentInstrument()];
-                this._useFilterSettings = this._getTargetFilterSettings(instrument);
+                if (this._forSong) {
+                    this._useFilterSettings = this._getTargetFilterSettingsForSong(this._doc.song);
+                }
+                else {
+                    const instrument = this._doc.song.channels[this._doc.channel].instruments[this._doc.getCurrentInstrument()];
+                    this._useFilterSettings = this._getTargetFilterSettings(instrument);
+                }
                 if (this._dragChange != null) {
                     if (this._dragChange instanceof ChangeSequence && this._dragChange.checkFirst() instanceof ChangeFilterMovePoint) {
+                        const data = this._dragChange.checkFirst().getMoveData(true);
+                        const newPoint = this._useFilterSettings.controlPoints[this._selectedIndex];
+                        if (newPoint == null || newPoint.type != data.point.type) {
+                            this._dragChange = null;
+                            this._writingMods = false;
+                            this._mouseDown = false;
+                        }
+                        else {
+                            newPoint.freq = data.freq;
+                            newPoint.gain = data.gain;
+                        }
+                    }
+                    else if (this._forSong && this._dragChange instanceof ChangeSequence && this._dragChange.checkFirst() instanceof ChangeSongFilterMovePoint) {
                         const data = this._dragChange.checkFirst().getMoveData(true);
                         const newPoint = this._useFilterSettings.controlPoints[this._selectedIndex];
                         if (newPoint == null || newPoint.type != data.point.type) {
@@ -45425,7 +45873,12 @@ li.select2-results__option[role=group] > strong:hover {
                         point.type = this._addedType;
                         point.freq = freq;
                         point.gain = gain;
-                        sequence.append(new ChangeFilterAddPoint(this._doc, this._useFilterSettings, point, this._useFilterSettings.controlPointCount, this._useNoteFilter));
+                        if (this._forSong) {
+                            sequence.append(new ChangeSongFilterAddPoint(this._doc, this._useFilterSettings, point, this._useFilterSettings.controlPointCount));
+                        }
+                        else {
+                            sequence.append(new ChangeFilterAddPoint(this._doc, this._useFilterSettings, point, this._useFilterSettings.controlPointCount, this._useNoteFilter));
+                        }
                         if (this.coordText != null) {
                             this.coordText.innerText = "(" + freq + ", " + gain + ")";
                         }
@@ -45448,20 +45901,36 @@ li.select2-results__option[role=group] > strong:hover {
                         this._mouseDragging = true;
                     }
                     if (freq >= 0 && freq < Config.filterFreqRange) {
-                        sequence.append(new ChangeFilterMovePoint(this._doc, point, point.freq, freq, point.gain, gain, this._useNoteFilter, this._selectedIndex));
+                        if (this._forSong) {
+                            sequence.append(new ChangeSongFilterMovePoint(this._doc, point, point.freq, freq, point.gain, gain, this._selectedIndex));
+                        }
+                        else {
+                            sequence.append(new ChangeFilterMovePoint(this._doc, point, point.freq, freq, point.gain, gain, this._useNoteFilter, this._selectedIndex));
+                        }
                         if (this.coordText != null) {
                             this.coordText.innerText = "(" + freq + ", " + gain + ")";
                             if (!this._writingMods) {
-                                const instrument = this._doc.song.channels[this._doc.channel].instruments[this._doc.getCurrentInstrument()];
-                                instrument.tmpEqFilterStart = instrument.eqFilter;
-                                instrument.tmpEqFilterEnd = null;
-                                instrument.tmpNoteFilterStart = instrument.noteFilter;
-                                instrument.tmpNoteFilterEnd = null;
+                                if (this._forSong) {
+                                    this._doc.song.tmpEqFilterStart = this._doc.song.eqFilter;
+                                    this._doc.song.tmpEqFilterEnd = null;
+                                }
+                                else {
+                                    const instrument = this._doc.song.channels[this._doc.channel].instruments[this._doc.getCurrentInstrument()];
+                                    instrument.tmpEqFilterStart = instrument.eqFilter;
+                                    instrument.tmpEqFilterEnd = null;
+                                    instrument.tmpNoteFilterStart = instrument.noteFilter;
+                                    instrument.tmpNoteFilterEnd = null;
+                                }
                             }
                         }
                     }
                     else {
-                        sequence.append(new ChangeFilterAddPoint(this._doc, this._useFilterSettings, point, this._selectedIndex, this._useNoteFilter, true));
+                        if (this._forSong) {
+                            sequence.append(new ChangeSongFilterAddPoint(this._doc, this._useFilterSettings, point, this._selectedIndex, true));
+                        }
+                        else {
+                            sequence.append(new ChangeFilterAddPoint(this._doc, this._useFilterSettings, point, this._selectedIndex, this._useNoteFilter, true));
+                        }
                         this._deletingPoint = true;
                     }
                 }
@@ -45572,8 +46041,13 @@ li.select2-results__option[role=group] > strong:hover {
             this._responsePath.setAttribute("d", responsePath);
         }
         swapToSettings(settings, useHistory = false) {
-            const instrument = this._doc.song.channels[this._doc.channel].instruments[this._doc.getCurrentInstrument()];
-            new ChangeFilterSettings(this._doc, settings, this._filterSettings, this._useNoteFilter, this._subFilters, this._useNoteFilter ? instrument.noteSubFilters : instrument.eqSubFilters);
+            if (this._forSong) {
+                new ChangeSongFilterSettings(this._doc, settings, this._filterSettings, this._subFilters, this._doc.song.eqSubFilters);
+            }
+            else {
+                const instrument = this._doc.song.channels[this._doc.channel].instruments[this._doc.getCurrentInstrument()];
+                new ChangeFilterSettings(this._doc, settings, this._filterSettings, this._useNoteFilter, this._subFilters, this._useNoteFilter ? instrument.noteSubFilters : instrument.eqSubFilters);
+            }
             this._filterSettings = settings;
             this._subFilters[this._subfilterIndex] = settings;
             if (useHistory && this._larger) {
@@ -45588,7 +46062,12 @@ li.select2-results__option[role=group] > strong:hover {
             let firstFilter = new FilterSettings;
             const instrument = this._doc.song.channels[this._doc.channel].instruments[this._doc.getCurrentInstrument()];
             firstFilter.fromJsonObject(JSON.parse(String(this.selfUndoSettings[0])));
-            this._doc.record(new ChangeFilterSettings(this._doc, this._subFilters[0], firstFilter, this._useNoteFilter, this._subFilters, this._useNoteFilter ? instrument.noteSubFilters : instrument.eqSubFilters), true);
+            if (this._forSong) {
+                this._doc.record(new ChangeSongFilterSettings(this._doc, this._subFilters[0], firstFilter, this._subFilters, this._doc.song.eqSubFilters), true);
+            }
+            else {
+                this._doc.record(new ChangeFilterSettings(this._doc, this._subFilters[0], firstFilter, this._useNoteFilter, this._subFilters, this._useNoteFilter ? instrument.noteSubFilters : instrument.eqSubFilters), true);
+            }
         }
         undo() {
             if (this.selfUndoHistoryPos > 0) {
@@ -45663,6 +46142,12 @@ li.select2-results__option[role=group] > strong:hover {
                 this.swapToSettings(this._subFilters[newIndex], false);
             }
         }
+        _getTargetFilterSettingsForSong(song) {
+            let targetSettings = song.tmpEqFilterStart;
+            if (targetSettings == null)
+                targetSettings = song.eqFilter;
+            return targetSettings;
+        }
         _getTargetFilterSettings(instrument) {
             let targetSettings = (this._useNoteFilter) ? instrument.tmpNoteFilterStart : instrument.tmpEqFilterStart;
             if (targetSettings == null)
@@ -45672,7 +46157,7 @@ li.select2-results__option[role=group] > strong:hover {
         render(activeMods = false, forceModRender = false) {
             this._writingMods = forceModRender && this._mouseDown;
             const instrument = this._doc.song.channels[this._doc.channel].instruments[this._doc.getCurrentInstrument()];
-            const filterSettings = this._useNoteFilter ? instrument.noteFilter : instrument.eqFilter;
+            const filterSettings = this._forSong ? this._doc.song.eqFilter : (this._useNoteFilter ? instrument.noteFilter : instrument.eqFilter);
             let displayMods = (activeMods && !this._larger && (forceModRender || (!this._mouseOver && !this._mouseDragging && !this._mouseDown)) && this._doc.synth.playing);
             if (displayMods)
                 this._controlPointPath.style.setProperty("fill", `${ColorConfig.overwritingModSlider}`);
@@ -45684,7 +46169,7 @@ li.select2-results__option[role=group] > strong:hover {
             }
             this._filterSettings = filterSettings;
             if (displayMods) {
-                this._useFilterSettings = this._getTargetFilterSettings(instrument);
+                this._useFilterSettings = this._forSong ? this._getTargetFilterSettingsForSong(this._doc.song) : this._getTargetFilterSettings(instrument);
                 if (this._writingMods)
                     this._whenCursorMoved();
             }
@@ -45719,10 +46204,11 @@ li.select2-results__option[role=group] > strong:hover {
 
     const { button: button$q, div: div$q, h2: h2$p, p: p$9 } = HTML;
     class CustomFilterPrompt {
-        constructor(_doc, _songEditor, _useNoteFilter) {
+        constructor(_doc, _songEditor, _useNoteFilter, forSong = false) {
             this._doc = _doc;
             this._songEditor = _songEditor;
             this._useNoteFilter = _useNoteFilter;
+            this.forSong = forSong;
             this.filterData = new FilterSettings;
             this.startingFilterData = new FilterSettings;
             this._subfilterIndex = 0;
@@ -45757,9 +46243,11 @@ li.select2-results__option[role=group] > strong:hover {
                 this._filterButtons[index].classList.add("selected-instrument");
             };
             this._copyFilterSettings = () => {
-                const filterCopy = this._useNoteFilter
-                    ? this._doc.song.channels[this._doc.channel].instruments[this._doc.getCurrentInstrument()].noteFilter.toJsonObject()
-                    : this._doc.song.channels[this._doc.channel].instruments[this._doc.getCurrentInstrument()].eqFilter.toJsonObject();
+                const filterCopy = this.forSong
+                    ? this._doc.song.eqFilter.toJsonObject()
+                    : this._useNoteFilter
+                        ? this._doc.song.channels[this._doc.channel].instruments[this._doc.getCurrentInstrument()].noteFilter.toJsonObject()
+                        : this._doc.song.channels[this._doc.channel].instruments[this._doc.getCurrentInstrument()].eqFilter.toJsonObject();
                 window.localStorage.setItem("filterCopy", JSON.stringify(filterCopy));
             };
             this._pasteFilterSettings = () => {
@@ -45845,11 +46333,11 @@ li.select2-results__option[role=group] > strong:hover {
             this._filterPasteButton.addEventListener("click", this._pasteFilterSettings);
             this.updatePlayButton();
             let colors = ColorConfig.getChannelColor(this._doc.song, this._doc.channel);
-            this.filterEditor = new FilterEditor(_doc, _useNoteFilter, true);
+            this.filterEditor = new FilterEditor(_doc, _useNoteFilter, true, this.forSong);
             this._filterContainer.appendChild(this.filterEditor.container);
             this.filterEditor.container.insertBefore(this._filterCoordinateText, this.filterEditor.container.firstChild);
             this.filterEditor.coordText = this._filterCoordinateText;
-            this._editorTitle.children[0].innerHTML = (_useNoteFilter) ? "Edit Note Filter" : "Edit EQ Filter";
+            this._editorTitle.children[0].innerHTML = forSong ? "Edit Song EQ Filter" : (_useNoteFilter) ? "Edit Note Filter" : "Edit EQ Filter";
             let newButton = button$q({ class: "no-underline", style: "max-width: 5em;" }, "Main");
             this._filterButtonContainer.appendChild(newButton);
             this._filterButtons.push(newButton);
@@ -60283,6 +60771,11 @@ You should be redirected to the song at:<br /><br />
                         message = div$8(h2$7("Random Envelope Type"), p$1("Random Envelopes can switch between being determined by the time in the song, the pitch of the note, or per note trigger."));
                     }
                     break;
+                case "songeq":
+                    {
+                        message = div$8(h2$7("Song Eq Filter"), p$1("Filters are a way of emphasizing or diminishing different parts of a sound. Musical notes have a fundamental (base) frequency, but the sound of a musical note also has parts at higher frequencies and filters can adjust the volume of each of these parts based on their frequency."), p$1("Click in the filter editor to insert, delete, or drag a filter control point. The horizontal position of the point determines which frequencies it affects, and the vertical position determines how the volume is affected at that frequency."), p$1("Insert a new point on the left side of the filter editor to add a \"high-pass\" filter point, which additionally reduces the volume of lower frequencies, or insert a new point on the right side to add a \"low-pass\" filter point which reduces the volume of higher frequencies."), p$1("The Song Eq Filter applies to all instruments. This can be handy for getting the sound of a certain genre or fading in and out in combination with modulation"));
+                    }
+                    break;
                 case "ringMod":
                     {
                         message = div$8(h2$7("Ring Modulation"), p$1(`This setting multiplies a selected wave's frequency with an instrument frequency, this is useful for "bell-like" instruments.`));
@@ -63005,10 +63498,10 @@ You should be redirected to the song at:<br /><br />
             this.prompt = null;
             this._menuMode = 1;
             this._instSettingMode = 1;
-            this._mobilePatternButton = button({ class: "mobilePatternButton", type: "button", style: "display:none; width: 33vw; height: 75%;" });
-            this._mobileTrackButton = button({ class: "mobileTrackButton", type: "button", style: "display:none; width: 34vw; height: 60%;" });
-            this._mobileSettingsButton = button({ class: "mobileSettingsButton", type: "button", style: "display:none; width: 33vw; height: 60%;" });
-            this.mobileMenu = div({ class: "mobileMenu", style: "position: fixed; bottom: 0px; height: 20vh; width: 100vw; display:none; background: var(--editor-background); z-index: 5;" });
+            this._mobilePatternButton = button({ class: "mobilePatternButton", type: "button", style: "display:none; width: 100%; height: 100%;" });
+            this._mobileTrackButton = button({ class: "mobileTrackButton", type: "button", style: "display:none; width: 100%; height: 100%;" });
+            this._mobileSettingsButton = button({ class: "mobileSettingsButton", type: "button", style: "display:none; width: 100%; height: 100%;" });
+            this.mobileMenu = div({ class: "mobileMenu" });
             this._mobileEditMenuIcon = div({ class: "mobileEditMenuIcon" });
             this._mobileTrackMenuIcon = div({ class: "mobileTrackMenuIcon" });
             this._mobileSettingsMenuIcon = div({ class: "mobileSettingsMenuIcon" });
@@ -63050,6 +63543,8 @@ You should be redirected to the song at:<br /><br />
             this._octaveStepper = input({ style: "width: 59.5%;", type: "number", min: Config.octaveMin, max: Config.octaveMax, value: "0" });
             this._tempoSlider = new Slider(input({ style: "margin: 0; vertical-align: middle;", type: "range", min: "1", max: "500", value: "160", step: "1" }), this._doc, (oldValue, newValue) => new ChangeTempo(this._doc, oldValue, newValue), false);
             this._tempoStepper = input({ style: "width: 4em; font-size: 80%; margin-left: 0.4em; vertical-align: middle;", type: "number", step: "1" });
+            this._songEqFilterEditor = new FilterEditor(this._doc, false, false, true);
+            this._songEqFilterZoom = button({ style: "margin-left:0em; padding-left:0.2em; height:1.5em; max-width: 12px;", onclick: () => this._openPrompt("customSongEQFilterSettings") }, "+");
             this._chorusSlider = new Slider(input({ style: "margin: 0;", type: "range", min: "0", max: Config.chorusRange - 1, value: "0", step: "1" }), this._doc, (oldValue, newValue) => new ChangeChorus(this._doc, oldValue, newValue), false);
             this._chorusRow = div({ class: "selectRow" }, span({ class: "tip", onclick: () => this._openPrompt("chorus") }, "Chorus:"), this._chorusSlider.container);
             this._ringModWaveSelect = buildOptions(select({}), Config.operatorWaves.map(wave => wave.name));
@@ -63348,13 +63843,14 @@ You should be redirected to the song at:<br /><br />
             this._sampleFailedBar = div({ style: `width: 0%; height: 100%; background-color: ${ColorConfig.sampleFailed};` });
             this._sampleLoadingBarContainer = div({ class: `sampleLoadingContainer`, style: `width: 80%; height: 4px; overflow: hidden; margin-left: auto; margin-right: auto; margin-top: 0.5em; cursor: pointer; display: flex; flex-direction: row; background-color: var(--empty-sample-bar, ${ColorConfig.indicatorSecondary});` }, this._sampleLoadingBar, this._sampleFailedBar);
             this._sampleLoadingStatusContainer = div({ style: "cursor: pointer;" }, div({ style: `margin-top: 0.5em; text-align: center; color: ${ColorConfig.secondaryText};` }, "Sample Loading Status"), div({ class: "selectRow", style: "height: 6px; margin-bottom: 0.5em;" }, this._sampleLoadingBarContainer));
-            this._songSettingsArea = div({ class: "song-settings-area" }, div({ class: "editor-controls" }, div({ class: "editor-song-settings" }, div({ style: "margin: 3px 0; position: relative; text-align: center; color: ${ColorConfig.secondaryText};" }, div({ class: "tip", style: "flex-shrink: 0; position:absolute; left: 0; top: 0; width: 12px; height: 12px", onclick: () => this._openPrompt("usedPattern") }, SVG.svg({ style: "flex-shrink: 0; position: absolute; left: 0; top: 0; pointer-events: none;", width: "12px", height: "12px", "margin-right": "0.5em", viewBox: "-6 -6 12 12" }, this._usedPatternIndicator)), div({ class: "tip", style: "flex-shrink: 0; position: absolute; left: 14px; top: 0; width: 12px; height: 12px", onclick: () => this._openPrompt("usedInstrument") }, SVG.svg({ style: "flex-shrink: 0; position: absolute; left: 0; top: 0; pointer-events: none;", width: "12px", height: "12px", "margin-right": "1em", viewBox: "-6 -6 12 12" }, this._usedInstrumentIndicator)), "Song Settings", div({ style: "width: 100%; left: 0; top: -1px; position:absolute; overflow-x:clip;" }, this._jumpToModIndicator))), div({ class: "selectRow" }, span({ class: "tip", onclick: () => this._openPrompt("scale") }, "Scale: "), div({ class: "selectContainer" }, this._scaleSelect)), div({ class: "selectRow" }, span({ class: "tip", onclick: () => this._openPrompt("key") }, "Key: "), div({ class: "selectContainer" }, this._keySelect)), div({ class: "selectRow" }, span({ class: "tip", onclick: () => this._openPrompt("key_octave") }, "Octave: "), this._octaveStepper), div({ class: "selectRow" }, span({ class: "tip", onclick: () => this._openPrompt("tempo") }, "Tempo: "), span({ style: "display: flex;" }, this._tempoSlider.container, this._tempoStepper)), div({ class: "selectRow" }, span({ class: "tip", onclick: () => this._openPrompt("rhythm") }, "Rhythm: "), div({ class: "selectContainer" }, this._rhythmSelect)), this._sampleLoadingStatusContainer));
+            this._songSettingsArea = div({ class: "song-settings-area" }, div({ class: "editor-controls" }, div({ class: "editor-song-settings" }, div({ style: "margin: 3px 0; position: relative; text-align: center; color: ${ColorConfig.secondaryText};" }, div({ class: "tip", style: "flex-shrink: 0; position:absolute; left: 0; top: 0; width: 12px; height: 12px", onclick: () => this._openPrompt("usedPattern") }, SVG.svg({ style: "flex-shrink: 0; position: absolute; left: 0; top: 0; pointer-events: none;", width: "12px", height: "12px", "margin-right": "0.5em", viewBox: "-6 -6 12 12" }, this._usedPatternIndicator)), div({ class: "tip", style: "flex-shrink: 0; position: absolute; left: 14px; top: 0; width: 12px; height: 12px", onclick: () => this._openPrompt("usedInstrument") }, SVG.svg({ style: "flex-shrink: 0; position: absolute; left: 0; top: 0; pointer-events: none;", width: "12px", height: "12px", "margin-right": "1em", viewBox: "-6 -6 12 12" }, this._usedInstrumentIndicator)), "Song Settings", div({ style: "width: 100%; left: 0; top: -1px; position:absolute; overflow-x:clip;" }, this._jumpToModIndicator))), div({ class: "selectRow" }, span({ class: "tip", onclick: () => this._openPrompt("scale") }, "Scale: "), div({ class: "selectContainer" }, this._scaleSelect)), div({ class: "selectRow" }, span({ class: "tip", onclick: () => this._openPrompt("key") }, "Key: "), div({ class: "selectContainer" }, this._keySelect)), div({ class: "selectRow" }, span({ class: "tip", onclick: () => this._openPrompt("key_octave") }, "Octave: "), this._octaveStepper), div({ class: "selectRow" }, span({ class: "tip", onclick: () => this._openPrompt("tempo") }, "Tempo: "), span({ style: "display: flex;" }, this._tempoSlider.container, this._tempoStepper)), div({ class: "selectRow" }, span({ class: "tip", onclick: () => this._openPrompt("rhythm") }, "Rhythm: "), div({ class: "selectContainer" }, this._rhythmSelect)), div({ class: "selectRow" }, span({ class: "tip", onclick: () => this._openPrompt("songeq") }, span("Song EQ:")), this._songEqFilterZoom, this._songEqFilterEditor.container), this._sampleLoadingStatusContainer));
             this._songDetailsButton = button({ class: "details-button" });
             this._instrumentSettingsArea = div({ class: "instrument-settings-area" }, this._instrumentSettingsGroup, this._modulatorGroup);
-            this._playbackMobileDiv = div({ class: "playback-bar-controls2", id: 'playback-bar-controls2', style: 'width: 100%; display: flex; background: var(--editor-background); z-index: 6;' }, this._mobilePlayButton, this._mobilePauseButton, this._mobilePrevBarButton, this._mobileNextBarButton);
-            this._playPauseAreaMobile = div({ class: "play-pause-area2", id: "play-pause-area2", style: 'flex-direction:row; position: absolute; width: 100%; display: flex; bottom: 16vh;' }, this._playbackMobileDiv);
-            this._settingsArea = div({ class: "settings-area noSelection" }, div({ class: "version-area" }, div({ style: `text-align: center; margin: 3px 0; color: ${ColorConfig.secondaryText}; display:flex;` }, this._songTitleInputBox.input, this._songDetailsButton)), div({ class: "play-pause-area", id: "play-pause-area" }, this._volumeBarBox, div({ class: "playback-bar-controls" }, this._playButton, this._pauseButton, this._recordButton, this._stopButton, this._prevBarButton, this._nextBarButton), div({ class: "playback-volume-controls" }, span({ class: "volume-speaker" }), this._volumeSlider.container), this._globalOscscopeContainer), this._menuArea, this._songSettingsArea, this._instrumentSettingsArea);
-            this.mainLayer = div({ class: "beepboxEditor", tabIndex: "0" }, this._patternArea, this._trackArea, this._settingsArea, this._promptContainer);
+            this._playbackMobileDiv = div({ class: "playback-bar-controls2", id: 'playback-bar-controls2' }, this._mobilePlayButton, this._mobilePauseButton, this._mobilePrevBarButton, this._mobileNextBarButton);
+            this._playPauseAreaMobile = div({ class: "play-pause-area2", id: "play-pause-area2" }, this._playbackMobileDiv);
+            this._settingsArea = div({ class: "settings-area noSelection", style: "display: grid" }, div({ class: "version-area" }, div({ style: `text-align: center; margin: 3px 0; color: ${ColorConfig.secondaryText}; display:flex;` }, this._songTitleInputBox.input, this._songDetailsButton)), div({ class: "play-pause-area", id: "play-pause-area" }, this._volumeBarBox, div({ class: "playback-bar-controls" }, this._playButton, this._pauseButton, this._recordButton, this._stopButton, this._prevBarButton, this._nextBarButton), div({ class: "playback-volume-controls" }, span({ class: "volume-speaker" }), this._volumeSlider.container), this._globalOscscopeContainer), this._menuArea, this._songSettingsArea, this._instrumentSettingsArea);
+            this._mobileButtonContainer = div({ class: "mobileButtonContainer" }, this._playPauseAreaMobile, this.mobileMenu);
+            this.mainLayer = div({ class: "beepboxEditor", tabIndex: "0" }, this._patternArea, this._trackArea, this._settingsArea, this._promptContainer, this._mobileButtonContainer);
             this._wasPlaying = false;
             this._currentPromptName = null;
             this._highlightedInstrumentIndex = -1;
@@ -63607,7 +64103,6 @@ You should be redirected to the song at:<br /><br />
                 else {
                     this.selectedPatternDiv.style.display = "none";
                     if (this._doc.prefs.oldMobileLayout != true) {
-                        this._promptContainer.style.left = "50vw";
                         this._instSettingMode == 1 ? this._instrumentDiv.style.display = "" : this._instrumentDiv.style.display = "none";
                         this._instSettingMode == 2 ? this._effectDiv.style.display = "" : this._effectDiv.style.display = "none";
                         this._instSettingMode == 3 ? this._envelopeDiv.style.display = "" : this._envelopeDiv.style.display = "none";
@@ -63615,7 +64110,6 @@ You should be redirected to the song at:<br /><br />
                         this._settingsArea.style.display = "none";
                         this._trackArea.style.display = "none";
                         this._patternArea.style.display = "";
-                        this.mainLayer.style.display = "unset";
                         if (window.innerWidth > window.innerHeight) {
                             if (SongEditor.getMobileUi() != 'landscape') {
                                 SongEditor.setMobileUi("landscape");
@@ -63623,9 +64117,6 @@ You should be redirected to the song at:<br /><br />
                             this._patternArea.style.display = this._menuMode == 1 ? "" : "none";
                             this._trackArea.style.display = this._menuMode == 2 ? "" : "none";
                             this._settingsArea.style.display = this._menuMode == 3 ? "" : "none";
-                            this._mobilePatternButton.style.width = this._menuMode == 1 ? "100%" : "80%";
-                            this._mobileTrackButton.style.width = this._menuMode == 2 ? "100%" : "80%";
-                            this._mobileSettingsButton.style.width = this._menuMode == 3 ? "100%" : "80%";
                             this._playPauseAreaMobile.style.display = this._menuMode == 1 ? "flex" : "none";
                         }
                         else if (window.innerWidth < window.innerHeight) {
@@ -63635,19 +64126,18 @@ You should be redirected to the song at:<br /><br />
                             this._patternArea.style.display = this._menuMode == 1 ? "" : "none";
                             this._trackArea.style.display = this._menuMode == 2 ? "" : "none";
                             this._settingsArea.style.display = this._menuMode == 3 ? "" : "none";
-                            this._mobilePatternButton.style.height = this._menuMode == 1 ? "100%" : "80%";
-                            this._mobileTrackButton.style.height = this._menuMode == 2 ? "100%" : "80%";
-                            this._mobileSettingsButton.style.height = this._menuMode == 3 ? "100%" : "80%";
                             this._playPauseAreaMobile.style.display = this._menuMode == 1 ? "flex" : "none";
                         }
                         this.mainLayer.style.minHeight = "80vh";
                         beepboxEditorContainer$1.style.maxHeight = "80vh";
+                        this._mobilePatternButton.setAttribute("class", this._menuMode == 1 ? "mobilePatternButton focused" : "mobilePatternButton");
+                        this._mobileTrackButton.setAttribute("class", this._menuMode == 2 ? "mobileTrackButton focused" : "mobileTrackButton");
+                        this._mobileSettingsButton.setAttribute("class", this._menuMode == 3 ? "mobileSettingsButton focused" : "mobileSettingsButton");
                         this._mobilePatternButton.style.display = "";
                         this._mobileTrackButton.style.display = "";
                         this._mobileSettingsButton.style.display = "";
                         this.mobileMenu.style.display = "";
                         this._instOptionsDiv.style.display = "";
-                        beepboxEditorContainer$1.appendChild(this._playPauseAreaMobile);
                         const playPauseArea = document.getElementById('play-pause-area');
                         const textContentMobile = document.getElementById('text-content');
                         textContentMobile.style.display = "none";
@@ -63655,7 +64145,6 @@ You should be redirected to the song at:<br /><br />
                         playPauseArea.style.display = "flex";
                         playPauseArea.style.flexDirection = "column";
                     }
-                    document.body.appendChild(this.mobileMenu);
                     this.mobileMenu.appendChild(this._mobilePatternButton);
                     this.mobileMenu.appendChild(this._mobileTrackButton);
                     this.mobileMenu.appendChild(this._mobileSettingsButton);
@@ -63783,6 +64272,12 @@ You should be redirected to the song at:<br /><br />
                 this._tempoSlider.updateValue(Math.max(0, Math.round(this._doc.song.tempo)));
                 this._tempoStepper.value = Math.round(this._doc.song.tempo).toString();
                 this._songTitleInputBox.updateValue(this._doc.song.title);
+                if (this._doc.synth.isFilterModActive(false, 0, 0, true)) {
+                    this._songEqFilterEditor.render(true, this._ctrlHeld || this._shiftHeld);
+                }
+                else {
+                    this._songEqFilterEditor.render();
+                }
                 this._eqFilterTypeRow.style.setProperty("--text-color-lit", colors.primaryNote);
                 this._eqFilterTypeRow.style.setProperty("--text-color-dim", colors.secondaryNote);
                 this._eqFilterTypeRow.style.setProperty("--background-color-lit", colors.primaryChannel);
@@ -64083,7 +64578,7 @@ You should be redirected to the song at:<br /><br />
                         this._pitchShiftSlider.updateValue(instrument.pitchShift);
                         this._pitchShiftSlider.input.title = (instrument.pitchShift - Config.pitchShiftCenter) + " semitone(s)";
                         for (const marker of this._pitchShiftFifthMarkers) {
-                            marker.style.display = prefs.showFifth ? "" : "none";
+                            marker.style.display = prefs.showFifth || prefs.advancedColorScheme ? "" : "none";
                         }
                     }
                     else {
@@ -64162,10 +64657,12 @@ You should be redirected to the song at:<br /><br />
                         this._instOptionsDiv.style.display = "";
                     }
                     else {
-                        this._instrumentDiv.style.display = "";
-                        this._effectDiv.style.display = "";
-                        this._envelopeDiv.style.display = "";
-                        this._instOptionsDiv.style.display = "none";
+                        if (!isMobile) {
+                            this._instrumentDiv.style.display = "";
+                            this._effectDiv.style.display = "";
+                            this._envelopeDiv.style.display = "";
+                            this._instOptionsDiv.style.display = "none";
+                        }
                     }
                     if (effectsIncludeDistortion(instrument.effects)) {
                         this._distortionRow.style.display = "";
@@ -64320,6 +64817,12 @@ You should be redirected to the song at:<br /><br />
                     this._detuneSliderInputBox.value = (instrument.detune - Config.detuneCenter) + "";
                     this._rmHzOffsetSliderInputBox.value = (instrument.rmHzOffset - Config.rmHzOffsetCenter) + "";
                     this._ringModHzNum.innerHTML = (clamp(1, 4600, Math.floor(20 * Math.pow(4400 / 20, Math.min(1.0, instrument.ringModulationHz / (Config.ringModHzRange - 1)))) + (instrument.rmHzOffset - Config.rmHzOffsetCenter))) + " (" + (Math.floor(20 * Math.pow(4400 / 20, Math.min(1.0, instrument.ringModulationHz / (Config.ringModHzRange - 1))))) + ")";
+                    if (this._doc.synth.isFilterModActive(false, 0, 0, true)) {
+                        this._songEqFilterEditor.render(true, this._ctrlHeld || this._shiftHeld);
+                    }
+                    else {
+                        this._songEqFilterEditor.render();
+                    }
                     this._instrumentVolumeSlider.updateValue(instrument.volume);
                     this._instrumentVolumeSliderInputBox.value = "" + (instrument.volume);
                     this._vibratoDepthSlider.updateValue(Math.round(instrument.vibratoDepth * 25));
@@ -64494,6 +64997,7 @@ You should be redirected to the song at:<br /><br />
                                 settingList.push("song distortion");
                                 settingList.push("song ring modulation");
                                 settingList.push("song pitch shift");
+                                settingList.push("song eq");
                             }
                             else {
                                 settingList.push("note volume");
@@ -64795,6 +65299,9 @@ You should be redirected to the song at:<br /><br />
                             this._modTargetIndicators[mod].classList.add("modTarget");
                         }
                         let filterType = Config.modulators[instrument.modulators[mod]].name;
+                        let useSongEq = filterType == "song eq";
+                        if (useSongEq)
+                            filterType = "eq filter";
                         if (filterType == "eq filter" || filterType == "note filter") {
                             $("#modFilterText" + mod).get(0).style.display = "";
                             $("#modSettingText" + mod).get(0).style.setProperty("margin-bottom", "2px");
@@ -64820,10 +65327,24 @@ You should be redirected to the song at:<br /><br />
                             let dotCount = (filterType == "eq filter")
                                 ? channel.instruments[useInstrument].getLargestControlPointCount(false)
                                 : channel.instruments[useInstrument].getLargestControlPointCount(true);
-                            const isSimple = (filterType == "eq filter" ? channel.instruments[useInstrument].eqFilterType : channel.instruments[useInstrument].noteFilterType);
+                            const isSimple = useSongEq ? false : (filterType == "eq filter" ? channel.instruments[useInstrument].eqFilterType : channel.instruments[useInstrument].noteFilterType);
                             if (isSimple)
                                 dotCount = 0;
-                            if (isSimple || this._modFilterBoxes[mod].children.length != 1 + dotCount * 2) {
+                            if (useSongEq) {
+                                dotCount = this._doc.song.eqFilter.controlPointCount;
+                                if (this._modFilterBoxes[mod].children.length != 1 + dotCount * 2) {
+                                    while (this._modFilterBoxes[mod].firstChild)
+                                        this._modFilterBoxes[mod].remove(0);
+                                    const dotList = [];
+                                    dotList.push("morph");
+                                    for (let i = 0; i < dotCount; i++) {
+                                        dotList.push("dot " + (i + 1) + " x");
+                                        dotList.push("dot " + (i + 1) + " y");
+                                    }
+                                    buildOptions(this._modFilterBoxes[mod], dotList);
+                                }
+                            }
+                            else if (isSimple || this._modFilterBoxes[mod].children.length != 1 + dotCount * 2) {
                                 while (this._modFilterBoxes[mod].firstChild)
                                     this._modFilterBoxes[mod].remove(0);
                                 const dotList = [];
@@ -64881,6 +65402,12 @@ You should be redirected to the song at:<br /><br />
                 }
                 else {
                     this._eqFilterEditor.render();
+                }
+                if (this._doc.synth.isFilterModActive(false, 0, 0, true)) {
+                    this._songEqFilterEditor.render(true, this._ctrlHeld || this._shiftHeld);
+                }
+                else {
+                    this._songEqFilterEditor.render();
                 }
                 this._instrumentVolumeSlider.updateValue(instrument.volume);
                 this._detuneSlider.updateValue(instrument.detune - Config.detuneCenter);
@@ -65318,6 +65845,9 @@ You should be redirected to the song at:<br /><br />
                             this._openPrompt("generateEuclideanRhythm");
                             event.preventDefault();
                             break;
+                        }
+                        else if (needControlForShortcuts == (event.ctrlKey || event.metaKey)) {
+                            this._openPrompt("customSongEQFilterSettings");
                         }
                         break;
                     case 70:
@@ -65864,6 +66394,9 @@ You should be redirected to the song at:<br /><br />
                 }
                 if (this._doc.synth.isFilterModActive(true, this._doc.channel, this._doc.getCurrentInstrument())) {
                     this._noteFilterEditor.render(true, this._ctrlHeld || this._shiftHeld);
+                }
+                if (this._doc.synth.isFilterModActive(false, 0, 0, true)) {
+                    this._songEqFilterEditor.render(true, this._ctrlHeld || this._shiftHeld);
                 }
                 window.requestAnimationFrame(this._animate);
             };
@@ -66690,6 +67223,7 @@ You should be redirected to the song at:<br /><br />
             this._spectrumEditor.container.addEventListener("mousedown", this.refocusStage);
             this._eqFilterEditor.container.addEventListener("mousedown", this.refocusStage);
             this._noteFilterEditor.container.addEventListener("mousedown", this.refocusStage);
+            this._songEqFilterEditor.container.addEventListener("mousedown", this.refocusStage);
             this._harmonicsEditor.container.addEventListener("mousedown", this.refocusStage);
             this._tempoStepper.addEventListener("keydown", this._tempoStepperCaptureNumberKeys, false);
             this._addEnvelopeButton.addEventListener("click", this._addNewEnvelope);
@@ -66864,6 +67398,7 @@ You should be redirected to the song at:<br /><br />
         _modSliderUpdate() {
             if (!this._doc.synth.playing) {
                 this._hasActiveModSliders = false;
+                this._songEqFilterEditor.render();
                 for (let setting = 0; setting < Config.modulators.length; setting++) {
                     if (this._showModSliders[setting] == true) {
                         this._showModSliders[setting] = false;
@@ -67087,6 +67622,9 @@ You should be redirected to the song at:<br /><br />
                         break;
                     case "customNoteFilterSettings":
                         this.prompt = new CustomFilterPrompt(this._doc, this, true);
+                        break;
+                    case "customSongEQFilterSettings":
+                        this.prompt = new CustomFilterPrompt(this._doc, this, false, true);
                         break;
                     case "harmonicsSettings":
                         this.prompt = new HarmonicsEditorPrompt(this._doc, this);
@@ -67469,24 +68007,51 @@ You should be redirected to the song at:<br /><br />
     };
     SongEditor.mobileUI = {
         "landscape": `
+
+            #beepboxEditorContainer {
+            padding: 0 !important;
+            min-height: unset;
+            }
+
+            .mobileButtonContainer {
+                flex-direction: row;
+            }
+
+            .beepboxEditor {
+                display: flex;
+                justify-content: space-between;
+            }
+
+            .instrument-settings-area {
+            height: 100%
+            }
+
+            .settings-area {
+            flex: 1;
+            overflow-y: scroll;
+            display: flex;
+            flex-direction: column;
+            }
+
+            .beepboxEditor .song-settings-area {
+                overflow-y: unset;
+            }
+
+            .beepboxEditor .instrument-settings-area {
+                overflow-y: unset;
+            }
+
             .mobileMenu {
-                right: 0 !important;
-                left: unset !important;
                 height: 100vh !important;
-                width: 15vw !important;
+                width: 64px !important;
 
                 display: flex;
                 flex-direction: column;
             }
 
             .pattern-area {
-                width: 74vw !important;
                 height: 100vh !important;
                 max-height: 100vh !important;
-            }
-
-            #beepboxEditorContainer {
-                max-width: 100vw !important;
             }
 
             .play-pause-area2 {
@@ -67506,13 +68071,6 @@ You should be redirected to the song at:<br /><br />
                 flex: 1;
             }
 
-            .settings-area {
-                grid-template-columns: 33% 34% 33% !important;
-                grid-template-rows: min-content min-content min-content min-content 1fr !important;
-                grid-template-areas: "version-area version-area version-area" "play-pause-area menu-area instrument-settings-area" "play-pause-area menu-area instrument-settings-area" "song-settings-area song-settings-area instrument-settings-area" "song-settings-area song-settings-area instrument-settings-area" !important;
-                width: 78vw !important;
-            }
-
             .track-area {
                 width: 78vw !important;
             }
@@ -67522,8 +68080,29 @@ You should be redirected to the song at:<br /><br />
                 flex: 1;
             }
 
+            .focused {
+                background: var(--ui-widget-focus) !important;
+            }
+
         `,
         "portrait": `
+
+            .beepboxEditor button, button,
+            .beepboxEditor select, select {
+                border-image-source: unset !important;
+            }
+
+            #beepboxEditorContainer {
+                max-height: unset !important;
+            }
+
+            .beepboxEditor {
+                display: flex !important;
+                height: 100vh;
+                flex-direction: column;
+                justify-content: space-between;
+                gap: 5px;
+            }
 
             .play-pause-area2 {
                 height: unset !important;
@@ -67533,25 +68112,37 @@ You should be redirected to the song at:<br /><br />
                 left: 0 !important;
             }
 
-            .mobileMenu {
-                right: unset !important;
-                left: unset !important;
-                height: 15vh !important;
-                width: 100vw !important;
-                bottom: 0 !important;
+            .mobileButtonContainer {
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
+            }
 
+            .mobileMenu {
                 display: flex;
                 flex-direction: row;
+                height: 64px;
+                width: 100vw
             }
-
+            
             .pattern-area {
-                width: 91vw !important;
-                height: 70vh !important;
-                max-height: 75vh;
+                height: 0 !important;
+                flex-grow: 1;
+                max-height: unset !important;
             }
 
-            #beepboxEditorContainer {
-                max-width: 710px !important;
+            .focused {
+                background: var(--ui-widget-focus) !important;
+            }
+
+            .settings-area {
+                display: flex;
+                flex-direction: column;
+                height: 0 !important;
+                flex-grow: 1;
+                max-height: unset !important;
+                overflow-y: scroll;
+                width: unset !important;
             }
 
             .playback-bar-controls2 {
@@ -67562,13 +68153,6 @@ You should be redirected to the song at:<br /><br />
             .mobilePlayButton, .mobilePauseButton, .mobilePrevBarButton, .mobileNextBarButton {
                 height: 100% !important;
                 flex: 1;
-            }
-
-            .settings-area {
-                grid-template-columns: 50% 50% !important;
-                grid-template-rows: min-content min-content min-content min-content 1fr !important;
-                grid-template-areas: "version-area version-area" "play-pause-area instrument-settings-area" "play-pause-area instrument-settings-area" "menu-area instrument-settings-area" "song-settings-area instrument-settings-area" !important;
-                width: 96vw !important;
             }
 
             .track-area {
