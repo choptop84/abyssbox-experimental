@@ -422,6 +422,7 @@ var beepbox = (function (exports) {
     Config.releaseVal = 0.25;
     Config.willReloadForCustomSamples = false;
     Config.jsonFormat = "AbyssBox";
+    Config.maxEffectCount = 17;
     Config.scales = toNameMap([
         { name: "Free", realName: "chromatic", flags: [true, true, true, true, true, true, true, true, true, true, true, true] },
         { name: "Major", realName: "ionian", flags: [true, false, true, false, true, true, false, true, false, true, false, true] },
@@ -477,6 +478,8 @@ var beepbox = (function (exports) {
     Config.reverbShelfHz = 8000.0;
     Config.reverbShelfGain = Math.pow(2.0, -1.5);
     Config.reverbRange = 32;
+    Config.reverbWetRange = 32;
+    Config.reverbDryRange = 32;
     Config.reverbDelayBufferSize = 16384;
     Config.reverbDelayBufferMask = Config.reverbDelayBufferSize - 1;
     Config.phaserMixRange = 32;
@@ -1111,8 +1114,10 @@ var beepbox = (function (exports) {
         { name: "chorus", computeIndex: 55, displayName: "chorus", interleave: false, isFilter: false, maxCount: 1, effect: 1, compatibleInstruments: null },
         { name: "echoSustain", computeIndex: 56, displayName: "echo sustain", interleave: false, isFilter: false, maxCount: 1, effect: 6, compatibleInstruments: null },
         { name: "reverb", computeIndex: 57, displayName: "reverb", interleave: false, isFilter: false, maxCount: 1, effect: 0, compatibleInstruments: null },
-        { name: "panning", computeIndex: 58, displayName: "panning", interleave: false, isFilter: false, maxCount: 1, effect: 2, compatibleInstruments: null },
-        { name: "arpeggioSpeed", computeIndex: 59, displayName: "arpeggio speed", interleave: false, isFilter: false, maxCount: 1, effect: 11, compatibleInstruments: null },
+        { name: "reverbWet", computeIndex: 58, displayName: "reverb wet mix", interleave: false, isFilter: false, maxCount: 1, effect: 0, compatibleInstruments: null },
+        { name: "reverbDry", computeIndex: 59, displayName: "reverb dry mix", interleave: false, isFilter: false, maxCount: 1, effect: 0, compatibleInstruments: null },
+        { name: "panning", computeIndex: 60, displayName: "panning", interleave: false, isFilter: false, maxCount: 1, effect: 2, compatibleInstruments: null },
+        { name: "arpeggioSpeed", computeIndex: 61, displayName: "arpeggio speed", interleave: false, isFilter: false, maxCount: 1, effect: 11, compatibleInstruments: null },
         { name: "granular", computeIndex: 48, displayName: "granular", interleave: false, isFilter: false, maxCount: 1, effect: 16, compatibleInstruments: null },
         { name: "grainFreq", computeIndex: 49, displayName: "grain freq", interleave: false, isFilter: false, maxCount: 1, effect: 16, compatibleInstruments: null },
         { name: "grainSize", computeIndex: 50, displayName: "grain size", interleave: false, isFilter: false, maxCount: 1, effect: 16, compatibleInstruments: null },
@@ -1427,7 +1432,7 @@ var beepbox = (function (exports) {
             promptDesc: ["This setting controls the number of phaser stages in your insturment, just like the phaser stages slider.", "At $LO, your instrument will have no phaser stages. At $HI, it will be at maximum.", "[OVERWRITING] [$LO - $HI]"] },
         { name: "song pitch shift",
             pianoName: "Song Pitch Shift",
-            maxRawVol: (Config.pitchShiftRange * 2) - 2, newNoteVol: Config.pitchShiftRange, forSong: true, convertRealFactor: -Config.pitchShiftRange + 1, associatedEffect: 7,
+            maxRawVol: (Config.pitchShiftRange * 2) - 2, newNoteVol: Config.pitchShiftRange - 1, forSong: true, convertRealFactor: -Config.pitchShiftRange + 1, associatedEffect: 7,
             promptName: "Songwide Pitch Shift",
             promptDesc: ["This setting controls the pitch offset of all instruments regardless of whether or not the instrument has the effect itself, just like the pitch shift slider.", "At $MID your instrument will have no pitch shift. This increases as you decrease toward $LO pitches (half-steps) at the low end, or increases towards +$HI pitches at the high end.", "[ADDITIVE] [$LO - $HI] [pitch]"] },
         { name: "individual envelope speed",
@@ -1459,6 +1464,11 @@ var beepbox = (function (exports) {
             maxRawVol: Config.grainRangeMax / Config.grainSizeStep, newNoteVol: 0, forSong: false, convertRealFactor: 0, associatedEffect: 16,
             promptName: "Grain Range",
             promptDesc: ["This setting controls the range of values for your grain size of the granular effect in your instrument, from no variation to a lot", "The number shown in the mod channel is multiplied by " + Config.grainSizeStep + " to get the actual grain size.", "[OVERWRITING] [$LO - $HI]"] },
+        { name: "song eq",
+            pianoName: "Song EQ",
+            maxRawVol: 10, newNoteVol: 0, forSong: true, convertRealFactor: 0, associatedEffect: 17,
+            promptName: "Song EQ Filter",
+            promptDesc: ["This setting overwrites every instrument's eq filter. You can do this in a few separate ways, similar to the per instrument eq filter modulator.", "When the option 'morph' is selected, your modulator values will indicate a sub-filter index of your EQ filter to 'morph' to over time. For example, a change from 0 to 1 means your main filter (default) will morph to sub-filter 1 over the specified duration. You can shape the main filter and sub-filters in the large filter editor ('+' button). If your two filters' number, type, and order of filter dots all match up, the morph will happen smoothly and you'll be able to hear them changing. If they do not match up, the filters will simply jump between each other.", "Note that filters will morph based on endpoints in the pattern editor. So, if you specify a morph from sub-filter 1 to 4 but do not specifically drag in new endpoints for 2 and 3, it will morph directly between 1 and 4 without going through the others.", "If you target Dot X or Dot Y, you can finely tune the coordinates of a single dot for your filter. The number of available dots to choose is dependent on your main filter's dot count.", "[OVERWRITING] [$LO - $HI]"] },
     ]);
     function centerWave(wave) {
         let sum = 0.0;
@@ -3558,6 +3568,428 @@ var beepbox = (function (exports) {
 			--note-flash: #ffffff;
 			--note-flash-secondary: #ffffff77;
 			--empty-sample-bar: #260b1b;
+				}
+			`,
+        "AbyssBox Comp simple": `
+			:root { 		
+			--page-margin: #000000; 		
+			--editor-background: #000000; 		
+			--hover-preview: white; 		
+			--playhead: rgba(255, 255, 255, 0.9); 		
+			--primary-text: white; 		
+			--secondary-text: #ffcedd; 		
+			--inverted-text: black;	 		
+			--text-selection: rgba(119,68,255,0.99); 		
+			--box-selection-fill: #bf2c5d; 		
+			--loop-accent: #873a51; 		
+			--link-accent: #df88ff; 		
+			--ui-widget-background: #581b3e; 		
+			--ui-widget-focus: #000000; 		
+			--pitch-background: #240f15; 		
+			--tonic: #a34b65; 		
+			--fifth-note: #75001e; 	
+			--third-note: #75002c;		
+			--white-piano-key: #cca5c7; 		
+			--black-piano-key: #402f2f;
+			--white-piano-key-text: #131200;		
+			--black-piano-key-text: #fff;		 		
+			--use-color-formula: true; 		
+			--track-editor-bg-pitch: #571c40; 		
+			--track-editor-bg-pitch-dim: #290d0d; 		
+			--track-editor-bg-noise: #571131; 		
+			--track-editor-bg-noise-dim: #330a28; 		
+			--track-editor-bg-mod: #54083c; 		
+			--track-editor-bg-mod-dim: #360426; 		
+			--multiplicative-mod-slider: #9f6082; 		
+			--overwriting-mod-slider: #9e3470; 		
+			--indicator-primary: #b3498f; 		
+			--indicator-secondary: #541d40; 		
+			--select2-opt-group: #4f191e; 		
+			--input-box-outline: #18041a; 		
+			--mute-button-normal: #dd5d94;	 		
+			--mute-button-mod: #ba364c; 		
+			--mod-label-primary: #541625; 		
+			--mod-label-secondary-text: rgb(120, 87, 86); 
+			--mod-label-primary-text: gray; 
+			--mod-title: #bf2c5d;
+			--progress-bar: #bf2c5d;
+			--empty-sample-bar: #0d0d0d;
+
+			--pitch-secondary-channel-hue: -80; 		
+			--pitch-secondary-channel-hue-scale: 0; 		
+			--pitch-secondary-channel-sat: 43; 		
+			--pitch-secondary-channel-sat-scale: 0.1; 		
+			--pitch-secondary-channel-lum: 40; 		
+			--pitch-secondary-channel-lum-scale: 0.05; 
+		
+			--pitch-primary-channel-hue: -53; 		
+			--pitch-primary-channel-hue-scale: 6.1; 		
+			--pitch-primary-channel-sat: 75; 		
+			--pitch-primary-channel-sat-scale: 0.1; 		
+			--pitch-primary-channel-lum: 67.5; 		
+			--pitch-primary-channel-lum-scale: 0.05; 	
+	
+			--pitch-secondary-note-hue: -34; 		
+			--pitch-secondary-note-hue-scale: 6.1; 		
+			--pitch-secondary-note-sat: 93.9; 		
+			--pitch-secondary-note-sat-scale: 0.1; 		
+			--pitch-secondary-note-lum: 25; 		
+			--pitch-secondary-note-lum-scale: 0.05; 
+		
+			--pitch-primary-note-hue: -53; 		
+			--pitch-primary-note-hue-scale: 6.1; 		
+			--pitch-primary-note-sat: 100; 		
+			--pitch-primary-note-sat-scale: 0.05; 		
+			--pitch-primary-note-lum: 85.6; 		
+			--pitch-primary-note-lum-scale: 0.025; 
+		
+			--noise-secondary-channel-hue: 0; 		
+			--noise-secondary-channel-hue-scale: 2; 		
+			--noise-secondary-channel-sat: 65; 		
+			--noise-secondary-channel-sat-scale: 0; 		
+			--noise-secondary-channel-lum: 42; 		
+			--noise-secondary-channel-lum-scale: 0; 
+		
+			--noise-primary-channel-hue: 0; 		
+			--noise-primary-channel-hue-scale: 1; 		
+			--noise-primary-channel-sat: 100; 		
+			--noise-primary-channel-sat-scale: 1; 		
+			--noise-primary-channel-lum: 63.5; 		
+			--noise-primary-channel-lum-scale: 0; 
+		
+			--noise-secondary-note-hue: 24; 		
+			--noise-secondary-note-hue-scale: 2; 		
+			--noise-secondary-note-sat: 100; 		
+			--noise-secondary-note-sat-scale: 0; 		
+			--noise-secondary-note-lum: 35; 		
+			--noise-secondary-note-lum-scale: 0; 	
+	
+			--noise-primary-note-hue: 24; 		
+			--noise-primary-note-hue-scale: 2; 		
+			--noise-primary-note-sat: 100; 		
+			--noise-primary-note-sat-scale: 1; 		
+			--noise-primary-note-lum: 60; 		
+			--noise-primary-note-lum-scale: 1; 	
+	
+			--mod-secondary-channel-hue: 55; 		
+			--mod-secondary-channel-hue-scale: 1.5; 		
+			--mod-secondary-channel-sat: 100; 		
+			--mod-secondary-channel-sat-scale: 0; 		
+			--mod-secondary-channel-lum: 20; 		
+			--mod-secondary-channel-lum-scale: 0; 
+		
+			--mod-primary-channel-hue: 55; 		
+			--mod-primary-channel-hue-scale: 1.5; 		
+			--mod-primary-channel-sat: 96; 		
+			--mod-primary-channel-sat-scale: 0; 		
+			--mod-primary-channel-lum: 50; 		
+			--mod-primary-channel-lum-scale: 0; 
+		
+			--mod-secondary-note-hue: 55; 		
+			--mod-secondary-note-hue-scale: 1.5; 		
+			--mod-secondary-note-sat: 92; 		
+			--mod-secondary-note-sat-scale: 0; 		
+			--mod-secondary-note-lum: 45; 		
+			--mod-secondary-note-lum-scale: 0; 
+		
+			--mod-primary-note-hue: 55; 		
+			--mod-primary-note-hue-scale: 1.5; 		
+			--mod-primary-note-sat: 96; 		
+			--mod-primary-note-sat-scale: 0; 		
+			--mod-primary-note-lum: 85; 		
+			--mod-primary-note-lum-scale: 0; 
+
+			--note-flash: #ffffff;
+			--note-flash-secondary: #ffffff77;
+
+			--oscilloscope-line-R: var(--ui-widget-background);
+			--oscilloscope-line-L: var(--secondary-text);
+
+			--scrollbar-color: #bf2c5d;
+				}		
+			`,
+        "AbyssBox Light simple": `
+			:root { 		
+			--page-margin: #e0adbc; 		
+			--editor-background: #e0adbc; 		
+			--hover-preview: white; 		
+			--playhead: rgba(255, 255, 255, 0.9); 		
+			--primary-text: #6110d9; 		
+			--secondary-text: #cc1338;		
+			--inverted-text:  #e8bcc9;	 		
+			--text-selection: rgba(119,68,255,0.99); 		
+			--box-selection-fill: #bf2c5d; 		
+			--loop-accent: #8c346a; 		
+			--link-accent: #8c346a; 		
+			--ui-widget-background: #eec8de;		
+			--ui-widget-focus: #eec8de; 		
+			--pitch-background: #eddadf; 		
+			--tonic: #f5f0f1; 		
+			--fifth-note: #ffb5c9; 	
+			--third-note: #ffa6f0;		
+			--white-piano-key: #cca5c7; 		
+			--black-piano-key: #402f2f;
+			--white-piano-key-text: #131200;		
+			--black-piano-key-text: #fff;	 		
+			--use-color-formula: true; 		
+			--track-editor-bg-pitch: #edbecc;	
+			--track-editor-bg-pitch-dim: #e0adbc; 		
+			--track-editor-bg-noise: #edbecc;		
+			--track-editor-bg-noise-dim: #e0adbc;		
+			--track-editor-bg-mod: #edbecc; 		
+			--track-editor-bg-mod-dim: #e0adbc;		
+			--multiplicative-mod-slider: #9f6082; 		
+			--overwriting-mod-slider: #9e3470; 		
+			--indicator-primary: #b3498f; 		
+			--indicator-secondary: #541d40; 		
+			--select2-opt-group: #4f191e; 		
+			--input-box-outline: #18041a; 		
+			--mute-button-normal: #dd5d94;	 		
+			--mute-button-mod: #ba364c; 		
+			--mod-label-primary: #541625; 		
+			--mod-label-secondary-text: rgb(120, 87, 86); 
+			--mod-label-primary-text: gray; 
+			--mod-title: #cc1338;
+			--progress-bar: #cc1338;
+			--empty-sample-bar: #d9a0b1;
+
+			--pitch-secondary-channel-hue: -80; 		
+			--pitch-secondary-channel-hue-scale: 0; 		
+			--pitch-secondary-channel-sat: 255; 		
+			--pitch-secondary-channel-sat-scale: 0.1; 		
+			--pitch-secondary-channel-lum: 30; 		
+			--pitch-secondary-channel-lum-scale: 0.05; 
+		
+			--pitch-primary-channel-hue: -53; 		
+			--pitch-primary-channel-hue-scale: 6.1; 		
+			--pitch-primary-channel-sat: 255; 		
+			--pitch-primary-channel-sat-scale: 0.1; 		
+			--pitch-primary-channel-lum: 60; 		
+			--pitch-primary-channel-lum-scale: 0.05; 	
+	
+			--pitch-secondary-note-hue: -34; 		
+			--pitch-secondary-note-hue-scale: 6.1; 		
+			--pitch-secondary-note-sat: 255; 		
+			--pitch-secondary-note-sat-scale: 0.1; 		
+			--pitch-secondary-note-lum: 30; 		
+			--pitch-secondary-note-lum-scale: 0.05; 
+		
+			--pitch-primary-note-hue: -53; 		
+			--pitch-primary-note-hue-scale: 6.1; 		
+			--pitch-primary-note-sat: 255; 		
+			--pitch-primary-note-sat-scale: 0.05; 		
+			--pitch-primary-note-lum: 60; 		
+			--pitch-primary-note-lum-scale: 0.025; 
+		
+			--noise-secondary-channel-hue: 0; 		
+			--noise-secondary-channel-hue-scale: 2; 		
+			--noise-secondary-channel-sat: 255; 		
+			--noise-secondary-channel-sat-scale: 0; 		
+			--noise-secondary-channel-lum: 30; 		
+			--noise-secondary-channel-lum-scale: 0; 
+		
+			--noise-primary-channel-hue: 0; 		
+			--noise-primary-channel-hue-scale: 1; 		
+			--noise-primary-channel-sat: 255; 		
+			--noise-primary-channel-sat-scale: 1; 		
+			--noise-primary-channel-lum: 60; 		
+			--noise-primary-channel-lum-scale: 0; 
+		
+			--noise-secondary-note-hue: 24; 		
+			--noise-secondary-note-hue-scale: 2; 		
+			--noise-secondary-note-sat: 255; 		
+			--noise-secondary-note-sat-scale: 0; 		
+			--noise-secondary-note-lum: 30; 		
+			--noise-secondary-note-lum-scale: 0; 	
+	
+			--noise-primary-note-hue: 24; 		
+			--noise-primary-note-hue-scale: 2; 		
+			--noise-primary-note-sat: 255; 		
+			--noise-primary-note-sat-scale: 1; 		
+			--noise-primary-note-lum: 60; 		
+			--noise-primary-note-lum-scale: 1; 	
+	
+			--mod-secondary-channel-hue: 55; 		
+			--mod-secondary-channel-hue-scale: 1.5; 		
+			--mod-secondary-channel-sat: 255; 		
+			--mod-secondary-channel-sat-scale: 0; 		
+			--mod-secondary-channel-lum: 30; 		
+			--mod-secondary-channel-lum-scale: 0; 
+		
+			--mod-primary-channel-hue: 55; 		
+			--mod-primary-channel-hue-scale: 1.5; 		
+			--mod-primary-channel-sat: 255; 		
+			--mod-primary-channel-sat-scale: 0; 		
+			--mod-primary-channel-lum: 60; 		
+			--mod-primary-channel-lum-scale: 0; 
+		
+			--mod-secondary-note-hue: 55; 		
+			--mod-secondary-note-hue-scale: 1.5; 		
+			--mod-secondary-note-sat: 255; 		
+			--mod-secondary-note-sat-scale: 0; 		
+			--mod-secondary-note-lum: 30; 		
+			--mod-secondary-note-lum-scale: 0; 
+		
+			--mod-primary-note-hue: 55; 		
+			--mod-primary-note-hue-scale: 1.5; 		
+			--mod-primary-note-sat: 255; 		
+			--mod-primary-note-sat-scale: 0; 		
+			--mod-primary-note-lum: 60; 		
+			--mod-primary-note-lum-scale: 0; 	
+			--note-flash: #ffffff;
+			--note-flash-secondary: #ffffff77;
+
+			--oscilloscope-line-R: var(--ui-widget-background);
+			--oscilloscope-line-L: var(--secondary-text);
+
+			--scrollbar-color: #bf2c5d;
+			}
+			`,
+        "AbyssBox Piano simple": ` 
+			:root {		
+			--page-margin: #450320; 		
+			--editor-background: #450320; 		
+			--hover-preview: white; 		
+			--playhead: rgba(255, 255, 255, 0.9); 		
+			--primary-text: white; 		
+			--secondary-text: #ffcedd; 		
+			--inverted-text: #450320;	 		
+			--text-selection: rgba(119,68,255,0.99); 		
+			--box-selection-fill: #1e0915; 		
+			--loop-accent: #873a51; 		
+			--link-accent: #df88ff; 		
+			--ui-widget-background: #800d4f; 		
+			--ui-widget-focus: #a01565;
+            --pitch-background: #5e2233;  	
+            --use-piano-scheme: true;	
+            --pitch-black-key: #4d1a28; 				
+            --pitch-white-key: #5e2233; 
+            --tonic: #873a51; 	
+			--white-tonic: #873a51; 	
+            --black-tonic: #68182f;	
+			--white-fifth-note: #911d3b; 	
+            --fifth-note: #911d3b; 
+            --black-fifth-note: #6e001d; 	
+			--white-third-note: #880d3c;	
+            --third-note: #880d3c;	
+            --black-third-note: #660f30; 	
+			--white-piano-key: #cca5c7; 		
+			--black-piano-key: #402f2f;
+			--white-piano-key-text: #131200;		
+			--black-piano-key-text: #fff;		 		
+			--use-color-formula: true; 		
+			--track-editor-bg-pitch: #7b0f52; 		
+			--track-editor-bg-pitch-dim: #560738; 		
+			--track-editor-bg-noise: #7b0f38; 		
+			--track-editor-bg-noise-dim: #5f0b2b; 		
+			--track-editor-bg-mod: #731116; 		
+			--track-editor-bg-mod-dim: #52060a; 		
+			--multiplicative-mod-slider: #9f6082; 		
+			--overwriting-mod-slider: #9e3470; 		
+			--indicator-primary: #b3498f; 		
+			--indicator-secondary: #541d40; 		
+			--select2-opt-group: #4f191e; 		
+			--input-box-outline: #18041a; 		
+			--mute-button-normal: #dd5d94;	 		
+			--mute-button-mod: #ba364c; 		
+			--mod-label-primary: #541625; 		
+			--mod-label-secondary-text: rgb(120, 87, 86); 
+			--mod-label-primary-text: gray; 
+			--mod-title: #bf2c5d;
+			--progress-bar: #bf2c5d;
+			--empty-sample-bar: #38021a;
+
+			--pitch-secondary-channel-hue: -80; 		
+			--pitch-secondary-channel-hue-scale: 0; 		
+			--pitch-secondary-channel-sat: 43; 		
+			--pitch-secondary-channel-sat-scale: 0.1; 		
+			--pitch-secondary-channel-lum: 40; 		
+			--pitch-secondary-channel-lum-scale: 0.05; 
+		
+			--pitch-primary-channel-hue: -53; 		
+			--pitch-primary-channel-hue-scale: 6.1; 		
+			--pitch-primary-channel-sat: 75; 		
+			--pitch-primary-channel-sat-scale: 0.1; 		
+			--pitch-primary-channel-lum: 67.5; 		
+			--pitch-primary-channel-lum-scale: 0.05; 	
+	
+			--pitch-secondary-note-hue: -34; 		
+			--pitch-secondary-note-hue-scale: 6.1; 		
+			--pitch-secondary-note-sat: 93.9; 		
+			--pitch-secondary-note-sat-scale: 0.1; 		
+			--pitch-secondary-note-lum: 25; 		
+			--pitch-secondary-note-lum-scale: 0.05; 
+		
+			--pitch-primary-note-hue: -53; 		
+			--pitch-primary-note-hue-scale: 6.1; 		
+			--pitch-primary-note-sat: 100; 		
+			--pitch-primary-note-sat-scale: 0.05; 		
+			--pitch-primary-note-lum: 85.6; 		
+			--pitch-primary-note-lum-scale: 0.025; 
+		
+			--noise-secondary-channel-hue: 0; 		
+			--noise-secondary-channel-hue-scale: 2; 		
+			--noise-secondary-channel-sat: 65; 		
+			--noise-secondary-channel-sat-scale: 0; 		
+			--noise-secondary-channel-lum: 42; 		
+			--noise-secondary-channel-lum-scale: 0; 
+		
+			--noise-primary-channel-hue: 0; 		
+			--noise-primary-channel-hue-scale: 1; 		
+			--noise-primary-channel-sat: 100; 		
+			--noise-primary-channel-sat-scale: 1; 		
+			--noise-primary-channel-lum: 63.5; 		
+			--noise-primary-channel-lum-scale: 0; 
+		
+			--noise-secondary-note-hue: 24; 		
+			--noise-secondary-note-hue-scale: 2; 		
+			--noise-secondary-note-sat: 100; 		
+			--noise-secondary-note-sat-scale: 0; 		
+			--noise-secondary-note-lum: 35; 		
+			--noise-secondary-note-lum-scale: 0; 	
+	
+			--noise-primary-note-hue: 24; 		
+			--noise-primary-note-hue-scale: 2; 		
+			--noise-primary-note-sat: 100; 		
+			--noise-primary-note-sat-scale: 1; 		
+			--noise-primary-note-lum: 60; 		
+			--noise-primary-note-lum-scale: 1; 	
+	
+			--mod-secondary-channel-hue: 55; 		
+			--mod-secondary-channel-hue-scale: 1.5; 		
+			--mod-secondary-channel-sat: 100; 		
+			--mod-secondary-channel-sat-scale: 0; 		
+			--mod-secondary-channel-lum: 20; 		
+			--mod-secondary-channel-lum-scale: 0; 
+		
+			--mod-primary-channel-hue: 55; 		
+			--mod-primary-channel-hue-scale: 1.5; 		
+			--mod-primary-channel-sat: 96; 		
+			--mod-primary-channel-sat-scale: 0; 		
+			--mod-primary-channel-lum: 50; 		
+			--mod-primary-channel-lum-scale: 0; 
+		
+			--mod-secondary-note-hue: 55; 		
+			--mod-secondary-note-hue-scale: 1.5; 		
+			--mod-secondary-note-sat: 92; 		
+			--mod-secondary-note-sat-scale: 0; 		
+			--mod-secondary-note-lum: 45; 		
+			--mod-secondary-note-lum-scale: 0; 
+		
+			--mod-primary-note-hue: 55; 		
+			--mod-primary-note-hue-scale: 1.5; 		
+			--mod-primary-note-sat: 96; 		
+			--mod-primary-note-sat-scale: 0; 		
+			--mod-primary-note-lum: 85; 		
+			--mod-primary-note-lum-scale: 0; 	
+
+			--note-flash: #ffffff;
+			--note-flash-secondary: #ffffff77;
+
+			--oscilloscope-line-R: var(--ui-widget-background);
+			--oscilloscope-line-L: var(--secondary-text);
+
+			--scrollbar-color: #bf2c5d;
 				}
 			`,
         "AbyssBox Piano": ` 
@@ -24458,6 +24890,12 @@ var beepbox = (function (exports) {
                 { name: "Phased Overdrive Guitar", generalMidi: false, settings: { "type": "Picked String", "eqFilter": [{ "type": "low-pass", "cutoffHz": 4756.83, "linearGain": 0.7071 }, { "type": "high-pass", "cutoffHz": 250, "linearGain": 1 }, { "type": "low-pass", "cutoffHz": 6727.17, "linearGain": 1.4142 }, { "type": "peak", "cutoffHz": 840.9, "linearGain": 0.3536 }], "eqFilterType": false, "eqSimpleCut": 10, "eqSimplePeak": 0, "envelopeSpeed": 12, "discreteEnvelope": false, "eqSubFilters0": [{ "type": "low-pass", "cutoffHz": 4756.83, "linearGain": 0.7071 }, { "type": "high-pass", "cutoffHz": 250, "linearGain": 1 }, { "type": "low-pass", "cutoffHz": 6727.17, "linearGain": 1.4142 }, { "type": "peak", "cutoffHz": 840.9, "linearGain": 0.3536 }], "effects": ["note filter", "distortion", "bitcrusher", "phaser"], "noteFilterType": false, "noteSimpleCut": 10, "noteSimplePeak": 0, "noteFilter": [{ "type": "high-pass", "cutoffHz": 297.3, "linearGain": 2 }, { "type": "low-pass", "cutoffHz": 2378.41, "linearGain": 0.7071 }], "noteSubFilters0": [{ "type": "high-pass", "cutoffHz": 297.3, "linearGain": 2 }, { "type": "low-pass", "cutoffHz": 2378.41, "linearGain": 0.7071 }], "distortion": 71, "aliases": false, "bitcrusherOctave": 6, "bitcrusherQuantization": 0, "phaserMix": 100, "phaserFreq": 19, "phaserFeedback": 61, "phaserStages": 52, "panDelay": 10, "fadeInSeconds": 0, "fadeOutTicks": 12, "harmonics": [86, 100, 100, 86, 86, 86, 86, 71, 71, 71, 71, 71, 71, 71, 71, 71, 71, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 71], "unison": "none", "stringSustain": 64, "envelopes": [{ "target": "noteFilterFreq", "envelope": "note size", "index": 1 }, { "target": "phaserFeedback", "envelope": "twang 2" }] } },
                 { name: "Phased Picked Guitar", generalMidi: false, settings: { "type": "Picked String", "eqFilter": [{ "type": "low-pass", "cutoffHz": 4756.83, "linearGain": 0.7071 }, { "type": "high-pass", "cutoffHz": 250, "linearGain": 1 }, { "type": "low-pass", "cutoffHz": 6727.17, "linearGain": 1.4142 }, { "type": "peak", "cutoffHz": 840.9, "linearGain": 0.3536 }], "eqFilterType": false, "eqSimpleCut": 10, "eqSimplePeak": 0, "envelopeSpeed": 12, "discreteEnvelope": false, "eqSubFilters0": [{ "type": "low-pass", "cutoffHz": 4756.83, "linearGain": 0.7071 }, { "type": "high-pass", "cutoffHz": 250, "linearGain": 1 }, { "type": "low-pass", "cutoffHz": 6727.17, "linearGain": 1.4142 }, { "type": "peak", "cutoffHz": 840.9, "linearGain": 0.3536 }], "effects": ["note filter", "distortion", "bitcrusher", "chorus", "echo", "phaser"], "noteFilterType": false, "noteSimpleCut": 10, "noteSimplePeak": 0, "noteFilter": [{ "type": "high-pass", "cutoffHz": 297.3, "linearGain": 2 }, { "type": "low-pass", "cutoffHz": 2378.41, "linearGain": 0.7071 }], "noteSubFilters0": [{ "type": "high-pass", "cutoffHz": 297.3, "linearGain": 2 }, { "type": "low-pass", "cutoffHz": 2378.41, "linearGain": 0.7071 }], "distortion": 29, "aliases": false, "bitcrusherOctave": 6, "bitcrusherQuantization": 0, "phaserMix": 77, "phaserFreq": 19, "phaserFeedback": 61, "phaserStages": 52, "panDelay": 10, "chorus": 43, "echoSustain": 43, "echoDelayBeats": 1, "fadeInSeconds": 0, "fadeOutTicks": 12, "harmonics": [86, 100, 100, 86, 86, 86, 86, 71, 71, 71, 71, 71, 71, 71, 71, 71, 71, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 71], "unison": "none", "stringSustain": 64, "envelopes": [{ "target": "noteFilterFreq", "envelope": "note size", "index": 1 }, { "target": "phaserMix", "envelope": "twang -1" }] } },
             ]) },
+        { name: "AbyssBox Templates", presets: toNameMap([
+                { name: "Template Bass", generalMidi: false, settings: { "type": "FM", "eqFilter": [{ "type": "low-pass", "cutoffHz": 11313.71, "linearGain": 0.1768 }], "eqFilterType": true, "eqSimpleCut": 6, "eqSimplePeak": 0, "envelopeSpeed": 12, "eqSubFilters1": [], "effects": ["bitcrusher"], "bitcrusherOctave": 4.5, "bitcrusherQuantization": 0, "panDelay": 10, "fadeInSeconds": 0, "fadeOutTicks": -1, "algorithm": "1←2←3←4", "feedbackType": "2→3", "feedbackAmplitude": 2, "operators": [{ "frequency": "1×", "amplitude": 15, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "0.5×", "amplitude": 10, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "7×", "amplitude": 4, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "10×", "amplitude": 8, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "1×", "amplitude": 0, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "1×", "amplitude": 0, "waveform": "sine", "pulseWidth": 5 }], "envelopes": [{ "target": "operatorAmplitude", "envelope": "twang 1", "index": 2 }, { "target": "operatorAmplitude", "envelope": "twang 1", "index": 3 }] } },
+                { name: "Template Organ", generalMidi: false, settings: { "type": "FM", "eqFilter": [{ "type": "low-pass", "cutoffHz": 16000, "linearGain": 0.3536 }], "eqFilterType": true, "eqSimpleCut": 8, "eqSimplePeak": 0, "envelopeSpeed": 12, "eqSubFilters1": [], "effects": ["note filter"], "noteFilterType": true, "noteSimpleCut": 8, "noteSimplePeak": 0, "noteFilter": [{ "type": "low-pass", "cutoffHz": 16000, "linearGain": 0.3536 }], "noteSubFilters1": [{ "type": "low-pass", "cutoffHz": 16000, "linearGain": 0.3536 }], "panDelay": 10, "fadeInSeconds": 0.0125, "fadeOutTicks": 6, "algorithm": "1 2 3 4", "feedbackType": "1→2", "feedbackAmplitude": 0, "operators": [{ "frequency": "1×", "amplitude": 15, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "2×", "amplitude": 15, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "3×", "amplitude": 15, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "4×", "amplitude": 15, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "1×", "amplitude": 0, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "1×", "amplitude": 0, "waveform": "sine", "pulseWidth": 5 }], "envelopes": [] } },
+                { name: "Template Soft Lead", generalMidi: false, settings: { "type": "FM", "eqFilter": [{ "type": "low-pass", "cutoffHz": 19027.31, "linearGain": 0.7071 }], "eqFilterType": true, "eqSimpleCut": 10, "eqSimplePeak": 0, "envelopeSpeed": 12, "eqSubFilters1": [], "effects": [], "panDelay": 10, "fadeInSeconds": 0.0263, "fadeOutTicks": 12, "algorithm": "1←(2 3 4)", "feedbackType": "1⟲", "feedbackAmplitude": 0, "operators": [{ "frequency": "1×", "amplitude": 15, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "8×", "amplitude": 5, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "1×", "amplitude": 0, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "1×", "amplitude": 0, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "1×", "amplitude": 0, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "1×", "amplitude": 0, "waveform": "sine", "pulseWidth": 5 }], "envelopes": [{ "target": "operatorAmplitude", "envelope": "twang 1", "index": 1 }] } },
+                { name: "Template Noise", generalMidi: false, settings: { "type": "FM", "eqFilter": [{ "type": "low-pass", "cutoffHz": 19027.31, "linearGain": 0.7071 }], "eqFilterType": true, "eqSimpleCut": 10, "eqSimplePeak": 0, "envelopeSpeed": 12, "eqSubFilters1": [], "effects": [], "panDelay": 10, "fadeInSeconds": 0, "fadeOutTicks": -1, "algorithm": "1←(2 3 4)", "feedbackType": "1→2", "feedbackAmplitude": 15, "operators": [{ "frequency": "1×", "amplitude": 15, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "1×", "amplitude": 15, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "1×", "amplitude": 0, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "1×", "amplitude": 0, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "1×", "amplitude": 0, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "1×", "amplitude": 0, "waveform": "sine", "pulseWidth": 5 }], "envelopes": [] } },
+            ]) },
         { name: "AbyssBox's Spooky Presets", presets: toNameMap([
                 { name: "Ghost House", generalMidi: false, settings: { "type": "FM", "eqFilter": [], "eqFilterType": false, "eqSimpleCut": 10, "eqSimplePeak": 0, "envelopeSpeed": 12, "discreteEnvelope": false, "eqSubFilters0": [], "effects": ["transition type", "vibrato", "bitcrusher"], "transition": "normal", "clicklessTransition": false, "vibrato": "heavy", "vibratoDepth": 0.45, "vibratoDelay": 0, "vibratoSpeed": 10, "vibratoType": 0, "bitcrusherOctave": 3.5, "bitcrusherQuantization": 43, "panDelay": 10, "fadeInSeconds": 0, "fadeOutTicks": -3, "algorithm": "1←(2 3←4)", "feedbackType": "1⟲", "feedbackAmplitude": 0, "operators": [{ "frequency": "1×", "amplitude": 15, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "1×", "amplitude": 4, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "1×", "amplitude": 6, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "1×", "amplitude": 7, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "1×", "amplitude": 0, "waveform": "sine", "pulseWidth": 5 }, { "frequency": "1×", "amplitude": 0, "waveform": "sine", "pulseWidth": 5 }], "envelopes": [{ "target": "noteVolume", "envelope": "punch" }] } },
                 { name: "Chipwave Music Box", generalMidi: false, settings: { "type": "custom chip", "eqFilter": [], "eqFilterType": false, "eqSimpleCut": 10, "eqSimplePeak": 0, "envelopeSpeed": 12, "discreteEnvelope": false, "eqSubFilters0": [], "effects": ["vibrato", "note filter", "bitcrusher", "chorus", "echo"], "vibrato": "shaky", "vibratoDepth": 0.1, "vibratoDelay": 0, "vibratoSpeed": 10, "vibratoType": 1, "noteFilterType": false, "noteSimpleCut": 10, "noteSimplePeak": 0, "noteFilter": [{ "type": "low-pass", "cutoffHz": 5656.85, "linearGain": 4 }, { "type": "high-pass", "cutoffHz": 88.39, "linearGain": 2.8284 }], "noteSubFilters0": [{ "type": "low-pass", "cutoffHz": 5656.85, "linearGain": 4 }, { "type": "high-pass", "cutoffHz": 88.39, "linearGain": 2.8284 }], "bitcrusherOctave": 4.5, "bitcrusherQuantization": 14, "panDelay": 10, "chorus": 14, "echoSustain": 29, "echoDelayBeats": 1, "fadeInSeconds": 0, "fadeOutTicks": 12, "wave": "square", "unison": "none", "customChipWave": { "0": 24, "1": 24, "2": 24, "3": 23, "4": 23, "5": 22, "6": 21, "7": 19, "8": 17, "9": 14, "10": 11, "11": 7, "12": 3, "13": -1, "14": -5, "15": -8, "16": -10, "17": -12, "18": -14, "19": -16, "20": -17, "21": -18, "22": -19, "23": -20, "24": -21, "25": -22, "26": -23, "27": -23, "28": -24, "29": -24, "30": -24, "31": -24, "32": -24, "33": -24, "34": -24, "35": -24, "36": -23, "37": -23, "38": -22, "39": -21, "40": -20, "41": -19, "42": -18, "43": -17, "44": -16, "45": -14, "46": -12, "47": -10, "48": -8, "49": -5, "50": -1, "51": 3, "52": 7, "53": 11, "54": 14, "55": 17, "56": 19, "57": 21, "58": 22, "59": 23, "60": 23, "61": 24, "62": 24, "63": 24 }, "customChipWaveIntegral": { "0": 0, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0, "10": 0, "11": 0, "12": 0, "13": 0, "14": 0, "15": 0, "16": 0, "17": 0, "18": 0, "19": 0, "20": 0, "21": 0, "22": 0, "23": 0, "24": 0, "25": 0, "26": 0, "27": 0, "28": 0, "29": 0, "30": 0, "31": 0, "32": 0, "33": 0, "34": 0, "35": 0, "36": 0, "37": 0, "38": 0, "39": 0, "40": 0, "41": 0, "42": 0, "43": 0, "44": 0, "45": 0, "46": 0, "47": 0, "48": 0, "49": 0, "50": 0, "51": 0, "52": 0, "53": 0, "54": 0, "55": 0, "56": 0, "57": 0, "58": 0, "59": 0, "60": 0, "61": 0, "62": 0, "63": 0, "64": 0 }, "envelopes": [{ "target": "noteFilterFreq", "envelope": "decay 3", "index": 1 }, { "target": "noteVolume", "envelope": "punch" }, { "target": "noteVolume", "envelope": "decay 3" }] } },
@@ -26049,6 +26487,8 @@ var beepbox = (function (exports) {
             this.grainRange = 40;
             this.chorus = 0;
             this.reverb = 0;
+            this.reverbWet = Config.reverbWetRange - 1;
+            this.reverbDry = Config.reverbDryRange - 1;
             this.echoSustain = 0;
             this.echoDelay = 0;
             this.phaserFreq = 0;
@@ -26117,6 +26557,8 @@ var beepbox = (function (exports) {
             this.effects = (1 << 2);
             this.chorus = Config.chorusRange - 1;
             this.reverb = 0;
+            this.reverbWet = Config.reverbWetRange - 1;
+            this.reverbDry = Config.reverbDryRange - 1;
             this.echoSustain = Math.floor((Config.echoSustainRange - 1) * 0.5);
             this.echoDelay = Math.floor((Config.echoDelayRange - 1) * 0.5);
             this.eqFilter.reset();
@@ -26487,6 +26929,8 @@ var beepbox = (function (exports) {
             }
             if (effectsIncludeReverb(this.effects)) {
                 instrumentObject["reverb"] = Math.round(100 * this.reverb / (Config.reverbRange - 1));
+                instrumentObject["reverbDry"] = Math.round(100 * this.reverbDry / (Config.reverbRange - 1));
+                instrumentObject["reverbWet"] = Math.round(100 * this.reverbWet / (Config.reverbRange - 1));
             }
             if (effectsIncludeNoteRange(this.effects)) {
                 instrumentObject["upperNoteLimit"] = this.upperNoteLimit;
@@ -26502,7 +26946,7 @@ var beepbox = (function (exports) {
                     instrumentObject["harmonics"][i] = Math.round(100 * this.harmonicsWave.harmonics[i] / Config.harmonicsMax);
                 }
             }
-            if (this.type == 0 || this.type == 6 || this.type == 9 || this.type == 2 || this.type == 5 || this.type == 7 || this.type == 3) {
+            if (this.type != 1 && this.type != 11 && this.type != 8) {
                 instrumentObject["unison"] = this.unison == Config.unisons.length ? "custom" : Config.unisons[this.unison].name;
                 if (this.unison == Config.unisons.length) {
                     instrumentObject["unisonVoices"] = this.unisonVoices;
@@ -26914,6 +27358,12 @@ var beepbox = (function (exports) {
             }
             else {
                 this.reverb = legacyGlobalReverb;
+            }
+            if (instrumentObject["reverbDry"] != undefined) {
+                this.reverbDry = clamp(0, Config.reverbRange, Math.round((Config.reverbRange - 1) * (instrumentObject["reverbDry"] | 0) / 100));
+            }
+            if (instrumentObject["reverbWet"] != undefined) {
+                this.reverbWet = clamp(0, Config.reverbRange, Math.round((Config.reverbRange - 1) * (instrumentObject["reverbWet"] | 0) / 100));
             }
             if (instrumentObject["upperNoteLimit"] != undefined) {
                 this.upperNoteLimit = instrumentObject["upperNoteLimit"];
@@ -27479,7 +27929,7 @@ var beepbox = (function (exports) {
                     let modulator = Config.modulators[instrument.modulators[modCount]];
                     let cap = modulator.maxRawVol;
                     if (cap != undefined) {
-                        if (modulator.name == "eq filter" || modulator.name == "note filter") {
+                        if (modulator.name == "eq filter" || modulator.name == "note filter" || modulator.name == "song eq") {
                             cap = Config.filterMorphCount - 1;
                             if (instrument.modFilterTypes[modCount] > 0 && instrument.modFilterTypes[modCount] % 2) {
                                 cap = Config.filterFreqRange;
@@ -27500,7 +27950,7 @@ var beepbox = (function (exports) {
                 else {
                     let cap = Config.modulators[modSetting].maxRawVol;
                     if (cap != undefined) {
-                        if (filterType != undefined && (Config.modulators[modSetting].name == "eq filter" || Config.modulators[modSetting].name == "note filter")) {
+                        if (filterType != undefined && (Config.modulators[modSetting].name == "eq filter" || Config.modulators[modSetting].name == "note filter" || Config.modulators[modSetting].name == "song eq")) {
                             cap = Config.filterMorphCount - 1;
                             if (filterType > 0 && filterType % 2) {
                                 cap = Config.filterFreqRange;
@@ -27656,6 +28106,32 @@ var beepbox = (function (exports) {
             }
             else {
                 buffer.push(base64IntToCharCode[0x3f]);
+            }
+            buffer.push(99);
+            if (this.eqFilter == null) {
+                buffer.push(base64IntToCharCode[0]);
+                console.log("Null EQ filter settings detected in toBase64String for song");
+            }
+            else {
+                buffer.push(base64IntToCharCode[this.eqFilter.controlPointCount]);
+                for (let j = 0; j < this.eqFilter.controlPointCount; j++) {
+                    const point = this.eqFilter.controlPoints[j];
+                    buffer.push(base64IntToCharCode[point.type], base64IntToCharCode[Math.round(point.freq)], base64IntToCharCode[Math.round(point.gain)]);
+                }
+            }
+            let usingSubFilterBitfield = 0;
+            for (let j = 0; j < Config.filterMorphCount - 1; j++) {
+                usingSubFilterBitfield |= (+(this.eqSubFilters[j + 1] != null) << j);
+            }
+            buffer.push(base64IntToCharCode[usingSubFilterBitfield >> 6], base64IntToCharCode[usingSubFilterBitfield & 63]);
+            for (let j = 0; j < Config.filterMorphCount - 1; j++) {
+                if (usingSubFilterBitfield & (1 << j)) {
+                    buffer.push(base64IntToCharCode[this.eqSubFilters[j + 1].controlPointCount]);
+                    for (let k = 0; k < this.eqSubFilters[j + 1].controlPointCount; k++) {
+                        const point = this.eqSubFilters[j + 1].controlPoints[k];
+                        buffer.push(base64IntToCharCode[point.type], base64IntToCharCode[Math.round(point.freq)], base64IntToCharCode[Math.round(point.gain)]);
+                    }
+                }
             }
             buffer.push(85);
             for (let channel = 0; channel < this.getChannelCount(); channel++) {
@@ -27814,6 +28290,8 @@ var beepbox = (function (exports) {
                     }
                     if (effectsIncludeReverb(instrument.effects)) {
                         buffer.push(base64IntToCharCode[instrument.reverb]);
+                        buffer.push(base64IntToCharCode[instrument.reverbWet]);
+                        buffer.push(base64IntToCharCode[instrument.reverbDry]);
                     }
                     if (effectsIncludeGranular(instrument.effects)) {
                         buffer.push(base64IntToCharCode[instrument.granular]);
@@ -28024,7 +28502,7 @@ var beepbox = (function (exports) {
                             if (status != 3) {
                                 bits.write(6, modSetting);
                             }
-                            if (Config.modulators[instrument.modulators[mod]].name == "eq filter" || Config.modulators[instrument.modulators[mod]].name == "note filter") {
+                            if (Config.modulators[instrument.modulators[mod]].name == "eq filter" || Config.modulators[instrument.modulators[mod]].name == "note filter" || Config.modulators[instrument.modulators[mod]].name == "song eq") {
                                 bits.write(6, modFilter);
                             }
                         }
@@ -29146,6 +29624,46 @@ var beepbox = (function (exports) {
                                     }
                                 }
                             }
+                            else {
+                                if (fromAbyssBox && !beforeFour) {
+                                    const originalControlPointCount = base64CharCodeToInt[compressed.charCodeAt(charIndex++)];
+                                    this.eqFilter.controlPointCount = clamp(0, Config.filterMaxPoints + 1, originalControlPointCount);
+                                    for (let i = this.eqFilter.controlPoints.length; i < this.eqFilter.controlPointCount; i++) {
+                                        this.eqFilter.controlPoints[i] = new FilterControlPoint();
+                                    }
+                                    for (let i = 0; i < this.eqFilter.controlPointCount; i++) {
+                                        const point = this.eqFilter.controlPoints[i];
+                                        point.type = clamp(0, 3, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
+                                        point.freq = clamp(0, Config.filterFreqRange, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
+                                        point.gain = clamp(0, Config.filterGainRange, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
+                                    }
+                                    for (let i = this.eqFilter.controlPointCount; i < originalControlPointCount; i++) {
+                                        charIndex += 3;
+                                    }
+                                    this.eqSubFilters[0] = this.eqFilter;
+                                    let usingSubFilterBitfield = (base64CharCodeToInt[compressed.charCodeAt(charIndex++)] << 6) | (base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
+                                    for (let j = 0; j < Config.filterMorphCount - 1; j++) {
+                                        if (usingSubFilterBitfield & (1 << j)) {
+                                            const originalSubfilterControlPointCount = base64CharCodeToInt[compressed.charCodeAt(charIndex++)];
+                                            if (this.eqSubFilters[j + 1] == null)
+                                                this.eqSubFilters[j + 1] = new FilterSettings();
+                                            this.eqSubFilters[j + 1].controlPointCount = clamp(0, Config.filterMaxPoints + 1, originalSubfilterControlPointCount);
+                                            for (let i = this.eqSubFilters[j + 1].controlPoints.length; i < this.eqSubFilters[j + 1].controlPointCount; i++) {
+                                                this.eqSubFilters[j + 1].controlPoints[i] = new FilterControlPoint();
+                                            }
+                                            for (let i = 0; i < this.eqSubFilters[j + 1].controlPointCount; i++) {
+                                                const point = this.eqSubFilters[j + 1].controlPoints[i];
+                                                point.type = clamp(0, 3, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
+                                                point.freq = clamp(0, Config.filterFreqRange, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
+                                                point.gain = clamp(0, Config.filterGainRange, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
+                                            }
+                                            for (let i = this.eqSubFilters[j + 1].controlPointCount; i < originalSubfilterControlPointCount; i++) {
+                                                charIndex += 3;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                         break;
                     case 71:
@@ -29279,6 +29797,8 @@ var beepbox = (function (exports) {
                                 instrument.convertLegacySettings(legacySettings, forceSimpleFilter);
                             }
                             else {
+                                if (17 > Config.maxEffectCount)
+                                    throw new Error();
                                 if ((fromAbyssBox && !beforeTwo || fromAbyssBox && !beforeThree) || (fromUltraBox && !beforeSix)) {
                                     instrument.effects = ((base64CharCodeToInt[compressed.charCodeAt(charIndex++)] << (6 * 5))
                                         | (base64CharCodeToInt[compressed.charCodeAt(charIndex++)] << (6 * 4))
@@ -29443,6 +29963,10 @@ var beepbox = (function (exports) {
                                     }
                                     else {
                                         instrument.reverb = clamp(0, Config.reverbRange, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
+                                        if (fromAbyssBox && !beforeFour) {
+                                            instrument.reverbWet = clamp(0, Config.reverbRange, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
+                                            instrument.reverbDry = clamp(0, Config.reverbRange, base64CharCodeToInt[compressed.charCodeAt(charIndex++)]);
+                                        }
                                     }
                                 }
                                 if (effectsIncludeGranular(instrument.effects)) {
@@ -29900,7 +30424,6 @@ var beepbox = (function (exports) {
                             let postAB4Chords = !beforeFour && fromAbyssBox;
                             let recentPitchBitLength = postAB4Chords ? 7 : (postJB4Chords ? 4 : 3);
                             let recentPitchLength = postAB4Chords ? 97 : (postJB4Chords ? 16 : 8);
-                            console.log(postAB4Chords);
                             if (beforeThree && fromBeepBox) {
                                 channelIndex = base64CharCodeToInt[compressed.charCodeAt(charIndex++)];
                                 charIndex++;
@@ -29925,6 +30448,7 @@ var beepbox = (function (exports) {
                             let songReverbIndex = -1;
                             const shouldCorrectTempoMods = fromJummBox;
                             const jummboxTempoMin = 30;
+                            const shouldCorrectPulseWidth = (fromAbyssBox && beforeFour && !beforeThree);
                             while (true) {
                                 const channel = this.channels[channelIndex];
                                 const isNoiseChannel = this.getChannelIsNoise(channelIndex);
@@ -29958,7 +30482,7 @@ var beepbox = (function (exports) {
                                             if (status != 3) {
                                                 instrument.modulators[mod] = bits.read(6);
                                             }
-                                            if (!jumfive && (Config.modulators[instrument.modulators[mod]].name == "eq filter" || Config.modulators[instrument.modulators[mod]].name == "note filter")) {
+                                            if (!jumfive && (Config.modulators[instrument.modulators[mod]].name == "eq filter" || Config.modulators[instrument.modulators[mod]].name == "note filter" || Config.modulators[instrument.modulators[mod]].name == "song eq")) {
                                                 instrument.modFilterTypes[mod] = bits.read(6);
                                             }
                                             if (jumfive && instrument.modChannels[mod] >= 0) {
@@ -30185,8 +30709,8 @@ var beepbox = (function (exports) {
                                             const noteIsForTempoMod = isModChannel && channel.instruments[newPattern.instruments[0]].modulators[Config.modCount - 1 - note.pitches[0]] === Config.modulators.dictionary["tempo"].index;
                                             let tempoOffset = 0;
                                             if (shouldCorrectTempoMods && noteIsForTempoMod) {
-                                                note.pins[0].size += tempoOffset;
                                                 tempoOffset = jummboxTempoMin - Config.tempoMin;
+                                                note.pins[0].size += tempoOffset;
                                             }
                                             if (isModChannel) {
                                                 note.pins[0].size *= detuneScaleNotes[newPattern.instruments[0]][note.pitches[0]];
@@ -30229,6 +30753,11 @@ var beepbox = (function (exports) {
                                                         note.continuesLastPattern = channel.instruments[newPattern.instruments[0]].legacyTieOver;
                                                     }
                                                 }
+                                            }
+                                            const noteIsForPWMod = isModChannel && channel.instruments[newPattern.instruments[0]].modulators[Config.modCount - 1 - note.pitches[0]] === Config.modulators.dictionary["pulse width"].index;
+                                            if (shouldCorrectPulseWidth && noteIsForPWMod) {
+                                                for (const pin of note.pins)
+                                                    pin.size = pin.size >> 1;
                                             }
                                             curPart = validateRange(0, this.beatsPerBar * Config.partsPerBeat, note.end);
                                         }
@@ -30635,10 +31164,14 @@ var beepbox = (function (exports) {
                 "limitRise": this.limitRise,
                 "limitRatio": this.limitRatio,
                 "compressionRatio": this.compressionRatio,
+                "songEq": this.eqFilter.toJsonObject(),
                 "layeredInstruments": this.layeredInstruments,
                 "patternInstruments": this.patternInstruments,
                 "channels": channelArray,
             };
+            for (let i = 0; i < Config.filterMorphCount - 1; i++) {
+                result["songEq" + i] = this.eqSubFilters[i];
+            }
             if (EditorConfig.customSamples != null && EditorConfig.customSamples.length > 0) {
                 result["customSamples"] = EditorConfig.customSamples;
             }
@@ -31080,6 +31613,20 @@ var beepbox = (function (exports) {
             else {
                 this.compressionRatio = 1.0;
             }
+            if (jsonObject["songEq"] != undefined) {
+                this.eqFilter.fromJsonObject(jsonObject["songEq"]);
+            }
+            else {
+                this.eqFilter.reset();
+            }
+            for (let i = 0; i < Config.filterMorphCount - 1; i++) {
+                if (jsonObject["songEq" + i]) {
+                    this.eqSubFilters[i] = jsonObject["songEq" + i];
+                }
+                else {
+                    this.eqSubFilters[i] = null;
+                }
+            }
             let maxInstruments = 1;
             let maxPatterns = 1;
             let maxBars = 1;
@@ -31433,7 +31980,7 @@ var beepbox = (function (exports) {
             this._modifiedEnvelopeIndices = [];
             this._modifiedEnvelopeCount = 0;
             this.lowpassCutoffDecayVolumeCompensation = 1.0;
-            const length = 60;
+            const length = 62;
             for (let i = 0; i < length; i++) {
                 this.envelopeStarts[i] = 1.0;
                 this.envelopeEnds[i] = 1.0;
@@ -31904,6 +32451,10 @@ var beepbox = (function (exports) {
             this.reverbDelayPos = 0;
             this.reverbMult = 0.0;
             this.reverbMultDelta = 0.0;
+            this.reverbWetMult = 0.0;
+            this.reverbWetMultDelta = 0.0;
+            this.reverbDryMult = 0.0;
+            this.reverbDryMultDelta = 0.0;
             this.reverbShelfA1 = 0.0;
             this.reverbShelfB0 = 0.0;
             this.reverbShelfB1 = 0.0;
@@ -32334,8 +32885,8 @@ var beepbox = (function (exports) {
             let delayInputMultStart = 1.0;
             let delayInputMultEnd = 1.0;
             if (usesPanning) {
-                const panEnvelopeStart = envelopeStarts[58] * 2.0 - 1.0;
-                const panEnvelopeEnd = envelopeEnds[58] * 2.0 - 1.0;
+                const panEnvelopeStart = envelopeStarts[60] * 2.0 - 1.0;
+                const panEnvelopeEnd = envelopeEnds[60] * 2.0 - 1.0;
                 let usePanStart = instrument.pan;
                 let usePanEnd = instrument.pan;
                 if (synth.isModActive(Config.modulators.dictionary["pan"].index, channelIndex, instrumentIndex)) {
@@ -32551,6 +33102,22 @@ var beepbox = (function (exports) {
                 const reverbEnd = Math.min(1.0, Math.pow(reverbEnvelopeEnd * useReverbEnd / Config.reverbRange, 0.667)) * 0.425;
                 this.reverbMult = reverbStart;
                 this.reverbMultDelta = (reverbEnd - reverbStart) / roundedSamplesPerTick;
+                let reverbDrySettingStart = instrument.reverbDry;
+                let reverbDrySettingEnd = instrument.reverbDry;
+                let reverbWetSettingStart = instrument.reverbWet;
+                let reverbWetSettingEnd = instrument.reverbWet;
+                const reverbDryEnvelopeStart = envelopeStarts[59];
+                const reverbDryEnvelopeEnd = envelopeEnds[59];
+                const reverbDryStart = ((reverbDrySettingStart * reverbDryEnvelopeStart)) / Config.reverbDryRange;
+                const reverbDryEnd = ((reverbDrySettingEnd * reverbDryEnvelopeEnd)) / Config.reverbDryRange;
+                const reverbWetEnvelopeStart = envelopeStarts[58];
+                const reverbWetEnvelopeEnd = envelopeEnds[58];
+                const reverbWetStart = ((reverbWetSettingStart * reverbWetEnvelopeStart)) / Config.reverbWetRange;
+                const reverbWetEnd = ((reverbWetSettingEnd * reverbWetEnvelopeEnd)) / Config.reverbWetRange;
+                this.reverbWetMult = reverbWetStart;
+                this.reverbWetMultDelta = (reverbWetEnd - reverbWetStart) / roundedSamplesPerTick;
+                this.reverbDryMult = reverbDryStart;
+                this.reverbDryMultDelta = (reverbDryEnd - reverbDryStart) / roundedSamplesPerTick;
                 maxReverbMult = Math.max(reverbStart, reverbEnd);
                 const shelfRadians = 2.0 * Math.PI * Config.reverbShelfHz / synth.samplesPerSecond;
                 Synth.tempFilterStartCoefficients.highShelf1stOrder(shelfRadians, Config.reverbShelfGain);
@@ -32722,6 +33289,8 @@ var beepbox = (function (exports) {
         }
         initModFilters(song) {
             if (song != null) {
+                song.tmpEqFilterStart = song.eqFilter;
+                song.tmpEqFilterEnd = null;
                 for (let channelIndex = 0; channelIndex < song.getChannelCount(); channelIndex++) {
                     for (let instrumentIndex = 0; instrumentIndex < song.channels[channelIndex].instruments.length; instrumentIndex++) {
                         const instrument = song.channels[channelIndex].instruments[instrumentIndex];
@@ -32816,7 +33385,30 @@ var beepbox = (function (exports) {
                                 for (let mod = 0; mod < Config.modCount; mod++) {
                                     if (latestPinParts[mod] != null) {
                                         if (Config.modulators[instrument.modulators[mod]].forSong) {
+                                            const songFilterParam = instrument.modulators[mod] == Config.modulators.dictionary["song eq"].index;
                                             if (latestModTimes[instrument.modulators[mod]] == null || currentBar * Config.partsPerBeat * this.song.beatsPerBar + latestPinParts[mod] > latestModTimes[instrument.modulators[mod]]) {
+                                                if (songFilterParam) {
+                                                    let tgtSong = this.song;
+                                                    if (instrument.modFilterTypes[mod] == 0) {
+                                                        tgtSong.tmpEqFilterStart = tgtSong.eqSubFilters[latestPinValues[mod]];
+                                                    }
+                                                    else {
+                                                        for (let i = 0; i < Config.filterMorphCount; i++) {
+                                                            if (tgtSong.tmpEqFilterStart != null && tgtSong.tmpEqFilterStart == tgtSong.eqSubFilters[i]) {
+                                                                tgtSong.tmpEqFilterStart = new FilterSettings();
+                                                                tgtSong.tmpEqFilterStart.fromJsonObject(tgtSong.eqSubFilters[i].toJsonObject());
+                                                                i = Config.filterMorphCount;
+                                                            }
+                                                        }
+                                                        if (tgtSong.tmpEqFilterStart != null && Math.floor((instrument.modFilterTypes[mod] - 1) / 2) < tgtSong.tmpEqFilterStart.controlPointCount) {
+                                                            if (instrument.modFilterTypes[mod] % 2)
+                                                                tgtSong.tmpEqFilterStart.controlPoints[Math.floor((instrument.modFilterTypes[mod] - 1) / 2)].freq = latestPinValues[mod];
+                                                            else
+                                                                tgtSong.tmpEqFilterStart.controlPoints[Math.floor((instrument.modFilterTypes[mod] - 1) / 2)].gain = latestPinValues[mod];
+                                                        }
+                                                    }
+                                                    tgtSong.tmpEqFilterEnd = tgtSong.tmpEqFilterStart;
+                                                }
                                                 this.setModValue(latestPinValues[mod], latestPinValues[mod], instrument.modChannels[mod], instrument.modInstruments[mod], instrument.modulators[mod]);
                                                 latestModTimes[instrument.modulators[mod]] = currentBar * Config.partsPerBeat * this.song.beatsPerBar + latestPinParts[mod];
                                             }
@@ -33210,6 +33802,15 @@ var beepbox = (function (exports) {
             this.metronomePrevAmplitude = 0.0;
             this.metronomeFilter = 0.0;
             this.limit = 0.0;
+            this.songEqFilterVolume = 1.0;
+            this.songEqFilterVolumeDelta = 0.0;
+            this.songEqFiltersL = [];
+            this.songEqFiltersR = [];
+            this.songEqFilterCount = 0;
+            this.initialSongEqFilterInput1L = 0.0;
+            this.initialSongEqFilterInput2L = 0.0;
+            this.initialSongEqFilterInput1R = 0.0;
+            this.initialSongEqFilterInput2R = 0.0;
             this.tempMonoInstrumentSampleBuffer = null;
             this.audioCtx = null;
             this.scriptNode = null;
@@ -33312,6 +33913,8 @@ var beepbox = (function (exports) {
             if (this.song != null) {
                 this.song.inVolumeCap = 0.0;
                 this.song.outVolumeCap = 0.0;
+                this.song.tmpEqFilterStart = null;
+                this.song.tmpEqFilterEnd = null;
                 for (let channelIndex = 0; channelIndex < this.song.pitchChannelCount + this.song.noiseChannelCount; channelIndex++) {
                     this.modInsValues[channelIndex] = [];
                     this.nextModInsValues[channelIndex] = [];
@@ -33397,7 +34000,8 @@ var beepbox = (function (exports) {
                 }
             }
         }
-        isFilterModActive(forNoteFilter, channelIdx, instrumentIdx) {
+        isFilterModActive(forNoteFilter, channelIdx, instrumentIdx, forSong) {
+            var _a;
             const instrument = this.song.channels[channelIdx].instruments[instrumentIdx];
             if (forNoteFilter) {
                 if (instrument.noteFilterType)
@@ -33406,10 +34010,16 @@ var beepbox = (function (exports) {
                     return true;
             }
             else {
-                if (instrument.eqFilterType)
-                    return false;
-                if (instrument.tmpEqFilterEnd != null)
-                    return true;
+                if (forSong) {
+                    if (((_a = this === null || this === void 0 ? void 0 : this.song) === null || _a === void 0 ? void 0 : _a.tmpEqFilterEnd) != null)
+                        return true;
+                }
+                else {
+                    if (instrument.eqFilterType)
+                        return false;
+                    if (instrument.tmpEqFilterEnd != null)
+                        return true;
+                }
             }
             return false;
         }
@@ -33548,6 +34158,63 @@ var beepbox = (function (exports) {
                     this.loopRepeatCount--;
             }
         }
+        computeSongState(samplesPerTick) {
+            if (this.song == null)
+                return;
+            const roundedSamplesPerTick = Math.ceil(samplesPerTick);
+            const samplesPerSecond = this.samplesPerSecond;
+            let eqFilterVolume = 1.0;
+            if (this.song.eqFilterType) {
+                const eqFilterSettingsStart = this.song.eqFilter;
+                if (this.song.eqSubFilters[1] == null)
+                    this.song.eqSubFilters[1] = new FilterSettings();
+                this.song.eqSubFilters[1];
+                let startSimpleFreq = this.song.eqFilterSimpleCut;
+                let startSimpleGain = this.song.eqFilterSimplePeak;
+                this.song.eqFilterSimpleCut;
+                this.song.eqFilterSimplePeak;
+                let startPoint;
+                {
+                    eqFilterSettingsStart.convertLegacySettingsForSynth(startSimpleFreq, startSimpleGain, true);
+                    startPoint = eqFilterSettingsStart.controlPoints[0];
+                    startPoint.toCoefficients(Synth.tempFilterStartCoefficients, samplesPerSecond, 1.0, 1.0);
+                    if (this.songEqFiltersL.length < 1)
+                        this.songEqFiltersL[0] = new DynamicBiquadFilter();
+                    this.songEqFiltersL[0].loadCoefficientsWithGradient(Synth.tempFilterStartCoefficients, Synth.tempFilterStartCoefficients, 1.0 / roundedSamplesPerTick, startPoint.type == 0);
+                    if (this.songEqFiltersR.length < 1)
+                        this.songEqFiltersR[0] = new DynamicBiquadFilter();
+                    this.songEqFiltersR[0].loadCoefficientsWithGradient(Synth.tempFilterStartCoefficients, Synth.tempFilterStartCoefficients, 1.0 / roundedSamplesPerTick, startPoint.type == 0);
+                }
+                eqFilterVolume *= startPoint.getVolumeCompensationMult();
+                this.songEqFilterCount = 1;
+                eqFilterVolume = Math.min(3.0, eqFilterVolume);
+            }
+            else {
+                const eqFilterSettings = (this.song.tmpEqFilterStart != null) ? this.song.tmpEqFilterStart : this.song.eqFilter;
+                for (let i = 0; i < eqFilterSettings.controlPointCount; i++) {
+                    let startPoint = eqFilterSettings.controlPoints[i];
+                    let endPoint = (this.song.tmpEqFilterEnd != null && this.song.tmpEqFilterEnd.controlPoints[i] != null) ? this.song.tmpEqFilterEnd.controlPoints[i] : eqFilterSettings.controlPoints[i];
+                    if (startPoint.type != endPoint.type) {
+                        startPoint = endPoint;
+                    }
+                    startPoint.toCoefficients(Synth.tempFilterStartCoefficients, samplesPerSecond, 1.0, 1.0);
+                    endPoint.toCoefficients(Synth.tempFilterEndCoefficients, samplesPerSecond, 1.0, 1.0);
+                    if (this.songEqFiltersL.length <= i)
+                        this.songEqFiltersL[i] = new DynamicBiquadFilter();
+                    this.songEqFiltersL[i].loadCoefficientsWithGradient(Synth.tempFilterStartCoefficients, Synth.tempFilterEndCoefficients, 1.0 / roundedSamplesPerTick, startPoint.type == 0);
+                    if (this.songEqFiltersR.length <= i)
+                        this.songEqFiltersR[i] = new DynamicBiquadFilter();
+                    this.songEqFiltersR[i].loadCoefficientsWithGradient(Synth.tempFilterStartCoefficients, Synth.tempFilterEndCoefficients, 1.0 / roundedSamplesPerTick, startPoint.type == 0);
+                    eqFilterVolume *= startPoint.getVolumeCompensationMult();
+                }
+                this.songEqFilterCount = eqFilterSettings.controlPointCount;
+                eqFilterVolume = Math.min(3.0, eqFilterVolume);
+            }
+            let eqFilterVolumeStart = eqFilterVolume;
+            let eqFilterVolumeEnd = eqFilterVolume;
+            this.songEqFilterVolume = eqFilterVolumeStart;
+            this.songEqFilterVolumeDelta = (eqFilterVolumeEnd - eqFilterVolumeStart) / roundedSamplesPerTick;
+        }
         synthesize(outputDataL, outputDataR, outputBufferLength, playSong = true) {
             if (this.song == null) {
                 for (let i = 0; i < outputBufferLength; i++) {
@@ -33618,7 +34285,8 @@ var beepbox = (function (exports) {
                                 const instrument = channel.instruments[tone.instrumentIndex];
                                 let mod = Config.modCount - 1 - tone.pitches[0];
                                 if ((instrument.modulators[mod] == Config.modulators.dictionary["note filter"].index
-                                    || instrument.modulators[mod] == Config.modulators.dictionary["eq filter"].index)
+                                    || instrument.modulators[mod] == Config.modulators.dictionary["eq filter"].index
+                                    || instrument.modulators[mod] == Config.modulators.dictionary["song eq"].index)
                                     && instrument.modFilterTypes[mod] != null && instrument.modFilterTypes[mod] > 0) {
                                     continue;
                                 }
@@ -33637,7 +34305,8 @@ var beepbox = (function (exports) {
                                 const instrument = channel.instruments[tone.instrumentIndex];
                                 let mod = Config.modCount - 1 - tone.pitches[0];
                                 if ((instrument.modulators[mod] == Config.modulators.dictionary["note filter"].index
-                                    || instrument.modulators[mod] == Config.modulators.dictionary["eq filter"].index)
+                                    || instrument.modulators[mod] == Config.modulators.dictionary["eq filter"].index
+                                    || instrument.modulators[mod] == Config.modulators.dictionary["song eq"].index)
                                     && instrument.modFilterTypes[mod] != null && instrument.modFilterTypes[mod] > 0) {
                                     this.playModTone(song, channelIndex, samplesPerTick, bufferIndex, runLength, tone, false, false);
                                 }
@@ -33660,6 +34329,7 @@ var beepbox = (function (exports) {
                     this.skipBar();
                     continue;
                 }
+                this.computeSongState(samplesPerTick);
                 for (let channelIndex = 0; channelIndex < song.pitchChannelCount + song.noiseChannelCount; channelIndex++) {
                     const channel = song.channels[channelIndex];
                     const channelState = this.channels[channelIndex];
@@ -33760,6 +34430,55 @@ var beepbox = (function (exports) {
                     }
                 }
                 for (let i = bufferIndex; i < runEnd; i++) {
+                    {
+                        let filtersL = this.songEqFiltersL;
+                        let filtersR = this.songEqFiltersR;
+                        const filterCount = this.songEqFilterCount | 0;
+                        let initialFilterInput1L = +this.initialSongEqFilterInput1L;
+                        let initialFilterInput2L = +this.initialSongEqFilterInput2L;
+                        let initialFilterInput1R = +this.initialSongEqFilterInput1R;
+                        let initialFilterInput2R = +this.initialSongEqFilterInput2R;
+                        const applyFilters = Synth.applyFilters;
+                        let eqFilterVolume = +this.songEqFilterVolume;
+                        const eqFilterVolumeDelta = +this.songEqFilterVolumeDelta;
+                        const inputSampleL = outputDataL[i];
+                        let sampleL = inputSampleL;
+                        sampleL = applyFilters(sampleL, initialFilterInput1L, initialFilterInput2L, filterCount, filtersL);
+                        initialFilterInput2L = initialFilterInput1L;
+                        initialFilterInput1L = inputSampleL;
+                        sampleL *= eqFilterVolume;
+                        outputDataL[i] = sampleL;
+                        const inputSampleR = outputDataR[i];
+                        let sampleR = inputSampleR;
+                        sampleR = applyFilters(sampleR, initialFilterInput1R, initialFilterInput2R, filterCount, filtersR);
+                        initialFilterInput2R = initialFilterInput1R;
+                        initialFilterInput1R = inputSampleR;
+                        sampleR *= eqFilterVolume;
+                        outputDataR[i] = sampleR;
+                        eqFilterVolume += eqFilterVolumeDelta;
+                        this.sanitizeFilters(filtersL);
+                        if (!(initialFilterInput1L < 100) || !(initialFilterInput2L < 100)) {
+                            initialFilterInput1L = 0.0;
+                            initialFilterInput2L = 0.0;
+                        }
+                        if (Math.abs(initialFilterInput1L) < epsilon)
+                            initialFilterInput1L = 0.0;
+                        if (Math.abs(initialFilterInput2L) < epsilon)
+                            initialFilterInput2L = 0.0;
+                        this.initialSongEqFilterInput1L = initialFilterInput1L;
+                        this.initialSongEqFilterInput2L = initialFilterInput2L;
+                        this.sanitizeFilters(filtersR);
+                        if (!(initialFilterInput1R < 100) || !(initialFilterInput2R < 100)) {
+                            initialFilterInput1R = 0.0;
+                            initialFilterInput2R = 0.0;
+                        }
+                        if (Math.abs(initialFilterInput1R) < epsilon)
+                            initialFilterInput1R = 0.0;
+                        if (Math.abs(initialFilterInput2R) < epsilon)
+                            initialFilterInput2R = 0.0;
+                        this.initialSongEqFilterInput1R = initialFilterInput1R;
+                        this.initialSongEqFilterInput2R = initialFilterInput2R;
+                    }
                     const sampleL = outputDataL[i] * song.masterGain * song.masterGain;
                     const sampleR = outputDataR[i] * song.masterGain * song.masterGain;
                     const absL = sampleL < 0.0 ? -sampleL : sampleL;
@@ -33847,6 +34566,12 @@ var beepbox = (function (exports) {
                                 instrument.tmpNoteFilterStart = instrument.noteFilter;
                             }
                         }
+                    }
+                    if (song.tmpEqFilterEnd != null) {
+                        song.tmpEqFilterStart = song.tmpEqFilterEnd;
+                    }
+                    else {
+                        song.tmpEqFilterStart = song.eqFilter;
                     }
                     this.tick++;
                     this.tickSampleCountdown += samplesPerTick;
@@ -35139,8 +35864,8 @@ var beepbox = (function (exports) {
                     let pulseWidthModStart = basePulseWidth;
                     let pulseWidthModEnd = basePulseWidth;
                     if (this.isModActive(Config.modulators.dictionary["pulse width"].index, channelIndex, tone.instrumentIndex)) {
-                        pulseWidthModStart = (this.getModValue(Config.modulators.dictionary["pulse width"].index, channelIndex, tone.instrumentIndex, false)) / (Config.pulseWidthRange * 2);
-                        pulseWidthModEnd = (this.getModValue(Config.modulators.dictionary["pulse width"].index, channelIndex, tone.instrumentIndex, true)) / (Config.pulseWidthRange * 2);
+                        pulseWidthModStart = (this.getModValue(Config.modulators.dictionary["pulse width"].index, channelIndex, tone.instrumentIndex, false)) / (Config.pulseWidthRange);
+                        pulseWidthModEnd = (this.getModValue(Config.modulators.dictionary["pulse width"].index, channelIndex, tone.instrumentIndex, true)) / (Config.pulseWidthRange);
                     }
                     const pulseWidthStart = pulseWidthModStart * envelopeStarts[2];
                     const pulseWidthEnd = pulseWidthModEnd * envelopeEnds[2];
@@ -35284,8 +36009,8 @@ var beepbox = (function (exports) {
                     let pulseWidthModStart = basePulseWidth;
                     let pulseWidthModEnd = basePulseWidth;
                     if (this.isModActive(Config.modulators.dictionary["pulse width"].index, channelIndex, tone.instrumentIndex)) {
-                        pulseWidthModStart = (this.getModValue(Config.modulators.dictionary["pulse width"].index, channelIndex, tone.instrumentIndex, false)) / (Config.pulseWidthRange * 2);
-                        pulseWidthModEnd = (this.getModValue(Config.modulators.dictionary["pulse width"].index, channelIndex, tone.instrumentIndex, true)) / (Config.pulseWidthRange * 2);
+                        pulseWidthModStart = (this.getModValue(Config.modulators.dictionary["pulse width"].index, channelIndex, tone.instrumentIndex, false)) / (Config.pulseWidthRange);
+                        pulseWidthModEnd = (this.getModValue(Config.modulators.dictionary["pulse width"].index, channelIndex, tone.instrumentIndex, true)) / (Config.pulseWidthRange);
                     }
                     let pulseWidthStart = pulseWidthModStart * envelopeStarts[2];
                     let pulseWidthEnd = pulseWidthModEnd * envelopeEnds[2];
@@ -36374,6 +37099,10 @@ var beepbox = (function (exports) {
 				
 				let reverb = +instrumentState.reverbMult;
 				const reverbDelta = +instrumentState.reverbMultDelta;
+                let reverbWet = +instrumentState.reverbWetMult;
+                const reverbWetDelta = +instrumentState.reverbWetMultDelta;
+                let reverbDry = +instrumentState.reverbDryMult;
+                const reverbDryDelta = +instrumentState.reverbDryMultDelta;
 				
 				const reverbShelfA1 = +instrumentState.reverbShelfA1;
 				const reverbShelfB0 = +instrumentState.reverbShelfB0;
@@ -36669,34 +37398,59 @@ var beepbox = (function (exports) {
 					const reverbDelayPos1 = (reverbDelayPos +  3041) & reverbMask;
 					const reverbDelayPos2 = (reverbDelayPos +  6426) & reverbMask;
 					const reverbDelayPos3 = (reverbDelayPos + 10907) & reverbMask;
+
+                    let drySampleL = sampleL;
+                    let drySampleR = sampleR;
+
+                    let originalSampleL = sampleL;
+                    let originalSampleR = sampleR;
+
 					const reverbSample0 = (reverbDelayLine[reverbDelayPos]);
 					const reverbSample1 = reverbDelayLine[reverbDelayPos1];
 					const reverbSample2 = reverbDelayLine[reverbDelayPos2];
 					const reverbSample3 = reverbDelayLine[reverbDelayPos3];
+
 					const reverbTemp0 = -(reverbSample0 + sampleL) + reverbSample1;
 					const reverbTemp1 = -(reverbSample0 + sampleR) - reverbSample1;
+
 					const reverbTemp2 = -reverbSample2 + reverbSample3;
 					const reverbTemp3 = -reverbSample2 - reverbSample3;
+
 					const reverbShelfInput0 = (reverbTemp0 + reverbTemp2) * reverb;
 					const reverbShelfInput1 = (reverbTemp1 + reverbTemp3) * reverb;
 					const reverbShelfInput2 = (reverbTemp0 - reverbTemp2) * reverb;
 					const reverbShelfInput3 = (reverbTemp1 - reverbTemp3) * reverb;
+
 					reverbShelfSample0 = reverbShelfB0 * reverbShelfInput0 + reverbShelfB1 * reverbShelfPrevInput0 - reverbShelfA1 * reverbShelfSample0;
 					reverbShelfSample1 = reverbShelfB0 * reverbShelfInput1 + reverbShelfB1 * reverbShelfPrevInput1 - reverbShelfA1 * reverbShelfSample1;
 					reverbShelfSample2 = reverbShelfB0 * reverbShelfInput2 + reverbShelfB1 * reverbShelfPrevInput2 - reverbShelfA1 * reverbShelfSample2;
 					reverbShelfSample3 = reverbShelfB0 * reverbShelfInput3 + reverbShelfB1 * reverbShelfPrevInput3 - reverbShelfA1 * reverbShelfSample3;
+
 					reverbShelfPrevInput0 = reverbShelfInput0;
 					reverbShelfPrevInput1 = reverbShelfInput1;
 					reverbShelfPrevInput2 = reverbShelfInput2;
 					reverbShelfPrevInput3 = reverbShelfInput3;
+
 					reverbDelayLine[reverbDelayPos1] = reverbShelfSample0 * delayInputMult;
 					reverbDelayLine[reverbDelayPos2] = reverbShelfSample1 * delayInputMult;
 					reverbDelayLine[reverbDelayPos3] = reverbShelfSample2 * delayInputMult;
 					reverbDelayLine[reverbDelayPos ] = reverbShelfSample3 * delayInputMult;
+
+                    let wetSampleL = (sampleL + (reverbSample1 + reverbSample2 + reverbSample3)) - drySampleL;
+                    let wetSampleR = (sampleR + (reverbSample0 + reverbSample2 - reverbSample3)) - drySampleR;
+
+                    wetSampleL *= reverbWet;
+                    wetSampleR *= reverbWet;
+                    drySampleL *= reverbDry;
+                    drySampleR *= reverbDry;
+
 					reverbDelayPos = (reverbDelayPos + 1) & reverbMask;
-					sampleL += reverbSample1 + reverbSample2 + reverbSample3;
-					sampleR += reverbSample0 + reverbSample2 - reverbSample3;
-					reverb += reverbDelta;`;
+					sampleL = (drySampleL + wetSampleL);
+					sampleR = (drySampleR + wetSampleR);
+					reverb += reverbDelta;
+                    reverbWet += reverbWetDelta;
+                    reverbDry += reverbDryDelta;
+                    `;
                 }
                 effectsSource += `
 					
@@ -36845,6 +37599,8 @@ var beepbox = (function (exports) {
 				Synth.sanitizeDelayLine(reverbDelayLine, reverbDelayPos + 10907, reverbMask);
 				instrumentState.reverbDelayPos = reverbDelayPos;
 				instrumentState.reverbMult = reverb;
+                instrumentState.reverbWetMult = reverbWet;
+                instrumentState.reverbDryMult = reverbDry;
 				
 				if (!Number.isFinite(reverbShelfSample0) || Math.abs(reverbShelfSample0) < epsilon) reverbShelfSample0 = 0.0;
 				if (!Number.isFinite(reverbShelfSample1) || Math.abs(reverbShelfSample1) < epsilon) reverbShelfSample1 = 0.0;
@@ -37253,6 +38009,43 @@ var beepbox = (function (exports) {
                 }
                 else if (setting == Config.modulators.dictionary["next bar"].index) {
                     synth.wantToSkip = true;
+                }
+                else if (setting == Config.modulators.dictionary["song eq"].index) {
+                    const tgtSong = synth.song;
+                    let dotTarget = instrument.modFilterTypes[mod] | 0;
+                    if (dotTarget == 0) {
+                        let pinIdx = 0;
+                        const currentPart = synth.getTicksIntoBar() / Config.ticksPerPart;
+                        while (tone.note.start + tone.note.pins[pinIdx].time <= currentPart)
+                            pinIdx++;
+                        let lerpEndRatio = ((currentPart - tone.note.start + (roundedSamplesPerTick / (synth.getSamplesPerTick() * Config.ticksPerPart)) * Config.ticksPerPart) - tone.note.pins[pinIdx - 1].time) / (tone.note.pins[pinIdx].time - tone.note.pins[pinIdx - 1].time);
+                        if (tgtSong.eqSubFilters[tone.note.pins[pinIdx - 1].size] != null || tgtSong.eqSubFilters[tone.note.pins[pinIdx].size] != null) {
+                            tgtSong.tmpEqFilterEnd = FilterSettings.lerpFilters(tgtSong.eqSubFilters[tone.note.pins[pinIdx - 1].size], tgtSong.eqSubFilters[tone.note.pins[pinIdx].size], lerpEndRatio);
+                        }
+                        else {
+                            tgtSong.tmpEqFilterEnd = tgtSong.eqFilter;
+                        }
+                    }
+                    else {
+                        for (let i = 0; i < Config.filterMorphCount; i++) {
+                            if (tgtSong.tmpEqFilterEnd == tgtSong.eqSubFilters[i] && tgtSong.tmpEqFilterEnd != null) {
+                                tgtSong.tmpEqFilterEnd = new FilterSettings();
+                                tgtSong.tmpEqFilterEnd.fromJsonObject(tgtSong.eqSubFilters[i].toJsonObject());
+                            }
+                        }
+                        if (tgtSong.tmpEqFilterEnd == null) {
+                            tgtSong.tmpEqFilterEnd = new FilterSettings();
+                            tgtSong.tmpEqFilterEnd.fromJsonObject(tgtSong.eqFilter.toJsonObject());
+                        }
+                        if (tgtSong.tmpEqFilterEnd.controlPointCount > Math.floor((dotTarget - 1) / 2)) {
+                            if (dotTarget % 2) {
+                                tgtSong.tmpEqFilterEnd.controlPoints[Math.floor((dotTarget - 1) / 2)].freq = tone.expression + tone.expressionDelta;
+                            }
+                            else {
+                                tgtSong.tmpEqFilterEnd.controlPoints[Math.floor((dotTarget - 1) / 2)].gain = tone.expression + tone.expressionDelta;
+                            }
+                        }
+                    }
                 }
                 else if (setting == Config.modulators.dictionary["eq filter"].index) {
                     const tgtInstrument = synth.song.channels[instrument.modChannels[mod]].instruments[usedInstruments[instrumentIndex]];
