@@ -1469,6 +1469,16 @@ var beepbox = (function (exports) {
             maxRawVol: 10, newNoteVol: 0, forSong: true, convertRealFactor: 0, associatedEffect: 17,
             promptName: "Song EQ Filter",
             promptDesc: ["This setting overwrites every instrument's eq filter. You can do this in a few separate ways, similar to the per instrument eq filter modulator.", "When the option 'morph' is selected, your modulator values will indicate a sub-filter index of your EQ filter to 'morph' to over time. For example, a change from 0 to 1 means your main filter (default) will morph to sub-filter 1 over the specified duration. You can shape the main filter and sub-filters in the large filter editor ('+' button). If your two filters' number, type, and order of filter dots all match up, the morph will happen smoothly and you'll be able to hear them changing. If they do not match up, the filters will simply jump between each other.", "Note that filters will morph based on endpoints in the pattern editor. So, if you specify a morph from sub-filter 1 to 4 but do not specifically drag in new endpoints for 2 and 3, it will morph directly between 1 and 4 without going through the others.", "If you target Dot X or Dot Y, you can finely tune the coordinates of a single dot for your filter. The number of available dots to choose is dependent on your main filter's dot count.", "[OVERWRITING] [$LO - $HI]"] },
+        { name: "reverb wet",
+            pianoName: "Reverb Wet Volume",
+            maxRawVol: Config.reverbWetRange, newNoteVol: 0, forSong: false, convertRealFactor: 0, associatedEffect: 0,
+            promptName: "Reverb Wet Volume",
+            promptDesc: ["This setting controls the volume of the wet samples in your reverb, just like the reverb (Wet) slider.", "At $LO, your instrument will have no wetness. At $HI, it will be at maximum.", "[OVERWRITING] [$LO - $HI]"] },
+        { name: "reverb dry",
+            pianoName: "Reverb Dry Volume",
+            maxRawVol: Config.reverbDryRange, newNoteVol: 0, forSong: false, convertRealFactor: 0, associatedEffect: 0,
+            promptName: "Reverb Dry Volume",
+            promptDesc: ["This setting controls the volume of the dry samples in your reverb, just like the reverb (Dry) slider.", "At $LO, your instrument will have no wetness. At $HI, it will be at maximum.", "[OVERWRITING] [$LO - $HI]"] },
     ]);
     function centerWave(wave) {
         let sum = 0.0;
@@ -33106,6 +33116,14 @@ var beepbox = (function (exports) {
                 let reverbDrySettingEnd = instrument.reverbDry;
                 let reverbWetSettingStart = instrument.reverbWet;
                 let reverbWetSettingEnd = instrument.reverbWet;
+                if (synth.isModActive(Config.modulators.dictionary["reverb wet"].index, channelIndex, instrumentIndex)) {
+                    reverbWetSettingStart = synth.getModValue(Config.modulators.dictionary["reverb wet"].index, channelIndex, instrumentIndex, false);
+                    reverbWetSettingEnd = synth.getModValue(Config.modulators.dictionary["reverb wet"].index, channelIndex, instrumentIndex, true);
+                }
+                if (synth.isModActive(Config.modulators.dictionary["reverb dry"].index, channelIndex, instrumentIndex)) {
+                    reverbDrySettingStart = synth.getModValue(Config.modulators.dictionary["reverb dry"].index, channelIndex, instrumentIndex, false);
+                    reverbDrySettingEnd = synth.getModValue(Config.modulators.dictionary["reverb dry"].index, channelIndex, instrumentIndex, true);
+                }
                 const reverbDryEnvelopeStart = envelopeStarts[59];
                 const reverbDryEnvelopeEnd = envelopeEnds[59];
                 const reverbDryStart = ((reverbDrySettingStart * reverbDryEnvelopeStart)) / Config.reverbDryRange;
