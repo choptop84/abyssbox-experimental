@@ -68586,6 +68586,7 @@ You should be redirected to the song at:<br /><br />
                 display: flex;
                 justify-content: space-between;
                 max-height: 100dvh;
+                overflow-y: hidden;
             }
 
             .instrument-settings-area {
