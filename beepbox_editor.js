@@ -65204,7 +65204,7 @@ You should be redirected to the song at:<br /><br />
                         this._noteFilterTypeRow.style.display = "none";
                         this._noteFilterContainerRow.style.display = "none";
                     }
-                    if (this._doc.prefs.instrumentSettingsSimplifier) {
+                    if (this._doc.prefs.instrumentSettingsSimplifier || isMobile) {
                         const colors = ColorConfig.getChannelColor(this._doc.song, this._doc.channel);
                         this._instOptionsDiv.style.setProperty("--text-color-lit", colors.primaryNote);
                         this._instOptionsDiv.style.setProperty("--text-color-dim", colors.secondaryNote);
