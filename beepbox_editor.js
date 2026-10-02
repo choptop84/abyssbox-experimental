@@ -68617,6 +68617,9 @@ You should be redirected to the song at:<br /><br />
             .pattern-area {
                 height: 100dvh !important;
                 max-height: 100dvh !important;
+                width: 0 !important;
+                flex-grow: 1;
+                max-height: unset !important;
             }
 
             .play-pause-area2 {
