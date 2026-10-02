@@ -259,6 +259,7 @@
             padding: 5px;
             border: solid var(--ui-widget-background) 3px;
             border-radius: 15px;
+            padding-top: 24px;
         }
 
         #warning {
@@ -271,12 +272,32 @@
             z-index: 10;
         }
 
+        #closeWarning {
+            height: 24px;
+            width: 24px;
+            background: var(--ui-widget-background);
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            border-radius: 10px;
+            text-align: center;
+            align-content: center;
+        }
+
+        #closeWarning:hover {
+            filter: brightness(110%);
+        }
+
     </style>
 </head>
 	 <!--WIP, DO NOT USE-->
      <div id="warning" style="right:50px; top:50px;">
-	 <div id="warningheader">
-        Warning! This is an Experimental build of AbyssBox, at any time your song could become completely corrupted later, so saving here is not recommended! You've been warned! </div>
+        <div id="warningheader">
+            Warning! This is an Experimental build of AbyssBox, at any time your song could become completely corrupted later, so saving here is not recommended! You've been warned! 
+        </div>
+        <div id="closeWarning" onclick="hideWarning()">
+            X
+        </div>
     </div>
 
      <script>
@@ -284,44 +305,48 @@
         dragElement(document.getElementById("warning"));
         
         function dragElement(elmnt) {
-          var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-          if (document.getElementById(elmnt.id + "header")) {
-            /* if present, the header is where you move the DIV from:*/
-            document.getElementById(elmnt.id + "header").onmousedown = dragMouseDown;
-          } else {
-            /* otherwise, move the DIV from anywhere inside the DIV:*/
-            elmnt.onmousedown = dragMouseDown;
-          }
-        
-          function dragMouseDown(e) {
-            e = e || window.event;
-            e.preventDefault();
-            // get the mouse cursor position at startup:
-            pos3 = e.clientX;
-            pos4 = e.clientY;
-            document.onmouseup = closeDragElement;
-            // call a function whenever the cursor moves:
-            document.onmousemove = elementDrag;
-          }
-        
-          function elementDrag(e) {
-            e = e || window.event;
-            e.preventDefault();
-            // calculate the new cursor position:
-            pos1 = pos3 - e.clientX;
-            pos2 = pos4 - e.clientY;
-            pos3 = e.clientX;
-            pos4 = e.clientY;
-            // set the element's new position:
-            elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
-            elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
-          }
-        
-          function closeDragElement() {
-            /* stop moving when mouse button is released:*/
-            document.onmouseup = null;
-            document.onmousemove = null;
-          }
+            var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            if (document.getElementById(elmnt.id + "header")) {
+                /* if present, the header is where you move the DIV from:*/
+                document.getElementById(elmnt.id + "header").onmousedown = dragMouseDown;
+            } else {
+                /* otherwise, move the DIV from anywhere inside the DIV:*/
+                elmnt.onmousedown = dragMouseDown;
+            }
+            
+            function dragMouseDown(e) {
+                e = e || window.event;
+                e.preventDefault();
+                // get the mouse cursor position at startup:
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                document.onmouseup = closeDragElement;
+                // call a function whenever the cursor moves:
+                document.onmousemove = elementDrag;
+            }
+            
+            function elementDrag(e) {
+                e = e || window.event;
+                e.preventDefault();
+                // calculate the new cursor position:
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                // set the element's new position:
+                elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+                elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+            }
+            
+            function closeDragElement() {
+                /* stop moving when mouse button is released:*/
+                document.onmouseup = null;
+                document.onmousemove = null;
+            }
+        }
+        function hideWarning() {
+            let element = document.getElementById("warning");
+            element.style.display = "none";
         }
         </script>
 
