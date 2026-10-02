@@ -68585,6 +68585,7 @@ You should be redirected to the song at:<br /><br />
             .beepboxEditor {
                 display: flex;
                 justify-content: space-between;
+                max-height: 100dvh;
             }
 
             .instrument-settings-area {
