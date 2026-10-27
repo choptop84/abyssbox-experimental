@@ -2561,8 +2561,8 @@ var beepbox = (function (exports) {
 		--file-page-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-file.png");
 		--edit-pencil-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-edit.png");
 		--preferences-gear-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-preferences.png");
-		--instrument-copy-symbol: url("./image_assets/icon-copy.png");
-		--instrument-paste-symbol: url("./image_assets/icon-paste.png");
+		--instrument-copy-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-copy.png");
+		--instrument-paste-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-paste.png");
 		--play-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-play.png");
 		--pause-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-pause.png");
 		--record-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-record.png");
@@ -2577,28 +2577,28 @@ var beepbox = (function (exports) {
 		--export-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-export.png");
 		--export-instrument-symbol: var(--export-symbol);
 		--import-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-import.png");
-		--undo-symbol: url("./image_assets/icon-undo.png");
-		--redo-symbol: url("./image_assets/icon-redo.png");
-		--copy-symbol: url("./image_assets/icon-copy.png");
-		--paste-symbol: url("./image_assets/icon-paste.png");
-		--insert-channel-symbol: url("./image_assets/icon-insertChannel.png");
-		--delete-channel-symbol: url("./image_assets/icon-deleteChannel.png");
-		--select-all-symbol: url("./image_assets/icon-SelectAll.png");
-		--duplicate-symbol: url("./image_assets/icon-duplicate.png");
-		--notes-up-symbol: url("./image_assets/moveNotesUp.png");
-		--notes-down-symbol: url("./image_assets/moveNotesDown.png");
-		--loop-bar-symbol: url("./image_assets/icon-singleBarLoop.png");
-		--fullscreen-symbol: url("./image_assets/icon-fullscreen.png");
-	--loop-within-bar-symbol: url("./image_assets/icon-loop-bar.png");
-	--loop-full-song-symbol: url("./image_assets/icon-loop-song.png");
-	--dont-loop-symbol: url("./image_assets/icon-loop-once.png");
+		--undo-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-undo.png");
+		--redo-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-redo.png");
+		--copy-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-copy.png");
+		--paste-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-paste.png");
+		--insert-channel-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-insertChannel.png");
+		--delete-channel-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-deleteChannel.png");
+		--select-all-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-SelectAll.png");
+		--duplicate-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-duplicate.png");
+		--notes-up-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/moveNotesUp.png");
+		--notes-down-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/moveNotesDown.png");
+		--loop-bar-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-singleBarLoop.png");
+		--fullscreen-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-fullscreen.png");
+	--loop-within-bar-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-loop-bar.png");
+	--loop-full-song-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-loop-song.png");
+	--dont-loop-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-loop-once.png");
 		}
 		
 			
 
 			/* sets background image */
 			body {
-			background-image: url("./image_assets/stripesbg.gif") !important;
+			background-image: url("${location.pathname.includes("player") ? "." : ""}./image_assets/stripesbg.gif") !important;
 			background-position: center;
 			background-repeat: repeat;
 
@@ -2614,7 +2614,7 @@ var beepbox = (function (exports) {
 			} */
 
 			#text-content {
-    				border-image-source: url("./image_assets/abyssbox_border.png");
+    				border-image-source: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_border.png");
     				border-image-slice: 4 fill; 
    				border-image-width: 8px; 
 				border-image-repeat: stretch; 
@@ -2627,7 +2627,7 @@ var beepbox = (function (exports) {
     				image-rendering: optimizeSpeed !important;             /* IE */
 				}
 			#beepboxEditorContainer {
-    				border-image-source: url("./image_assets/abyssbox_border.png");
+    				border-image-source: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_border.png");
     				border-image-slice: 4 fill; 
    				border-image-width: 8px; 
 				border-image-repeat: stretch;
@@ -2659,7 +2659,7 @@ var beepbox = (function (exports) {
 			button.importInstrumentButton, 
 			.beepboxEditor select, 
 			.beepboxEditor .select2-selection__rendered {
-    				border-image-source: url("./image_assets/abyssbox_border.png") !important;
+    				border-image-source: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_border.png") !important;
     				border-image-slice: 4 fill !important; 
    				border-image-width: 4px !important; 
 				border-image-repeat: stretch !important;
@@ -2671,7 +2671,7 @@ var beepbox = (function (exports) {
     				image-rendering: pixelated !important;                 /* Future browsers */
     				image-rendering: optimizeSpeed !important;             /* IE */
 
-					cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+					cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 				}
 
 			div.selectRow button:not(.copyButton,.pasteButton,.exportInstrumentButton,.importInstrumentButton) {
@@ -2691,7 +2691,7 @@ var beepbox = (function (exports) {
 			@font-face {
 		   font-family: "AbyssType_small";
 		   src:
- 		   url("./image_assets/abysstype_small.otf") format("opentype") tech(color-COLRv1),
+ 		   url("${location.pathname.includes("player") ? "." : ""}./image_assets/abysstype_small.otf") format("opentype") tech(color-COLRv1),
 			}
 
 			
@@ -2700,72 +2700,72 @@ var beepbox = (function (exports) {
 
 			.beepboxEditor input[type="range"]::-webkit-slider-thumb
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]::-webkit-slider-runnable-track
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]:focus::-webkit-slider-runnable-track
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]::-ms-thumb
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]::-ms-track
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]:focus::-ms-track
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]::-moz-range-thumb
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]::-moz-range-track
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]:focus::-moz-range-track
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="text"],
 			.beepboxEditor input[type="number"]
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="checkbox"]
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="checkbox"]:checked
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="checkbox"]:checked:after
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 
 			div.selectRow span {
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 
 			`,
@@ -2912,8 +2912,8 @@ var beepbox = (function (exports) {
 		--file-page-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-file.png");
 		--edit-pencil-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-edit.png");
 		--preferences-gear-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-preferences.png");
-		--instrument-copy-symbol: url("./image_assets/icon-copy.png");
-		--instrument-paste-symbol: url("./image_assets/icon-paste.png");
+		--instrument-copy-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-copy.png");
+		--instrument-paste-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-paste.png");
 		--play-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-play.png");
 		--pause-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-pause.png");
 		--record-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-record.png");
@@ -2928,21 +2928,21 @@ var beepbox = (function (exports) {
 		--export-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-export.png");
 		--export-instrument-symbol: var(--export-symbol);
 		--import-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-import.png");
-		--undo-symbol: url("./image_assets/icon-undo.png");
-		--redo-symbol: url("./image_assets/icon-redo.png");
-		--copy-symbol: url("./image_assets/icon-copy.png");
-		--paste-symbol: url("./image_assets/icon-paste.png");
-		--insert-channel-symbol: url("./image_assets/icon-insertChannel.png");
-		--delete-channel-symbol: url("./image_assets/icon-deleteChannel.png");
-		--select-all-symbol: url("./image_assets/icon-SelectAll.png");
-		--duplicate-symbol: url("./image_assets/icon-duplicate.png");
-		--notes-up-symbol: url("./image_assets/moveNotesUp.png");
-		--notes-down-symbol: url("./image_assets/moveNotesDown.png");
-		--loop-bar-symbol: url("./image_assets/icon-singleBarLoop.png");
-		--fullscreen-symbol: url("./image_assets/icon-fullscreen.png");
-		--loop-within-bar-symbol: url("./image_assets/icon-loop-bar.png");
-	--loop-full-song-symbol: url("./image_assets/icon-loop-song.png");
-	--dont-loop-symbol: url("./image_assets/icon-loop-once.png");
+		--undo-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-undo.png");
+		--redo-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-redo.png");
+		--copy-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-copy.png");
+		--paste-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-paste.png");
+		--insert-channel-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-insertChannel.png");
+		--delete-channel-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-deleteChannel.png");
+		--select-all-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-SelectAll.png");
+		--duplicate-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-duplicate.png");
+		--notes-up-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/moveNotesUp.png");
+		--notes-down-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/moveNotesDown.png");
+		--loop-bar-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-singleBarLoop.png");
+		--fullscreen-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-fullscreen.png");
+		--loop-within-bar-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-loop-bar.png");
+	--loop-full-song-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-loop-song.png");
+	--dont-loop-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-loop-once.png");
 		}
 		
 			
@@ -2952,7 +2952,7 @@ var beepbox = (function (exports) {
 			@font-face {
 		   font-family: "AbyssType_small";
 		   src:
- 		   url("./image_assets/abysstype_small.otf") format("opentype") tech(color-COLRv1),
+ 		   url("${location.pathname.includes("player") ? "." : ""}./image_assets/abysstype_small.otf") format("opentype") tech(color-COLRv1),
 			}
 
 			.beepboxEditor button,
@@ -3027,72 +3027,72 @@ var beepbox = (function (exports) {
 
 			.beepboxEditor input[type="range"]::-webkit-slider-thumb
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]::-webkit-slider-runnable-track
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]:focus::-webkit-slider-runnable-track
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]::-ms-thumb
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]::-ms-track
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]:focus::-ms-track
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]::-moz-range-thumb
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]::-moz-range-track
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]:focus::-moz-range-track
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="text"],
 			.beepboxEditor input[type="number"]
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="checkbox"]
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="checkbox"]:checked
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="checkbox"]:checked:after
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 
 			div.selectRow span {
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 
 			`,
@@ -3239,7 +3239,7 @@ var beepbox = (function (exports) {
 
 				/* sets background image */
 				body {
-				background-image: url("./image_assets/stripesbg_light.gif") !important;
+				background-image: url("${location.pathname.includes("player") ? "." : ""}./image_assets/stripesbg_light.gif") !important;
 				background-position: center;
 				background-repeat: repeat;
 	
@@ -3250,7 +3250,7 @@ var beepbox = (function (exports) {
 				image-rendering: optimizeSpeed !important;             /* IE */
 					}		
 			#text-content {
-    				border-image-source: url("./image_assets/abyssbox_border_light.png");
+    				border-image-source: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_border_light.png");
     				border-image-slice: 4 fill; 
    				border-image-width: 8px; 
 				border-image-repeat: stretch; 
@@ -3263,7 +3263,7 @@ var beepbox = (function (exports) {
     				image-rendering: optimizeSpeed !important;             /* IE */
 				}
 			#beepboxEditorContainer {
-    				border-image-source: url("./image_assets/abyssbox_border_light.png");
+    				border-image-source: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_border_light.png");
     				border-image-slice: 4 fill; 
    				border-image-width: 8px; 
 				border-image-repeat: stretch;
@@ -3295,7 +3295,7 @@ var beepbox = (function (exports) {
 				button.importInstrumentButton, 
 				.beepboxEditor select, 
 				.beepboxEditor .select2-selection__rendered {
-						border-image-source: url("./image_assets/abyssbox_border_light.png") !important;
+						border-image-source: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_border_light.png") !important;
 						border-image-slice: 4 fill !important; 
 					   border-image-width: 4px !important; 
 					border-image-repeat: stretch !important;
@@ -3307,7 +3307,7 @@ var beepbox = (function (exports) {
 						image-rendering: pixelated !important;                 /* Future browsers */
 						image-rendering: optimizeSpeed !important;             /* IE */
 	
-						cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+						cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 					}
 	
 				div.selectRow button:not(.copyButton,.pasteButton,.exportInstrumentButton,.importInstrumentButton) {
@@ -3325,8 +3325,8 @@ var beepbox = (function (exports) {
 		--file-page-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-file.png");
 		--edit-pencil-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-edit.png");
 		--preferences-gear-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-preferences.png");
-		--instrument-copy-symbol: url("./image_assets/icon-copy.png");
-		--instrument-paste-symbol: url("./image_assets/icon-paste.png");
+		--instrument-copy-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-copy.png");
+		--instrument-paste-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-paste.png");
 		--play-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-play.png");
 		--pause-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-pause.png");
 		--record-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-record.png");
@@ -3341,21 +3341,21 @@ var beepbox = (function (exports) {
 		--export-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-export.png");
 		--export-instrument-symbol: var(--export-symbol);
 		--import-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-import.png");
-		--undo-symbol: url("./image_assets/icon-undo.png");
-		--redo-symbol: url("./image_assets/icon-redo.png");
-		--copy-symbol: url("./image_assets/icon-copy.png");
-		--paste-symbol: url("./image_assets/icon-paste.png");
-		--insert-channel-symbol: url("./image_assets/icon-insertChannel.png");
-		--delete-channel-symbol: url("./image_assets/icon-deleteChannel.png");
-		--select-all-symbol: url("./image_assets/icon-SelectAll.png");
-		--duplicate-symbol: url("./image_assets/icon-duplicate.png");
-		--notes-up-symbol: url("./image_assets/moveNotesUp.png");
-		--notes-down-symbol: url("./image_assets/moveNotesDown.png");
-		--loop-bar-symbol: url("./image_assets/icon-singleBarLoop.png");
-		--fullscreen-symbol: url("./image_assets/icon-fullscreen.png");
-		--loop-within-bar-symbol: url("./image_assets/icon-loop-bar.png");
-	--loop-full-song-symbol: url("./image_assets/icon-loop-song.png");
-	--dont-loop-symbol: url("./image_assets/icon-loop-once.png");
+		--undo-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-undo.png");
+		--redo-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-redo.png");
+		--copy-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-copy.png");
+		--paste-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-paste.png");
+		--insert-channel-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-insertChannel.png");
+		--delete-channel-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-deleteChannel.png");
+		--select-all-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-SelectAll.png");
+		--duplicate-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-duplicate.png");
+		--notes-up-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/moveNotesUp.png");
+		--notes-down-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/moveNotesDown.png");
+		--loop-bar-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-singleBarLoop.png");
+		--fullscreen-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-fullscreen.png");
+		--loop-within-bar-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-loop-bar.png");
+	--loop-full-song-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-loop-song.png");
+	--dont-loop-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-loop-once.png");
 		}
 		
 			
@@ -3365,7 +3365,7 @@ var beepbox = (function (exports) {
 			@font-face {
 		   font-family: "AbyssType_small";
 		   src:
- 		   url("./image_assets/abysstype_small.otf") format("opentype") tech(color-COLRv1),
+ 		   url("${location.pathname.includes("player") ? "." : ""}./image_assets/abysstype_small.otf") format("opentype") tech(color-COLRv1),
 			}
 
 			button.envelopeDropdown, div.selectRow button:not(.copyButton,.pasteButton,.exportInstrumentButton,.importInstrumentButton) {
@@ -3380,72 +3380,72 @@ var beepbox = (function (exports) {
 
 			.beepboxEditor input[type="range"]::-webkit-slider-thumb
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]::-webkit-slider-runnable-track
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]:focus::-webkit-slider-runnable-track
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]::-ms-thumb
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]::-ms-track
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]:focus::-ms-track
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]::-moz-range-thumb
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]::-moz-range-track
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]:focus::-moz-range-track
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="text"],
 			.beepboxEditor input[type="number"]
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="checkbox"]
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="checkbox"]:checked
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="checkbox"]:checked:after
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 
 			div.selectRow span {
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 
 			`,
@@ -4153,8 +4153,8 @@ var beepbox = (function (exports) {
 		--file-page-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-file.png");
 		--edit-pencil-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-edit.png");
 		--preferences-gear-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-preferences.png");
-		--instrument-copy-symbol: url("./image_assets/icon-copy.png");
-		--instrument-paste-symbol: url("./image_assets/icon-paste.png");
+		--instrument-copy-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-copy.png");
+		--instrument-paste-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-paste.png");
 		--play-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-play.png");
 		--pause-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-pause.png");
 		--record-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-record.png");
@@ -4169,21 +4169,21 @@ var beepbox = (function (exports) {
 		--export-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-export.png");
 		--export-instrument-symbol: var(--export-symbol);
 		--import-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-import.png");
-		--undo-symbol: url("./image_assets/icon-undo.png");
-		--redo-symbol: url("./image_assets/icon-redo.png");
-		--copy-symbol: url("./image_assets/icon-copy.png");
-		--paste-symbol: url("./image_assets/icon-paste.png");
-		--insert-channel-symbol: url("./image_assets/icon-insertChannel.png");
-		--delete-channel-symbol: url("./image_assets/icon-deleteChannel.png");
-		--select-all-symbol: url("./image_assets/icon-SelectAll.png");
-		--duplicate-symbol: url("./image_assets/icon-duplicate.png");
-		--notes-up-symbol: url("./image_assets/moveNotesUp.png");
-		--notes-down-symbol: url("./image_assets/moveNotesDown.png");
-		--loop-bar-symbol: url("./image_assets/icon-singleBarLoop.png");
-		--fullscreen-symbol: url("./image_assets/icon-fullscreen.png");
-		--loop-within-bar-symbol: url("./image_assets/icon-loop-bar.png");
-	--loop-full-song-symbol: url("./image_assets/icon-loop-song.png");
-	--dont-loop-symbol: url("./image_assets/icon-loop-once.png");
+		--undo-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-undo.png");
+		--redo-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-redo.png");
+		--copy-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-copy.png");
+		--paste-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-paste.png");
+		--insert-channel-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-insertChannel.png");
+		--delete-channel-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-deleteChannel.png");
+		--select-all-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-SelectAll.png");
+		--duplicate-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-duplicate.png");
+		--notes-up-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/moveNotesUp.png");
+		--notes-down-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/moveNotesDown.png");
+		--loop-bar-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-singleBarLoop.png");
+		--fullscreen-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-fullscreen.png");
+		--loop-within-bar-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-loop-bar.png");
+	--loop-full-song-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-loop-song.png");
+	--dont-loop-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-loop-once.png");
 		}
 		
 			
@@ -4263,7 +4263,7 @@ var beepbox = (function (exports) {
     				image-rendering: pixelated !important;                 /* Future browsers */
     				image-rendering: optimizeSpeed !important;             /* IE */
 
-					cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+					cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 				}
 
 			div.selectRow button:not(.copyButton,.pasteButton,.exportInstrumentButton,.importInstrumentButton) {
@@ -4283,7 +4283,7 @@ var beepbox = (function (exports) {
 			@font-face {
 		   font-family: "AbyssType_small";
 		   src:
- 		   url("./image_assets/abysstype_small.otf") format("opentype") tech(color-COLRv1),
+ 		   url("${location.pathname.includes("player") ? "." : ""}./image_assets/abysstype_small.otf") format("opentype") tech(color-COLRv1),
 			}
 
 			
@@ -4292,72 +4292,72 @@ var beepbox = (function (exports) {
 
 			.beepboxEditor input[type="range"]::-webkit-slider-thumb
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]::-webkit-slider-runnable-track
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]:focus::-webkit-slider-runnable-track
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]::-ms-thumb
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]::-ms-track
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]:focus::-ms-track
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]::-moz-range-thumb
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]::-moz-range-track
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="range"]:focus::-moz-range-track
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="text"],
 			.beepboxEditor input[type="number"]
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="checkbox"]
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="checkbox"]:checked
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			 
 			.beepboxEditor input[type="checkbox"]:checked:after
 			{
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 
 			div.selectRow span {
-				cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 			}
 			`,
         "Frutiger Aero": `
@@ -4525,6 +4525,16 @@ var beepbox = (function (exports) {
 			image-rendering: optimizeSpeed !important;             /* IE */
 		}
 
+		.beepboxEditor .effectExt {
+			margin-top: 8px;
+			margin-bottom: 8px;
+			background: linear-gradient(#596c8a54, #273449a6);
+			padding: 4px;
+			border-radius: 7px;
+			box-shadow: 0px 1px 2px 1px rgba(0, 0, 0, 0.2), 0px 1px 4px 1px rgba(0, 0, 0, 0.3), inset 0px 1px 0px 0px rgba(255, 255, 255, 0.3);
+			border-top: none !important;
+		}
+		
 		div.mute-button.muted::before {
 			background: #fff0 !important;
 			background-image: url("https://choptop84.github.io/choptop84s-image-repository/vistaSpeakerIconMuted.png") !important;
@@ -5039,6 +5049,16 @@ var beepbox = (function (exports) {
 			opacity: 0 !important;
 		}
 
+		.beepboxEditor .effectExt {
+			margin-top: 8px;
+			margin-bottom: 8px;
+			background: linear-gradient(#8a598054, #332749a6);
+			padding: 4px;
+			border-radius: 7px;
+			box-shadow: 0px 1px 2px 1px rgba(0, 0, 0, 0.2), 0px 1px 4px 1px rgba(0, 0, 0, 0.3), inset 0px 1px 0px 0px rgba(255, 255, 255, 0.3);
+			border-top: none !important;
+		}
+
 		div.mute-button::before {
 			background: #fff0 !important;
 			background-image: url("https://choptop84.github.io/choptop84s-image-repository/vistaSpeakerIcon.png") !important;
@@ -5122,7 +5142,7 @@ var beepbox = (function (exports) {
 			  }
 
 			div.prompt.noSelection{
-				background: linear-gradient(#84aef080, #2a3d6a80) !important; 
+				background: linear-gradient(#e384f080, #682a6a80) !important; 
 				opacity: 77;
 				backdrop-filter: blur(14px);
 			}  
@@ -6142,7 +6162,7 @@ var beepbox = (function (exports) {
 		 
 		.beepboxEditor .prompt
 		{
-			background: radial-gradient(farthest-corner at 50% 0px, #1d0700, #110400) !important;
+			background: radial-gradient(farthest-corner at 50% 0px, #27241e, #13120f) !important
 		}
 		 
 		#beepboxEditorContainer {
@@ -6531,7 +6551,7 @@ var beepbox = (function (exports) {
 			@font-face {
 		   font-family: "Varela";
 		   src:
- 		   url("./image_assets/Varela.ttf") format("truetype") tech(color-COLRv1),
+ 		   url("${location.pathname.includes("player") ? "." : ""}./image_assets/Varela.ttf") format("truetype") tech(color-COLRv1),
 			}
 
 			/* sets background image */
@@ -6876,7 +6896,7 @@ var beepbox = (function (exports) {
 			}
 
 			#text-content {
-    				border-image-source: url("./image_assets/abyssbox_border.png");
+    				border-image-source: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_border.png");
     				border-image-slice: 4 fill; 
    				border-image-width: 8px; 
 				border-image-repeat: stretch; 
@@ -6889,7 +6909,7 @@ var beepbox = (function (exports) {
     				image-rendering: optimizeSpeed !important;             /* IE */
 				}
 			#beepboxEditorContainer {
-    				border-image-source: url("./image_assets/abyssbox_border.png");
+    				border-image-source: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_border.png");
     				border-image-slice: 4 fill; 
    				border-image-width: 8px; 
 				border-image-repeat: stretch;
@@ -6903,7 +6923,7 @@ var beepbox = (function (exports) {
 
 				}
 			 .beepboxEditor button, .beepboxEditor select, .beepboxEditor .select2-selection__rendered {
-    				border-image-source: url("./image_assets/abyssbox_border.png") !important;
+    				border-image-source: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_border.png") !important;
     				border-image-slice: 4 fill !important; 
    				border-image-width: 4px !important; 
 				border-image-repeat: stretch !important;
@@ -6921,7 +6941,7 @@ var beepbox = (function (exports) {
 				}
 
 				#firstImage {
-					background-image: url("./image_assets/viviandbelle.png") !important;
+					background-image: url("${location.pathname.includes("player") ? "." : ""}./image_assets/viviandbelle.png") !important;
 					background-repeat: no-repeat !important;
 					background-size: 100% 100% !important;
 				}
@@ -6930,7 +6950,7 @@ var beepbox = (function (exports) {
 			@font-face {
 		   font-family: "AbyssType_small";
 		   src:
- 		   url("./image_assets/abysstype_small.otf") format("opentype") tech(color-COLRv1),
+ 		   url("${location.pathname.includes("player") ? "." : ""}./image_assets/abysstype_small.otf") format("opentype") tech(color-COLRv1),
 			}
 
 			
@@ -7073,7 +7093,7 @@ var beepbox = (function (exports) {
 		}
 		.instructions-column > section:first-of-type > p:first-of-type:after {
 		display: block;
-		content: url("./image_assets/wide-gordon.png");
+		content: url("${location.pathname.includes("player") ? "." : ""}./image_assets/wide-gordon.png");
 		width: inherit;
 		height: contain;
 		text-align: center;
@@ -7081,7 +7101,7 @@ var beepbox = (function (exports) {
 		}
 		/* sets background image */
 		body {
-		background-image: url("./image_assets/lambda.png") !important;
+		background-image: url("${location.pathname.includes("player") ? "." : ""}./image_assets/lambda.png") !important;
 		background-size: cover !important;
 		background-position: center !important;
 		background-repeat: no-repeat !important;
@@ -7093,7 +7113,7 @@ var beepbox = (function (exports) {
 			@font-face {
 		   font-family: "trebuc";
 		   src:
- 		   url("./image_assets/trebuc.otf") format("opentype") tech(color-COLRv1),
+ 		   url("${location.pathname.includes("player") ? "." : ""}./image_assets/trebuc.otf") format("opentype") tech(color-COLRv1),
 			}
 
 			html {
@@ -7241,7 +7261,7 @@ var beepbox = (function (exports) {
 		}
 		.instructions-column > section:first-of-type > p:first-of-type:after {
 		display: block;
-		content: url("./image_assets/wide-gordon.png");
+		content: url("${location.pathname.includes("player") ? "." : ""}./image_assets/wide-gordon.png");
 		width: inherit;
 		height: contain;
 		text-align: center;
@@ -7249,7 +7269,7 @@ var beepbox = (function (exports) {
 		}
 		/* sets background image */
 		body {
-		background-image: url("./image_assets/lambda.png") !important;
+		background-image: url("${location.pathname.includes("player") ? "." : ""}./image_assets/lambda.png") !important;
 		background-position: center;
 		background-repeat: repeat;
 			}
@@ -8054,12 +8074,12 @@ var beepbox = (function (exports) {
 		}
 		#text-content > section > h1 {
 		margin: auto;
-		content: url("./image_assets/AbyssBox_DOOM.png");
+		content: url("${location.pathname.includes("player") ? "." : ""}./image_assets/AbyssBox_DOOM.png");
 		}
 				
 				/* sets background image */
 		body {
-		background-image: url("./image_assets/doomsky.png") !important;
+		background-image: url("${location.pathname.includes("player") ? "." : ""}./image_assets/doomsky.png") !important;
 		background-size: cover;
 		background-position: center;
 		background-repeat: no-repeat;
@@ -8072,7 +8092,7 @@ var beepbox = (function (exports) {
 			@font-face {
 		   font-family: "doomfont";
 		   src:
- 		   url("./image_assets/doomfont.otf") format("opentype") tech(color-COLRv1),
+ 		   url("${location.pathname.includes("player") ? "." : ""}./image_assets/doomfont.otf") format("opentype") tech(color-COLRv1),
 			}
 
 			html {
@@ -8462,8 +8482,8 @@ var beepbox = (function (exports) {
 		--file-page-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-file.png");
 		--edit-pencil-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-edit.png");
 		--preferences-gear-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-preferences.png");
-		--instrument-copy-symbol: url("./image_assets/icon-copy.png");
-		--instrument-paste-symbol: url("./image_assets/icon-paste.png");
+		--instrument-copy-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-copy.png");
+		--instrument-paste-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-paste.png");
 		--play-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-play.png");
 		--pause-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-pause.png");
 		--record-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-record.png");
@@ -8478,21 +8498,21 @@ var beepbox = (function (exports) {
 		--export-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-export.png");
 		--export-instrument-symbol: var(--export-symbol);
 		--import-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-import.png");
-		--undo-symbol: url("./image_assets/icon-undo.png");
-		--redo-symbol: url("./image_assets/icon-redo.png");
-		--copy-symbol: url("./image_assets/icon-copy.png");
-		--paste-symbol: url("./image_assets/icon-paste.png");
-		--insert-channel-symbol: url("./image_assets/icon-insertChannel.png");
-		--delete-channel-symbol: url("./image_assets/icon-deleteChannel.png");
-		--select-all-symbol: url("./image_assets/icon-SelectAll.png");
-		--duplicate-symbol: url("./image_assets/icon-duplicate.png");
-		--notes-up-symbol: url("./image_assets/moveNotesUp.png");
-		--notes-down-symbol: url("./image_assets/moveNotesDown.png");
-		--loop-bar-symbol: url("./image_assets/icon-singleBarLoop.png");
-		--fullscreen-symbol: url("./image_assets/icon-fullscreen.png");
-		--loop-within-bar-symbol: url("./image_assets/icon-loop-bar.png");
-		--loop-full-song-symbol: url("./image_assets/icon-loop-song.png");
-		--dont-loop-symbol: url("./image_assets/icon-loop-once.png");
+		--undo-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-undo.png");
+		--redo-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-redo.png");
+		--copy-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-copy.png");
+		--paste-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-paste.png");
+		--insert-channel-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-insertChannel.png");
+		--delete-channel-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-deleteChannel.png");
+		--select-all-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-SelectAll.png");
+		--duplicate-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-duplicate.png");
+		--notes-up-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/moveNotesUp.png");
+		--notes-down-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/moveNotesDown.png");
+		--loop-bar-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-singleBarLoop.png");
+		--fullscreen-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-fullscreen.png");
+		--loop-within-bar-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-loop-bar.png");
+		--loop-full-song-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-loop-song.png");
+		--dont-loop-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-loop-once.png");
 		}
 		
 		.spIcon {
@@ -8758,7 +8778,7 @@ var beepbox = (function (exports) {
 				@font-face {
 					font-family: "tahoma";
 					src:
-					 url("./image_assets/tahoma.otf") format("opentype") tech(color-COLRv1),
+					 url("${location.pathname.includes("player") ? "." : ""}./image_assets/tahoma.otf") format("opentype") tech(color-COLRv1),
 					 image-rendering: -moz-crisp-edges !important;         /* Firefox */
 					 image-rendering: -webkit-optimize-contrast !important; /* Webkit (Chrome/Safari) */
 					 image-rendering: -o-crisp-edges !important;            /* Opera */
@@ -8926,21 +8946,21 @@ var beepbox = (function (exports) {
 				}
 
 		* {
-		cursor: url("./image_assets/xpcursor.png"), auto !important;
-		--play-symbol:url("./image_assets/xpPlay.png");
-		--pause-symbol:url("./image_assets/xpPause.png");
-		--record-symbol:url("./image_assets/xpRecord.png");
-		--stop-symbol:url("./image_assets/xpStop.png");
-		--prev-bar-symbol:url("./image_assets/xpBackward.png");
-		--next-bar-symbol:url("./image_assets/xpForward.png");
-		--file-page-symbol: url("./image_assets/xpFile.png");
-		--edit-pencil-symbol: url("./image_assets/xpEdit.png");
-		--preferences-gear-symbol: url("./image_assets/xpPreferences.png");
-		--muted-symbol: url("./image_assets/xpSpeakerMute.png");
-		--unmuted-symbol: url("./image_assets/xpSpeaker.png");
-		--volume-symbol: url("./image_assets/xpSpeaker.png");
-		--zoom-in-symbol: url("./image_assets/xpZoomIn.png");
-		--zoom-out-symbol: url("./image_assets/xpZoomOut.png");
+		cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/xpcursor.png"), auto !important;
+		--play-symbol:url("${location.pathname.includes("player") ? "." : ""}./image_assets/xpPlay.png");
+		--pause-symbol:url("${location.pathname.includes("player") ? "." : ""}./image_assets/xpPause.png");
+		--record-symbol:url("${location.pathname.includes("player") ? "." : ""}./image_assets/xpRecord.png");
+		--stop-symbol:url("${location.pathname.includes("player") ? "." : ""}./image_assets/xpStop.png");
+		--prev-bar-symbol:url("${location.pathname.includes("player") ? "." : ""}./image_assets/xpBackward.png");
+		--next-bar-symbol:url("${location.pathname.includes("player") ? "." : ""}./image_assets/xpForward.png");
+		--file-page-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/xpFile.png");
+		--edit-pencil-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/xpEdit.png");
+		--preferences-gear-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/xpPreferences.png");
+		--muted-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/xpSpeakerMute.png");
+		--unmuted-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/xpSpeaker.png");
+		--volume-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/xpSpeaker.png");
+		--zoom-in-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/xpZoomIn.png");
+		--zoom-out-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/xpZoomOut.png");
 		}
 
 		.beepboxEditor button,
@@ -8967,7 +8987,7 @@ var beepbox = (function (exports) {
 			}
 
 		div.mute-button::before {
-			background-image: url("./image_assets/xpSpeaker.png") !important;
+			background-image: url("${location.pathname.includes("player") ? "." : ""}./image_assets/xpSpeaker.png") !important;
 			background-size: 120% !important;
 			background-position-x: center !important;
 			background-position-y: center !important;
@@ -8981,7 +9001,7 @@ var beepbox = (function (exports) {
 		}
 
 		div.mute-button.muted::before {
-			background-image: url("./image_assets/xpSpeakerMute.png") !important;
+			background-image: url("${location.pathname.includes("player") ? "." : ""}./image_assets/xpSpeakerMute.png") !important;
 			background-size: 120% !important;
 			background-position-x: center !important;
 			background-position-y: center !important;
@@ -8995,7 +9015,7 @@ var beepbox = (function (exports) {
 		}
 
 		button.recordButton::Before {
-			background-image: url("./image_assets/xpRecord.png") !important;
+			background-image: url("${location.pathname.includes("player") ? "." : ""}./image_assets/xpRecord.png") !important;
 			background-size: 64% !important;
 			background-position: center !important;
 			background-repeat: no-repeat !important;
@@ -9009,7 +9029,7 @@ var beepbox = (function (exports) {
 		}
 
 		button.stopButton::Before {
-			background-image: url("./image_assets/xpStop.png") !important;
+			background-image: url("${location.pathname.includes("player") ? "." : ""}./image_assets/xpStop.png") !important;
 			background-size: 64% !important;
 			background-position: center !important;
 			background-repeat: no-repeat !important;
@@ -9023,7 +9043,7 @@ var beepbox = (function (exports) {
 		}
 
 		button.pauseButton::Before {
-			background-image: url("./image_assets/xpPause.png") !important;
+			background-image: url("${location.pathname.includes("player") ? "." : ""}./image_assets/xpPause.png") !important;
 			background-size: 64% !important;
 			background-position: center !important;
 			background-repeat: no-repeat !important;
@@ -9037,7 +9057,7 @@ var beepbox = (function (exports) {
 		}
 
 		.beepboxEditor span.volume-speaker {
-			background-image: url("./image_assets/xpSpeaker.png");
+			background-image: url("${location.pathname.includes("player") ? "." : ""}./image_assets/xpSpeaker.png");
 			background-position: center !important;
 			background-repeat: no-repeat !important;
 
@@ -9050,7 +9070,7 @@ var beepbox = (function (exports) {
 
 		div.selectContainer.menu.file::before {
 
-			background-image: url("./image_assets/xpFile.png");
+			background-image: url("${location.pathname.includes("player") ? "." : ""}./image_assets/xpFile.png");
 			background-size: 64%;
 			background-position-x: center;
 			background-position-y: center;
@@ -9064,7 +9084,7 @@ var beepbox = (function (exports) {
 
 		div.selectContainer.menu.edit::before {
 
-			background-image: url("./image_assets/xpEdit.png");
+			background-image: url("${location.pathname.includes("player") ? "." : ""}./image_assets/xpEdit.png");
 			background-size: 64%;
 			background-position-x: center;
 			background-position-y: center;
@@ -9077,7 +9097,7 @@ var beepbox = (function (exports) {
 		}
 		div.selectContainer.menu.preferences::before {
 
-			background-image: url("./image_assets/xpPreferences.png");
+			background-image: url("${location.pathname.includes("player") ? "." : ""}./image_assets/xpPreferences.png");
 			background-size: 64%;
 			background-position-x: center;
 			background-position-y: center;
@@ -9090,7 +9110,7 @@ var beepbox = (function (exports) {
 		}
 		button.playButton::before {
 
-			background-image: url("./image_assets/xpPlay.png") !important;
+			background-image: url("${location.pathname.includes("player") ? "." : ""}./image_assets/xpPlay.png") !important;
 			background-size: 64% !important;
 			background-position: center !important;
 
@@ -9103,7 +9123,7 @@ var beepbox = (function (exports) {
 		}
 
 		.beepboxEditor button.prevBarButton::before {
-			background-image: url("./image_assets/xpBackward.png") !important;
+			background-image: url("${location.pathname.includes("player") ? "." : ""}./image_assets/xpBackward.png") !important;
 			background-size: 64% !important;
 			background-position: center !important;
 
@@ -9117,7 +9137,7 @@ var beepbox = (function (exports) {
 		}
 
 		.beepboxEditor button.nextBarButton::before {
-			background-image: url("./image_assets/xpForward.png") !important;
+			background-image: url("${location.pathname.includes("player") ? "." : ""}./image_assets/xpForward.png") !important;
 			background-size: 64% !important;
 			background-position: center !important;
 
@@ -9131,7 +9151,7 @@ var beepbox = (function (exports) {
 		}
 
 		.beepboxEditor .zoomInButton::before {
-			background-image: url("./image_assets/xpZoomIn.png") !important;
+			background-image: url("${location.pathname.includes("player") ? "." : ""}./image_assets/xpZoomIn.png") !important;
 			background-position: center !important;
 
 
@@ -9144,7 +9164,7 @@ var beepbox = (function (exports) {
 		}
 
 		.beepboxEditor .zoomOutButton::before {
-			background-image: url("./image_assets/xpZoomOut.png") !important;
+			background-image: url("${location.pathname.includes("player") ? "." : ""}./image_assets/xpZoomOut.png") !important;
 			background-position: center !important;
 
 
@@ -9157,7 +9177,7 @@ var beepbox = (function (exports) {
 		}
 
 		.beepboxEditor input[type="range"]::-moz-range-thumb {
-			background-image: url("./image_assets/scrollbar.png") !important;
+			background-image: url("${location.pathname.includes("player") ? "." : ""}./image_assets/scrollbar.png") !important;
 			background-position: center !important;
 			background-size: inherit !important;
 
@@ -9179,12 +9199,12 @@ var beepbox = (function (exports) {
 		}
 		#text-content > section > h1 {
 		margin: auto;
-		content: url("./image_assets/AbyssBox_XP.png");
+		content: url("${location.pathname.includes("player") ? "." : ""}./image_assets/AbyssBox_XP.png");
 		}
 
 				/* sets background image */
 		body {
-		background-image: url("./image_assets/xphills.png") !important;
+		background-image: url("${location.pathname.includes("player") ? "." : ""}./image_assets/xphills.png") !important;
 		background-size: cover;
 		background-position: center;
 		background-repeat: no-repeat;
@@ -9214,7 +9234,7 @@ var beepbox = (function (exports) {
 				margin-top: 15px;
 				}
 			#beepboxEditorContainer {
-    				border-image-source: url("./image_assets/xptextbg.png");
+    				border-image-source: url("${location.pathname.includes("player") ? "." : ""}./image_assets/xptextbg.png");
     				border-image-slice: 11 fill; 
    				border-image-width: 11px; 
 				border-image-repeat: stretch;
@@ -9269,7 +9289,7 @@ var beepbox = (function (exports) {
 			}
 
 			#firstImage {
-				background-image: url("./image_assets/xpsongeditorbg.png") !important;
+				background-image: url("${location.pathname.includes("player") ? "." : ""}./image_assets/xpsongeditorbg.png") !important;
 				background-repeat: no-repeat !important;
 				background-size: 100% 100% !important;
 			}
@@ -9294,7 +9314,7 @@ var beepbox = (function (exports) {
 			}
 			
 			.beepboxEditor select:focus {
-					border-image-source: url("./image_assets/xpbuttonpressedbg.png");
+					border-image-source: url("${location.pathname.includes("player") ? "." : ""}./image_assets/xpbuttonpressedbg.png");
 					border-image-slice: 4 fill; 
 					border-image-width: 4px; 
 					border-image-repeat: repeat;
@@ -9311,7 +9331,7 @@ var beepbox = (function (exports) {
 					border-radius: 0px;
 					width: 13px !important;
 					height: 13px !important;
-					background-image:url("./image_assets/xpCheckmarkBlank.png");
+					background-image:url("${location.pathname.includes("player") ? "." : ""}./image_assets/xpCheckmarkBlank.png");
 					background-repeat:no-repeat;
 
 					image-rendering: -moz-crisp-edges !important;         /* Firefox */
@@ -9336,7 +9356,7 @@ var beepbox = (function (exports) {
 					text-align: center;
 					content: "";
 					background-repeat:no-repeat;
-					background-image:url("./image_assets/xpCheckmark.png");
+					background-image:url("${location.pathname.includes("player") ? "." : ""}./image_assets/xpCheckmark.png");
 					image-rendering: -moz-crisp-edges !important;         /* Firefox */
 					image-rendering: -webkit-optimize-contrast !important; /* Webkit (Chrome/Safari) */
 					image-rendering: -o-crisp-edges !important;            /* Opera */
@@ -9547,6 +9567,15 @@ var beepbox = (function (exports) {
 			--mod-title: #1D1C1D;
 			}
 
+			.beepboxEditor .effectExt {
+				margin-top: 8px;
+				margin-bottom: 8px;
+				background: #151516;
+				padding: 4px;
+				border-radius: 7px;
+				border-top: none !important;
+			}
+
 			.channelBox {
 			border-radius: 25px;
 			}
@@ -9687,6 +9716,15 @@ var beepbox = (function (exports) {
 			--disabled-note-primary:    #999;
 			--disabled-note-secondary:  #666;
 			--mod-title: #1D1C1D;
+			}
+
+			.beepboxEditor .effectExt {
+				margin-top: 8px;
+				margin-bottom: 8px;
+				background: #E3E1DE;
+				padding: 4px;
+				border-radius: 7px;
+				border-top: none !important;
 			}
 
 			.channelBox {
@@ -9839,7 +9877,7 @@ var beepbox = (function (exports) {
 						@font-face {
 					   font-family: "Workbench";
 					   src:
-						url("./image_assets/Workbench.ttf") format("truetype") tech(color-COLRv1),
+						url("${location.pathname.includes("player") ? "." : ""}./image_assets/Workbench.ttf") format("truetype") tech(color-COLRv1),
 						}
 			
 						html {
@@ -10109,8 +10147,8 @@ var beepbox = (function (exports) {
 				--file-page-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-file.png");
 				--edit-pencil-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-edit.png");
 				--preferences-gear-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-preferences.png");
-				--instrument-copy-symbol: url("./image_assets/icon-copy.png");
-				--instrument-paste-symbol: url("./image_assets/icon-paste.png");
+				--instrument-copy-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-copy.png");
+				--instrument-paste-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-paste.png");
 				--play-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-play.png");
 				--pause-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-pause.png");
 				--record-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-record.png");
@@ -10125,32 +10163,32 @@ var beepbox = (function (exports) {
 				--export-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-export.png");
 				--export-instrument-symbol: var(--export-symbol);
 				--import-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-import.png");
-				--undo-symbol: url("./image_assets/icon-undo.png");
-				--redo-symbol: url("./image_assets/icon-redo.png");
-				--copy-symbol: url("./image_assets/icon-copy.png");
-				--paste-symbol: url("./image_assets/icon-paste.png");
-				--insert-channel-symbol: url("./image_assets/icon-insertChannel.png");
-				--delete-channel-symbol: url("./image_assets/icon-deleteChannel.png");
-				--select-all-symbol: url("./image_assets/icon-SelectAll.png");
-				--duplicate-symbol: url("./image_assets/icon-duplicate.png");
-				--notes-up-symbol: url("./image_assets/moveNotesUp.png");
-				--notes-down-symbol: url("./image_assets/moveNotesDown.png");
-				--loop-bar-symbol: url("./image_assets/icon-singleBarLoop.png");
-				--fullscreen-symbol: url("./image_assets/icon-fullscreen.png");
-				--loop-within-bar-symbol: url("./image_assets/icon-loop-bar.png");
-	--loop-full-song-symbol: url("./image_assets/icon-loop-song.png");
-	--dont-loop-symbol: url("./image_assets/icon-loop-once.png");
+				--undo-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-undo.png");
+				--redo-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-redo.png");
+				--copy-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-copy.png");
+				--paste-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-paste.png");
+				--insert-channel-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-insertChannel.png");
+				--delete-channel-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-deleteChannel.png");
+				--select-all-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-SelectAll.png");
+				--duplicate-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-duplicate.png");
+				--notes-up-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/moveNotesUp.png");
+				--notes-down-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/moveNotesDown.png");
+				--loop-bar-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-singleBarLoop.png");
+				--fullscreen-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-fullscreen.png");
+				--loop-within-bar-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-loop-bar.png");
+	--loop-full-song-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-loop-song.png");
+	--dont-loop-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-loop-once.png");
 				} 
 					@font-face {
 				   font-family: "AbyssType";
 				   src:
-					url("./image_assets/abysstype.otf") format("opentype") tech(color-COLRv1),
+					url("${location.pathname.includes("player") ? "." : ""}./image_assets/abysstype.otf") format("opentype") tech(color-COLRv1),
 					}
 			
 					@font-face {
 				   font-family: "AbyssType_small";
 				   src:
-					url("./image_assets/abysstype_small.otf") format("opentype") tech(color-COLRv1),
+					url("${location.pathname.includes("player") ? "." : ""}./image_assets/abysstype_small.otf") format("opentype") tech(color-COLRv1),
 					}
 			
 					body {
@@ -10714,8 +10752,8 @@ var beepbox = (function (exports) {
 					--file-page-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-file.png");
 					--edit-pencil-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-edit.png");
 					--preferences-gear-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-preferences.png");
-					--instrument-copy-symbol: url("./image_assets/icon-copy.png");
-					--instrument-paste-symbol: url("./image_assets/icon-paste.png");
+					--instrument-copy-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-copy.png");
+					--instrument-paste-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-paste.png");
 					--play-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-play.png");
 					--pause-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-pause.png");
 					--record-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-record.png");
@@ -10730,32 +10768,32 @@ var beepbox = (function (exports) {
 					--export-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-export.png");
 					--export-instrument-symbol: var(--export-symbol);
 					--import-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-import.png");
-					--undo-symbol: url("./image_assets/icon-undo.png");
-					--redo-symbol: url("./image_assets/icon-redo.png");
-					--copy-symbol: url("./image_assets/icon-copy.png");
-					--paste-symbol: url("./image_assets/icon-paste.png");
-					--insert-channel-symbol: url("./image_assets/icon-insertChannel.png");
-					--delete-channel-symbol: url("./image_assets/icon-deleteChannel.png");
-					--select-all-symbol: url("./image_assets/icon-SelectAll.png");
-					--duplicate-symbol: url("./image_assets/icon-duplicate.png");
-					--notes-up-symbol: url("./image_assets/moveNotesUp.png");
-					--notes-down-symbol: url("./image_assets/moveNotesDown.png");
-					--loop-bar-symbol: url("./image_assets/icon-singleBarLoop.png");
-					--fullscreen-symbol: url("./image_assets/icon-fullscreen.png");
-					--loop-within-bar-symbol: url("./image_assets/icon-loop-bar.png");
-	--loop-full-song-symbol: url("./image_assets/icon-loop-song.png");
-	--dont-loop-symbol: url("./image_assets/icon-loop-once.png");
+					--undo-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-undo.png");
+					--redo-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-redo.png");
+					--copy-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-copy.png");
+					--paste-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-paste.png");
+					--insert-channel-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-insertChannel.png");
+					--delete-channel-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-deleteChannel.png");
+					--select-all-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-SelectAll.png");
+					--duplicate-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-duplicate.png");
+					--notes-up-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/moveNotesUp.png");
+					--notes-down-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/moveNotesDown.png");
+					--loop-bar-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-singleBarLoop.png");
+					--fullscreen-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-fullscreen.png");
+					--loop-within-bar-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-loop-bar.png");
+	--loop-full-song-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-loop-song.png");
+	--dont-loop-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-loop-once.png");
 					}
 					
 						@font-face {
 					   font-family: "AbyssType";
 					   src:
-						url("./image_assets/abysstype.otf") format("opentype") tech(color-COLRv1),
+						url("${location.pathname.includes("player") ? "." : ""}./image_assets/abysstype.otf") format("opentype") tech(color-COLRv1),
 						}
 
 						/* sets background image */
 						body {
-						background-image: url("./image_assets/diamondsbg.gif") !important;
+						background-image: url("${location.pathname.includes("player") ? "." : ""}./image_assets/diamondsbg.gif") !important;
 						background-position: center;
 						background-repeat: repeat;
 			
@@ -10767,7 +10805,7 @@ var beepbox = (function (exports) {
 							}
 			
 						#text-content {
-								border-image-source: url("./image_assets/beepbox_pixel_border.png");
+								border-image-source: url("${location.pathname.includes("player") ? "." : ""}./image_assets/beepbox_pixel_border.png");
 								border-image-slice: 4 fill; 
 							   border-image-width: 8px; 
 							border-image-repeat: stretch; 
@@ -10780,7 +10818,7 @@ var beepbox = (function (exports) {
 								image-rendering: optimizeSpeed !important;             /* IE */
 							}
 						#beepboxEditorContainer {
-								border-image-source: url("./image_assets/beepbox_pixel_border.png");
+								border-image-source: url("${location.pathname.includes("player") ? "." : ""}./image_assets/beepbox_pixel_border.png");
 								border-image-slice: 4 fill; 
 							   border-image-width: 8px; 
 							border-image-repeat: stretch;
@@ -10812,7 +10850,7 @@ var beepbox = (function (exports) {
 						button.importInstrumentButton, 
 						.beepboxEditor select, 
 						.beepboxEditor .select2-selection__rendered {
-								border-image-source: url("./image_assets/beepbox_pixel_border.png") !important;
+								border-image-source: url("${location.pathname.includes("player") ? "." : ""}./image_assets/beepbox_pixel_border.png") !important;
 								border-image-slice: 4 fill !important; 
 							   border-image-width: 4px !important; 
 							border-image-repeat: stretch !important;
@@ -10824,7 +10862,7 @@ var beepbox = (function (exports) {
 								image-rendering: pixelated !important;                 /* Future browsers */
 								image-rendering: optimizeSpeed !important;             /* IE */
 			
-								cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+								cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 							}
 			
 						.beepboxEditor .channelBox {
@@ -10873,7 +10911,7 @@ var beepbox = (function (exports) {
 						@font-face {
 					   font-family: "AbyssType_small";
 					   src:
-						url("./image_assets/abysstype_small.otf") format("opentype") tech(color-COLRv1),
+						url("${location.pathname.includes("player") ? "." : ""}./image_assets/abysstype_small.otf") format("opentype") tech(color-COLRv1),
 						}
 			
 						html {
@@ -10886,72 +10924,72 @@ var beepbox = (function (exports) {
 			
 						.beepboxEditor input[type="range"]::-webkit-slider-thumb
 						{
-							cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+							cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 						}
 						 
 						.beepboxEditor input[type="range"]::-webkit-slider-runnable-track
 						{
-							cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+							cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 						}
 						 
 						.beepboxEditor input[type="range"]:focus::-webkit-slider-runnable-track
 						{
-							cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+							cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 						}
 						 
 						.beepboxEditor input[type="range"]::-ms-thumb
 						{
-							cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+							cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 						}
 						 
 						.beepboxEditor input[type="range"]::-ms-track
 						{
-							cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+							cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 						}
 						 
 						.beepboxEditor input[type="range"]:focus::-ms-track
 						{
-							cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+							cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 						}
 						 
 						.beepboxEditor input[type="range"]::-moz-range-thumb
 						{
-							cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+							cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 						}
 						 
 						.beepboxEditor input[type="range"]::-moz-range-track
 						{
-							cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+							cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 						}
 						 
 						.beepboxEditor input[type="range"]:focus::-moz-range-track
 						{
-							cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+							cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 						}
 						 
 						.beepboxEditor input[type="text"],
 						.beepboxEditor input[type="number"]
 						{
-							cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+							cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 						}
 						 
 						.beepboxEditor input[type="checkbox"]
 						{
-							cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+							cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 						}
 						 
 						.beepboxEditor input[type="checkbox"]:checked
 						{
-							cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+							cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 						}
 						 
 						.beepboxEditor input[type="checkbox"]:checked:after
 						{
-							cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+							cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 						}
 			
 						div.selectRow span {
-							cursor: url("./image_assets/abyssbox_cursor_hand.png"), pointer !important;
+							cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/abyssbox_cursor_hand.png"), pointer !important;
 						}
 			
 			`,
@@ -11750,7 +11788,7 @@ var beepbox = (function (exports) {
 
 					/* sets background image */
 					body {
-						background-image: url("./image_assets/Forest2Trees.png") !important;
+						background-image: url("${location.pathname.includes("player") ? "." : ""}./image_assets/Forest2Trees.png") !important;
 						background-size: cover;
 						background-position: center top; /* Adjusted to align with the top */
   						background-repeat: no-repeat;
@@ -11763,7 +11801,7 @@ var beepbox = (function (exports) {
 						}
 						#text-content {
 						--editor-background: (255, 255, 255, 0);
-							border-image-source: url("./image_assets/forest2_border.png");
+							border-image-source: url("${location.pathname.includes("player") ? "." : ""}./image_assets/forest2_border.png");
 							border-image-slice: 16 fill; 
 						   	border-image-width: 32px; 
 							border-image-repeat: repeat; 
@@ -11777,7 +11815,7 @@ var beepbox = (function (exports) {
 						}
 					#beepboxEditorContainer {
 						--editor-background: (255, 255, 255, 0);
-							border-image-source: url("./image_assets/forest2_border.png");
+							border-image-source: url("${location.pathname.includes("player") ? "." : ""}./image_assets/forest2_border.png");
 							border-image-slice: 16 fill; 
 						   	border-image-width: 32px; 
 							border-image-repeat: repeat; 
@@ -11793,7 +11831,7 @@ var beepbox = (function (exports) {
 							image-rendering: optimizeSpeed !important;             /* IE */ 
 						}
 					.beepboxEditor button, .beepboxEditor select, .beepboxEditor .select2-selection__rendered, button {
-							border-image-source: url("./image_assets/forest2_border2.png") !important;
+							border-image-source: url("${location.pathname.includes("player") ? "." : ""}./image_assets/forest2_border2.png") !important;
 							border-image-slice: 4 fill !important; 
 						   border-image-width: 4px !important; 
 						border-image-repeat: stretch !important;
@@ -11815,12 +11853,12 @@ var beepbox = (function (exports) {
 					border-radius: 5px;
 					} */
 					* {
-						cursor: url("./image_assets/pixel_cursor.png"), auto !important;
+						cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/pixel_cursor.png"), auto !important;
 						--file-page-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-file.png");
 						--edit-pencil-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-edit.png");
 						--preferences-gear-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-preferences.png");
-						--instrument-copy-symbol: url("./image_assets/icon-copy.png");
-						--instrument-paste-symbol: url("./image_assets/icon-paste.png");
+						--instrument-copy-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-copy.png");
+						--instrument-paste-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-paste.png");
 						--play-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-play.png");
 						--pause-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-pause.png");
 						--record-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-record.png");
@@ -11835,26 +11873,26 @@ var beepbox = (function (exports) {
 						--export-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-export.png");
 						--export-instrument-symbol: var(--export-symbol);
 						--import-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-import.png");
-						--undo-symbol: url("./image_assets/icon-undo.png");
-						--redo-symbol: url("./image_assets/icon-redo.png");
-						--copy-symbol: url("./image_assets/icon-copy.png");
-						--paste-symbol: url("./image_assets/icon-paste.png");
-						--insert-channel-symbol: url("./image_assets/icon-insertChannel.png");
-						--delete-channel-symbol: url("./image_assets/icon-deleteChannel.png");
-						--select-all-symbol: url("./image_assets/icon-SelectAll.png");
-						--duplicate-symbol: url("./image_assets/icon-duplicate.png");
-						--notes-up-symbol: url("./image_assets/moveNotesUp.png");
-						--notes-down-symbol: url("./image_assets/moveNotesDown.png");
-						--loop-bar-symbol: url("./image_assets/icon-singleBarLoop.png");
-						--fullscreen-symbol: url("./image_assets/icon-fullscreen.png");
-						--loop-within-bar-symbol: url("./image_assets/icon-loop-bar.png");
-	--loop-full-song-symbol: url("./image_assets/icon-loop-song.png");
-	--dont-loop-symbol: url("./image_assets/icon-loop-once.png");
+						--undo-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-undo.png");
+						--redo-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-redo.png");
+						--copy-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-copy.png");
+						--paste-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-paste.png");
+						--insert-channel-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-insertChannel.png");
+						--delete-channel-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-deleteChannel.png");
+						--select-all-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-SelectAll.png");
+						--duplicate-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-duplicate.png");
+						--notes-up-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/moveNotesUp.png");
+						--notes-down-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/moveNotesDown.png");
+						--loop-bar-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-singleBarLoop.png");
+						--fullscreen-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-fullscreen.png");
+						--loop-within-bar-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-loop-bar.png");
+	--loop-full-song-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-loop-song.png");
+	--dont-loop-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-loop-once.png");
 						} 
 							@font-face {
 						   font-family: "AbyssType";
 						   src:
-							url("./image_assets/abysstype.otf") format("opentype") tech(color-COLRv1),
+							url("${location.pathname.includes("player") ? "." : ""}./image_assets/abysstype.otf") format("opentype") tech(color-COLRv1),
 							}
 				
 							button.envelopeDropdown, div.selectRow button:not(.copyButton,.pasteButton,.exportInstrumentButton,.importInstrumentButton) {
@@ -11865,7 +11903,7 @@ var beepbox = (function (exports) {
 							@font-face {
 						   font-family: "AbyssType_small";
 						   src:
-							url("./image_assets/abysstype_small.otf") format("opentype") tech(color-COLRv1),
+							url("${location.pathname.includes("player") ? "." : ""}./image_assets/abysstype_small.otf") format("opentype") tech(color-COLRv1),
 							}
 				
 							html {
@@ -12114,12 +12152,12 @@ var beepbox = (function (exports) {
 			}
 			
 			* {
-				cursor: url("./image_assets/pixel_cursor.png"), auto !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/pixel_cursor.png"), auto !important;
 				--file-page-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-file.png");
 				--edit-pencil-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-edit.png");
 				--preferences-gear-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-preferences.png");
-				--instrument-copy-symbol: url("./image_assets/icon-copy.png");
-				--instrument-paste-symbol: url("./image_assets/icon-paste.png");
+				--instrument-copy-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-copy.png");
+				--instrument-paste-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-paste.png");
 				--play-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-play.png");
 				--pause-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-pause.png");
 				--record-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-record.png");
@@ -12134,33 +12172,33 @@ var beepbox = (function (exports) {
 				--export-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-export.png");
 				--export-instrument-symbol: var(--export-symbol);
 				--import-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-import.png");
-				--undo-symbol: url("./image_assets/icon-undo.png");
-				--redo-symbol: url("./image_assets/icon-redo.png");
-				--copy-symbol: url("./image_assets/icon-copy.png");
-				--paste-symbol: url("./image_assets/icon-paste.png");
-				--insert-channel-symbol: url("./image_assets/icon-insertChannel.png");
-				--delete-channel-symbol: url("./image_assets/icon-deleteChannel.png");
-				--select-all-symbol: url("./image_assets/icon-SelectAll.png");
-				--duplicate-symbol: url("./image_assets/icon-duplicate.png");
-				--notes-up-symbol: url("./image_assets/moveNotesUp.png");
-				--notes-down-symbol: url("./image_assets/moveNotesDown.png");
-				--loop-bar-symbol: url("./image_assets/icon-singleBarLoop.png");
-				--fullscreen-symbol: url("./image_assets/icon-fullscreen.png");
-				--loop-within-bar-symbol: url("./image_assets/icon-loop-bar.png");
-	--loop-full-song-symbol: url("./image_assets/icon-loop-song.png");
-	--dont-loop-symbol: url("./image_assets/icon-loop-once.png");
+				--undo-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-undo.png");
+				--redo-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-redo.png");
+				--copy-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-copy.png");
+				--paste-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-paste.png");
+				--insert-channel-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-insertChannel.png");
+				--delete-channel-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-deleteChannel.png");
+				--select-all-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-SelectAll.png");
+				--duplicate-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-duplicate.png");
+				--notes-up-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/moveNotesUp.png");
+				--notes-down-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/moveNotesDown.png");
+				--loop-bar-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-singleBarLoop.png");
+				--fullscreen-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-fullscreen.png");
+				--loop-within-bar-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-loop-bar.png");
+	--loop-full-song-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-loop-song.png");
+	--dont-loop-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-loop-once.png");
 				} 
 			
 			@font-face {
 				font-family: "AbyssType";
 				src:
-				 url("./image_assets/abysstype.otf") format("opentype") tech(color-COLRv1),
+				 url("${location.pathname.includes("player") ? "." : ""}./image_assets/abysstype.otf") format("opentype") tech(color-COLRv1),
 				 }
 			
 				 @font-face {
 				font-family: "AbyssType_small";
 				src:
-				 url("./image_assets/abysstype_small.otf") format("opentype") tech(color-COLRv1),
+				 url("${location.pathname.includes("player") ? "." : ""}./image_assets/abysstype_small.otf") format("opentype") tech(color-COLRv1),
 				 }
 			
 				 #pattern-area {
@@ -14292,7 +14330,7 @@ var beepbox = (function (exports) {
 			}
 
 			body {
-				background-image: url("./image_assets/stars.gif") !important;
+				background-image: url("${location.pathname.includes("player") ? "." : ""}./image_assets/stars.gif") !important;
 				background-size: contain !important;
 				background-position: center top !important;
 				  background-repeat: repeat !important;
@@ -14305,7 +14343,7 @@ var beepbox = (function (exports) {
 				}
 			#text-content {
 				--editor-background: rgba(255, 255, 255, 0);
-					border-image-source: url("./image_assets/nebula2_border.png");
+					border-image-source: url("${location.pathname.includes("player") ? "." : ""}./image_assets/nebula2_border.png");
 					border-image-slice: 16 fill; 
 					   border-image-width: 32px; 
 					border-image-repeat: repeat; 
@@ -14319,7 +14357,7 @@ var beepbox = (function (exports) {
 				}
 			#beepboxEditorContainer {
 				--editor-background: rgba(255, 255, 255, 0);
-					border-image-source: url("./image_assets/nebula2_border.png");
+					border-image-source: url("${location.pathname.includes("player") ? "." : ""}./image_assets/nebula2_border.png");
 					border-image-slice: 16 fill; 
 					   border-image-width: 32px; 
 					border-image-repeat: repeat; 
@@ -14335,7 +14373,7 @@ var beepbox = (function (exports) {
 					image-rendering: optimizeSpeed !important;             /* IE */ 
 				}
 			.beepboxEditor button, .beepboxEditor select, .beepboxEditor .select2-selection__rendered, button {
-					border-image-source: url("./image_assets/nebula2_border2.png") !important;
+					border-image-source: url("${location.pathname.includes("player") ? "." : ""}./image_assets/nebula2_border2.png") !important;
 					border-image-slice: 4 fill !important; 
 				   border-image-width: 4px !important; 
 				border-image-repeat: stretch !important;
@@ -14354,12 +14392,12 @@ var beepbox = (function (exports) {
 			border-radius: 5px;
 			} */
 			* {
-				cursor: url("./image_assets/pixel_cursor.png"), auto !important;
+				cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/pixel_cursor.png"), auto !important;
 				--file-page-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-file.png");
 				--edit-pencil-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-edit.png");
 				--preferences-gear-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-preferences.png");
-				--instrument-copy-symbol: url("./image_assets/icon-copy.png");
-				--instrument-paste-symbol: url("./image_assets/icon-paste.png");
+				--instrument-copy-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-copy.png");
+				--instrument-paste-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-paste.png");
 				--play-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-play.png");
 				--pause-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-pause.png");
 				--record-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-record.png");
@@ -14374,32 +14412,32 @@ var beepbox = (function (exports) {
 				--export-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-export.png");
 				--export-instrument-symbol: var(--export-symbol);
 				--import-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-import.png");
-				--undo-symbol: url("./image_assets/icon-undo.png");
-				--redo-symbol: url("./image_assets/icon-redo.png");
-				--copy-symbol: url("./image_assets/icon-copy.png");
-				--paste-symbol: url("./image_assets/icon-paste.png");
-				--insert-channel-symbol: url("./image_assets/icon-insertChannel.png");
-				--delete-channel-symbol: url("./image_assets/icon-deleteChannel.png");
-				--select-all-symbol: url("./image_assets/icon-SelectAll.png");
-				--duplicate-symbol: url("./image_assets/icon-duplicate.png");
-				--notes-up-symbol: url("./image_assets/moveNotesUp.png");
-				--notes-down-symbol: url("./image_assets/moveNotesDown.png");
-				--loop-bar-symbol: url("./image_assets/icon-singleBarLoop.png");
-				--fullscreen-symbol: url("./image_assets/icon-fullscreen.png");
-				--loop-within-bar-symbol: url("./image_assets/icon-loop-bar.png");
-	--loop-full-song-symbol: url("./image_assets/icon-loop-song.png");
-	--dont-loop-symbol: url("./image_assets/icon-loop-once.png");
+				--undo-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-undo.png");
+				--redo-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-redo.png");
+				--copy-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-copy.png");
+				--paste-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-paste.png");
+				--insert-channel-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-insertChannel.png");
+				--delete-channel-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-deleteChannel.png");
+				--select-all-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-SelectAll.png");
+				--duplicate-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-duplicate.png");
+				--notes-up-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/moveNotesUp.png");
+				--notes-down-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/moveNotesDown.png");
+				--loop-bar-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-singleBarLoop.png");
+				--fullscreen-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-fullscreen.png");
+				--loop-within-bar-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-loop-bar.png");
+	--loop-full-song-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-loop-song.png");
+	--dont-loop-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-loop-once.png");
 				} 
 					@font-face {
 				   font-family: "AbyssType";
 				   src:
-					url("./image_assets/abysstype.otf") format("opentype") tech(color-COLRv1),
+					url("${location.pathname.includes("player") ? "." : ""}./image_assets/abysstype.otf") format("opentype") tech(color-COLRv1),
 					}
 		
 					@font-face {
 				   font-family: "AbyssType_small";
 				   src:
-					url("./image_assets/abysstype_small.otf") format("opentype") tech(color-COLRv1),
+					url("${location.pathname.includes("player") ? "." : ""}./image_assets/abysstype_small.otf") format("opentype") tech(color-COLRv1),
 					}
 		
 					html {
@@ -15386,12 +15424,12 @@ var beepbox = (function (exports) {
 		--note-flash-secondary: #ffffff77; }
 	
 		* {
-		cursor: url("./image_assets/pixel_cursor.png"), auto !important;
+		cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/pixel_cursor.png"), auto !important;
 		--file-page-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-file.png");
 		--edit-pencil-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-edit.png");
 		--preferences-gear-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-preferences.png");
-		--instrument-copy-symbol: url("./image_assets/icon-copy.png");
-		--instrument-paste-symbol: url("./image_assets/icon-paste.png");
+		--instrument-copy-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-copy.png");
+		--instrument-paste-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-paste.png");
 		--play-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-play.png");
 		--pause-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-pause.png");
 		--record-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-record.png");
@@ -15406,26 +15444,26 @@ var beepbox = (function (exports) {
 		--export-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-export.png");
 		--export-instrument-symbol: var(--export-symbol);
 		--import-symbol: url("https://choptop84.github.io/choptop84s-image-repository/icon-import.png");
-		--undo-symbol: url("./image_assets/icon-undo.png");
-		--redo-symbol: url("./image_assets/icon-redo.png");
-		--copy-symbol: url("./image_assets/icon-copy.png");
-		--paste-symbol: url("./image_assets/icon-paste.png");
-		--insert-channel-symbol: url("./image_assets/icon-insertChannel.png");
-		--delete-channel-symbol: url("./image_assets/icon-deleteChannel.png");
-		--select-all-symbol: url("./image_assets/icon-SelectAll.png");
-		--duplicate-symbol: url("./image_assets/icon-duplicate.png");
-		--notes-up-symbol: url("./image_assets/moveNotesUp.png");
-		--notes-down-symbol: url("./image_assets/moveNotesDown.png");
-		--loop-bar-symbol: url("./image_assets/icon-singleBarLoop.png");
-		--fullscreen-symbol: url("./image_assets/icon-fullscreen.png");
-		--loop-within-bar-symbol: url("./image_assets/icon-loop-bar.png");
-	--loop-full-song-symbol: url("./image_assets/icon-loop-song.png");
-	--dont-loop-symbol: url("./image_assets/icon-loop-once.png");
+		--undo-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-undo.png");
+		--redo-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-redo.png");
+		--copy-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-copy.png");
+		--paste-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-paste.png");
+		--insert-channel-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-insertChannel.png");
+		--delete-channel-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-deleteChannel.png");
+		--select-all-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-SelectAll.png");
+		--duplicate-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-duplicate.png");
+		--notes-up-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/moveNotesUp.png");
+		--notes-down-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/moveNotesDown.png");
+		--loop-bar-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-singleBarLoop.png");
+		--fullscreen-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-fullscreen.png");
+		--loop-within-bar-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-loop-bar.png");
+	--loop-full-song-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-loop-song.png");
+	--dont-loop-symbol: url("${location.pathname.includes("player") ? "." : ""}./image_assets/icon-loop-once.png");
 		} 
 			@font-face {
 		   font-family: "AbyssType";
 		   src:
-			url("./image_assets/abysstype.otf") format("opentype") tech(color-COLRv1),
+			url("${location.pathname.includes("player") ? "." : ""}./image_assets/abysstype.otf") format("opentype") tech(color-COLRv1),
 			}
 	
 			#beepboxEditorContainer, .track-area, .beepboxEditor, #text-content, div.noSelection, .beepboxEditor .loopEditor {
@@ -15435,7 +15473,7 @@ var beepbox = (function (exports) {
 			@font-face {
 		   font-family: "AbyssType_small";
 		   src:
-			url("./image_assets/abysstype_small.otf") format("opentype") tech(color-COLRv1),
+			url("${location.pathname.includes("player") ? "." : ""}./image_assets/abysstype_small.otf") format("opentype") tech(color-COLRv1),
 			}
 	
 			body {
@@ -23224,18 +23262,18 @@ var beepbox = (function (exports) {
 		}
 		.instructions-column > section:first-of-type > p:first-of-type:after {
 		display: block;
-		content: url("./image_assets/UltraboxAzurLaneThemeStarterSquad.png");
+		content: url("${location.pathname.includes("player") ? "." : ""}./image_assets/UltraboxAzurLaneThemeStarterSquad.png");
 		width: 100%;
 		text-align: center;
 		margin-top: 25px;
 		}
 		/* sets cursor */
 		* {
-		cursor: url("./image_assets/UltraBoxAzurLaneThemeMouse.png"), auto !important;
+		cursor: url("${location.pathname.includes("player") ? "." : ""}./image_assets/UltraBoxAzurLaneThemeMouse.png"), auto !important;
 		}
 		/* sets background image */
 		body {
-		background-image: url("./image_assets/UltraBoxAzurLaneThemeMemoryTaskBackground.png") !important;
+		background-image: url("${location.pathname.includes("player") ? "." : ""}./image_assets/UltraBoxAzurLaneThemeMemoryTaskBackground.png") !important;
 		background-size: cover;
 		background-position: center;
 		background-repeat: no-repeat;
@@ -23249,7 +23287,7 @@ var beepbox = (function (exports) {
 		}
 		#text-content > section > h1 {
 		margin: auto;
-		content: url("./image_assets/UltraBoxALThemeLogo.png");
+		content: url("${location.pathname.includes("player") ? "." : ""}./image_assets/UltraBoxALThemeLogo.png");
 		}
 	}`,
         "WeebBox": `
@@ -24516,8 +24554,9 @@ var beepbox = (function (exports) {
             return (_a = EditorConfig.presetCategories[0].presets.dictionary) === null || _a === void 0 ? void 0 : _a[TypePresets === null || TypePresets === void 0 ? void 0 : TypePresets[instrument]];
         }
     }
-    EditorConfig.version = "1.7";
-    EditorConfig.versionDisplayName = "AbyssBox " + EditorConfig.version;
+    EditorConfig.version = "1.8";
+    EditorConfig.isExperimental = location.pathname.includes("/abyssbox-experimental/") ? "Experimental " : "";
+    EditorConfig.versionDisplayName = "AbyssBox " + EditorConfig.isExperimental + EditorConfig.version;
     EditorConfig.releaseNotesURL = "./patch_notes.html";
     EditorConfig.isOnMac = /^Mac/i.test(navigator.platform) || /Mac OS X/i.test(navigator.userAgent) || /^(iPhone|iPad|iPod)/i.test(navigator.platform) || /(iPhone|iPad|iPod)/i.test(navigator.userAgent);
     EditorConfig.ctrlSymbol = EditorConfig.isOnMac ? "⌘" : "Ctrl+";
@@ -38833,10 +38872,12 @@ var beepbox = (function (exports) {
 
     const { a, button, div, h1, input, canvas, form, label, h2 } = HTML;
     const { svg, circle, rect, path } = SVG;
+    const isInRecovery = window.self != window.top;
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|android|ipad|playbook|silk/i.test(navigator.userAgent);
     const colorTheme = getLocalStorage("colorTheme");
     const setSpLayout = getLocalStorage("spLayout");
-    SongPlayerLayout.setLayout(setSpLayout === null ? "classic" : setSpLayout);
+    if (!isInRecovery)
+        SongPlayerLayout.setLayout(setSpLayout === null ? "classic" : setSpLayout);
     let prevHash = null;
     let id = ((Math.random() * 0xffffffff) >>> 0).toString(16);
     let pauseButtonDisplayed = false;
@@ -38978,8 +39019,10 @@ var beepbox = (function (exports) {
     let draggingTimelineBar = false;
     const playButton = button({ style: "width: 100%; height: 100%; max-height: 50px;" });
     const playButtonContainer = div({ class: "playButtonContainer", style: "flex-shrink: 0; display: flex; padding: 2px; width: 80px; height: 100%; box-sizing: border-box; align-items: center;" }, playButton);
-    const loopIcon = path({ d: "M 4 2 L 4 0 L 7 3 L 4 6 L 4 4 Q 2 4 2 6 Q 2 8 4 8 L 4 10 Q 0 10 0 6 Q 0 2 4 2 M 8 10 L 8 12 L 5 9 L 8 6 L 8 8 Q 10 8 10 6 Q 10 4 8 4 L 8 2 Q 12 2 12 6 Q 12 10 8 10 z" });
-    const loopButton = button({ title: "loop", class: "spIcon loopIcon", style: "background: none; flex: 0 0 12px; margin: 0 3px; width: 12px; height: 12px; display: flex;" }, svg({ width: 12, height: 12, viewBox: "0 0 12 12" }, loopIcon));
+    const loopIcon = path({ d: "M4 2V4Q2 4 2 6T4 8v2Q0 10 0 6T4 2V4H8q2 0 2 2T8 8H4v2H8q4 0 4-4T8 2z", fill: ColorConfig.linkAccent });
+    const loopWholeSongIcon = path({ d: "M 4 2 L 4 0 L 7 3 L 4 6 L 4 4 Q 2 4 2 6 Q 2 8 4 8 L 4 10 Q 0 10 0 6 Q 0 2 4 2 M 8 10 L 8 12 L 5 9 L 8 6 L 8 8 Q 10 8 10 6 Q 10 4 8 4 L 8 2 Q 12 2 12 6 Q 12 10 8 10 z", fill: ColorConfig.linkAccent });
+    const noLoopIcon = path({ d: "M0 9v2H9v2l3-3L9 7V9ZM0 2V4H9V6l3-3L9 0V2", fill: ColorConfig.uiWidgetBackground });
+    const loopButton = button({ title: "loop", class: "spIcon loopIcon", style: "background: none; flex: 0 0 12px; margin: 0 3px; width: 12px; height: 12px; display: flex;" }, svg({ width: 12, height: 12, viewBox: "0 0 12 12" }, loopIcon, loopWholeSongIcon, noLoopIcon));
     const volumeIcon = svg({ class: "spIcon volumeIcon", style: "flex: 0 0 12px; margin: 0 1px; width: 12px; height: 12px;", viewBox: "0 0 12 12" }, path({ fill: ColorConfig.uiWidgetBackground, d: "M 1 9 L 1 3 L 4 3 L 7 0 L 7 12 L 4 9 L 1 9 M 9 3 Q 12 6 9 9 L 8 8 Q 10.5 6 8 4 L 9 3 z" }));
     const volumeSlider = input({ title: "volume", type: "range", value: 75, min: 0, max: 75, step: 1, style: "width: 12vw; max-width: 100px; margin: 0 1px;" });
     const zoomIcon = svg({ class: "spIcon zoomIcon", width: 12, height: 12, viewBox: "0 0 12 12" }, circle({ cx: "5", cy: "5", r: "4.5", "stroke-width": "1", stroke: "currentColor", fill: "none" }), path({ stroke: "currentColor", "stroke-width": "2", d: "M 8 8 L 11 11 M 5 2 L 5 8 M 2 5 L 8 5", fill: "none" }));
@@ -39019,6 +39062,14 @@ var beepbox = (function (exports) {
     songPlayerContainer.appendChild(pianoContainer);
     songPlayerContainer.appendChild(timelineBarContainer);
     songPlayerContainer.appendChild(div({ class: "control-center", id: "control-center", style: `flex-shrink: 0; height: 20vh; min-height: 22px; max-height: 70px; display: flex; align-items: center; grid-area: control-center;` }, div({ class: "control-center row", id: "row1", style: `display: flex; align-items: center;` }, playButtonContainer, loopButton, volumeIcon, volumeSlider, zoomButton, volumeBarContainerDiv, oscilascope.canvas), div({ class: "control-center row", id: "row2", style: `display: flex; align-items: center;` }, titleText, layoutStuffs, editLink, copyLink, shareLink, shortenSongLink), div({ class: "control-center row", id: "row3", style: `display: flex; align-items: center;` })));
+    const elementsToHide = [loopButton, volumeIcon, volumeSlider, zoomButton, volumeBarContainerDiv, oscilascope.canvas, titleText, layoutStuffs, copyLink];
+    let hasHidden = false;
+    if (isInRecovery && !hasHidden) {
+        for (let i = 0; i < elementsToHide.length; i++) {
+            elementsToHide[i].style.display = "none";
+        }
+        hasHidden = true;
+    }
     document.body.appendChild(songPlayerContainer);
     songPlayerContainer.appendChild(promptContainer);
     promptContainer.appendChild(layoutContainer);
@@ -39079,7 +39130,7 @@ var beepbox = (function (exports) {
         editLink.href = "../#" + updatedSongString;
     }
     function hashUpdatedExternally() {
-        var _a;
+        var _a, _b;
         let myHash = location.hash;
         if (prevHash == myHash || myHash == "")
             return;
@@ -39101,21 +39152,23 @@ var beepbox = (function (exports) {
                             if (synth.song != null) {
                                 if (synth.song.setSongTheme != null) {
                                     if (((_a = synth.song) === null || _a === void 0 ? void 0 : _a.setSongTheme) == "none") {
-                                        ColorConfig.setTheme(colorTheme === null ? "AbyssBox Classic" : colorTheme);
+                                        ColorConfig.setTheme(colorTheme === null ? "AbyssBox 0.8" : colorTheme);
                                     }
                                     else {
                                         ColorConfig.setTheme(synth.song.setSongTheme);
                                     }
                                 }
                                 else {
-                                    ColorConfig.setTheme(colorTheme === null ? "AbyssBox Classic" : colorTheme);
+                                    ColorConfig.setTheme(colorTheme === null ? "AbyssBox 0.8" : colorTheme);
                                 }
                             }
                         }
                         break;
                     case "loop":
-                        synth.loopRepeatCount = (value != "1") ? 0 : -1;
-                        renderLoopIcon();
+                        if (((_b = synth.song) === null || _b === void 0 ? void 0 : _b.loopType) != undefined) {
+                            synth.loopRepeatCount = (synth.song.loopType == 3) ? 0 : -1;
+                            renderLoopIcon();
+                        }
                         break;
                 }
             }
@@ -39130,8 +39183,33 @@ var beepbox = (function (exports) {
         renderTimeline();
     }
     function shortenSongPlayerUrl() {
-        let shortenerStrategy = "https://tinyurl.com/api-create.php?url=";
-        window.open(shortenerStrategy + encodeURIComponent(new URL("#song=" + synth.song.toBase64String(), location.href).href));
+        let localShortenerStrategy = window.localStorage.getItem("shortenerStrategySelect");
+        if (localShortenerStrategy == "tinyurl") {
+            window.localStorage.setItem("shortenerStrategySelect", "wackybox");
+            localShortenerStrategy = "wackybox";
+        }
+        const shorteners = {
+            "wackybox": {
+                maxLength: 128000,
+                altName: "wackybox.org",
+                encode: encodeURIComponent,
+                shortenerStrategy: "https://wackybox.org/api-create.php?url="
+            },
+            "isgd": {
+                maxLength: 5000,
+                altName: "is.gd",
+                encode: encodeURIComponent,
+                shortenerStrategy: "https://is.gd/create.php?format=simple&url="
+            }
+        };
+        const shortener = shorteners[localShortenerStrategy || "wackybox"];
+        if (synth.song == null)
+            return;
+        const uri = shortener.encode(new URL("#" + synth.song.toBase64String(), location.href).href);
+        const uriLength = uri.length;
+        if (uriLength > shortener.maxLength)
+            return;
+        window.open(shortener.shortenerStrategy + uri);
     }
     let pauseIfAnotherPlayerStartsHandle = null;
     function pauseIfAnotherPlayerStarts() {
@@ -39232,11 +39310,15 @@ var beepbox = (function (exports) {
         renderTimeline();
     }
     function onToggleLoop() {
-        if (synth.loopRepeatCount == -1) {
-            synth.loopRepeatCount = 0;
-        }
-        else {
-            synth.loopRepeatCount = -1;
+        var _a;
+        if (((_a = synth.song) === null || _a === void 0 ? void 0 : _a.loopType) != undefined) {
+            if (synth.song.loopType < 3) {
+                synth.song.loopType++;
+            }
+            else {
+                synth.song.loopType = 1;
+                synth.loopRepeatCount = -1;
+            }
         }
         renderLoopIcon();
     }
@@ -39585,7 +39667,14 @@ var beepbox = (function (exports) {
         pauseButtonDisplayed = synth.playing;
     }
     function renderLoopIcon() {
-        loopIcon.setAttribute("fill", (synth.loopRepeatCount == -1) ? ColorConfig.linkAccent : ColorConfig.uiWidgetBackground);
+        var _a;
+        if (((_a = synth.song) === null || _a === void 0 ? void 0 : _a.loopType) != undefined) {
+            loopIcon.setAttribute("display", (synth.song.loopType == 1) ? "" : "none");
+            loopWholeSongIcon.setAttribute("display", (synth.song.loopType == 2) ? "" : "none");
+            noLoopIcon.setAttribute("display", (synth.song.loopType == 3) ? "" : "none");
+            if (synth.song.loopType == 3)
+                synth.loopRepeatCount = 0;
+        }
     }
     function renderZoomIcon() {
         zoomIcon.style.color = zoomEnabled ? ColorConfig.linkAccent : ColorConfig.uiWidgetBackground;
