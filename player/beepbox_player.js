@@ -215,12 +215,12 @@ var beepbox = (function (exports) {
                 sampleLoadingState.statusTable[chipWaveIndex] = 0;
                 sampleLoadingState.urlTable[chipWaveIndex] = "legacySamples";
             }
-            loadScript("samples.js")
-                .then(() => loadScript("samples2.js"))
-                .then(() => loadScript("samples3.js"))
-                .then(() => loadScript("drumsamples.js"))
-                .then(() => loadScript("wario_samples.js"))
-                .then(() => loadScript("kirby_samples.js"))
+            loadScript(`${location.pathname.includes("player") ? "." : ""}./samples/samples.js`)
+                .then(() => loadScript(`${location.pathname.includes("player") ? "." : ""}./samples/samples2.js`))
+                .then(() => loadScript(`${location.pathname.includes("player") ? "." : ""}./samples/samples3.js`))
+                .then(() => loadScript(`${location.pathname.includes("player") ? "." : ""}./samples/drumsamples.js`))
+                .then(() => loadScript(`${location.pathname.includes("player") ? "." : ""}./samples/wario_samples.js`))
+                .then(() => loadScript(`${location.pathname.includes("player") ? "." : ""}./samples/kirby_samples.js`))
                 .then(() => {
                 const chipWaveSamples = [
                     centerWave(kicksample),
@@ -330,7 +330,7 @@ var beepbox = (function (exports) {
                 sampleLoadingState.statusTable[chipWaveIndex] = 0;
                 sampleLoadingState.urlTable[chipWaveIndex] = "nintariboxSamples";
             }
-            loadScript("nintaribox_samples.js")
+            loadScript(`${location.pathname.includes("player") ? "." : ""}./samples/nintaribox_samples.js`)
                 .then(() => {
                 const chipWaveSamples = [
                     centerWave(chronoperc1finalsample),
@@ -381,7 +381,7 @@ var beepbox = (function (exports) {
                 sampleLoadingState.statusTable[chipWaveIndex] = 0;
                 sampleLoadingState.urlTable[chipWaveIndex] = "marioPaintboxSamples";
             }
-            loadScript("mario_paintbox_samples.js")
+            loadScript(`${location.pathname.includes("player") ? "." : ""}./samples/mario_paintbox_samples.js`)
                 .then(() => {
                 const chipWaveSamples = [
                     centerWave(catpaintboxsample),
